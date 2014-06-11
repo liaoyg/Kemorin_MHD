@@ -100,20 +100,17 @@
       integer (kind = kint) :: ist_send, ist_recv
 !
 !
-      call resize_work_sph_SR(NB, npe_send, npe_recv,                   &
-     &    istack_send(npe_send), istack_recv(npe_recv))
-!
       ncomm_send = npe_send - isend_self
       ncomm_recv = npe_recv - irecv_self
 !
 !C-- SEND
 !
-      s1time = MPI_WTIME()
+!      s1time = MPI_WTIME()
       call set_to_send_buf_N_mod(NB, nnod_org, npe_send,                &
      &    istack_send(npe_send), istack_send, inod_export, X_org, WS)
-      elaps3(1) = elaps3(1) + MPI_WTIME() - s1time
+!      elaps3(1) = elaps3(1) + MPI_WTIME() - s1time
 !C
-      s1time = MPI_WTIME()
+!      s1time = MPI_WTIME()
       do neib = 1, ncomm_send
         ist = NB * istack_send(neib-1) + 1
         num = NB * (istack_send(neib  ) - istack_send(neib-1))
@@ -145,15 +142,12 @@
       end if
 !
 !
-      s2time = MPI_WTIME()
+!      s2time = MPI_WTIME()
       call set_from_recv_buf_N(NB, nnod_new, npe_recv,                  &
      &    istack_recv(npe_recv), istack_recv, inod_import, WR, X_new)
-      elaps3(2) = elaps3(2) + MPI_WTIME() - s2time
+!      elaps3(2) = elaps3(2) + MPI_WTIME() - s2time
 !
-      if(ncomm_send .gt. 0) then
-        call MPI_WAITALL (ncomm_send, req1, sta1, ierr_MPI)
-      end if
-      elaps3(3) = elaps3(3) + MPI_WTIME() - s1time
+!      elaps3(3) = elaps3(3) + MPI_WTIME() - s1time
 !
       end subroutine calypso_send_recv_N
 !
@@ -207,21 +201,18 @@
       integer (kind = kint) :: ist_send, ist_recv
 !
 !
-      call resize_work_sph_SR( (3*NB), npe_send, npe_recv,              &
-     &    istack_send(npe_send), istack_recv(npe_recv))
-!
       ncomm_send = npe_send - isend_self
       ncomm_recv = npe_recv - irecv_self
 !
 !C-- SEND
 !
-      s1time = MPI_WTIME()
+!      s1time = MPI_WTIME()
       call set_to_send_buf_3xN_mod(NB, nnod_org,                        &
      &    npe_send, istack_send(npe_send), istack_send, inod_export,    &
      &    X1_org, X2_org, X3_org, WS)
-      elaps3(1) = elaps3(1) + MPI_WTIME() - s1time
+!      elaps3(1) = elaps3(1) + MPI_WTIME() - s1time
 !C
-      s1time = MPI_WTIME()
+!      s1time = MPI_WTIME()
       do neib = 1, ncomm_send
         ist = 3*NB * istack_send(neib-1) + 1
         num = 3*NB * (istack_send(neib  ) - istack_send(neib-1))
@@ -255,16 +246,12 @@
       end if
 !
 !
-      s2time = MPI_WTIME()
+!      s2time = MPI_WTIME()
       call set_from_recv_buf_3xN(NB, nnod_new,                          &
      &    npe_recv, istack_recv(npe_recv), istack_recv, inod_import,    &
      &    WR, X1_new, X2_new, X3_new)
-      elaps3(2) = elaps3(2) + MPI_WTIME() - s2time
-!
-      if(ncomm_send .gt. 0) then
-        call MPI_WAITALL (ncomm_send, req1, sta1, ierr_MPI)
-      end if
-      elaps3(3) = elaps3(3) + MPI_WTIME() - s1time
+!      elaps3(2) = elaps3(2) + MPI_WTIME() - s2time
+!      elaps3(3) = elaps3(3) + MPI_WTIME() - s1time
 !
       end subroutine calypso_send_recv_3xN
 !

@@ -8,13 +8,17 @@
 !      subroutine init_work_4_SR( NEIBPETOT, NEIBPE, STACK_IMPORT)
 !      subroutine init_window_4_SR(NB, NEIBPETOT, STACK_IMPORT)
 !      subroutine init_window_4_SR_int(NB, NEIBPETOT, STACK_IMPORT)
+!      subroutine init_window_4_SR_int8(NB, NEIBPETOT, STACK_IMPORT)
 !
 !      subroutine delete_window_4_SR
 !      subroutine delete_window_4_SR_int
+!      subroutine delete_window_4_SR_int8
+!
 !      subroutine deallocate_import_table
 !
 !      subroutine resize_wsend_RMA(nb, ntot_send)
 !      subroutine resize_isend_RMA(ntot_send)
+!      subroutine resize_i8send_RMA(ntot_send)
 !
 !
       module m_RMA_SR
@@ -32,28 +36,37 @@
 ! \beginARG       work array for communication (send)
       real(kind = kreal), allocatable:: WRecieve(:)
 ! \beginARG       work array for communication (receive)
+!
       integer(kind=kint ), allocatable:: iWS(:)
-! \beginARG       work array for communication (receive)
-      integer(kind=kint ), allocatable:: iWRecieve(send)
+! \beginARG       work array for communication (send)
+      integer(kind=kint ), allocatable:: iWRecieve(:)
 ! \beginARG       work array for communication (receive)
 !
-      integer, save :: win, iwin
+      integer(kind=kint_d ), allocatable:: i8WS(:)
+! \beginARG       work array for communication (send)
+      integer(kind=kint_d ), allocatable:: i8WRecieve(:)
+! \beginARG       work array for communication (receive)
+!
+      integer, save :: win, iwin, i8win
       integer, save :: group, igroup
       integer, save :: nbr_group, inbr_group
 !        window name
 !
-      integer(kind = kint) :: iflag_init = 0
-      integer(kind = kint) :: iflag_win =  0
-      integer(kind = kint) :: iflag_iwin =  0
+      integer(kind = kint) :: iflag_init =   0
+      integer(kind = kint) :: iflag_win =    0
+      integer(kind = kint) :: iflag_iwin =   0
+      integer(kind = kint) :: iflag_i8win =  0
 !
-      integer(kind = kint) :: iflag_ws =  -1
-      integer(kind = kint) :: iflag_iws = -1
+      integer(kind = kint) :: iflag_ws =   -1
+      integer(kind = kint) :: iflag_iws =  -1
+      integer(kind = kint) :: iflag_i8ws = -1
 !
       private :: iflag_init
       private :: size_window
-      private :: iflag_ws, iflag_iws
-      private :: allocate_wsend_RMA, deallocate_wsend_RMA
-      private :: allocate_isend_RMA, deallocate_isend_RMA
+      private :: iflag_ws, iflag_iws, iflag_i8ws
+      private :: allocate_wsend_RMA,  deallocate_wsend_RMA
+      private :: allocate_isend_RMA,  deallocate_isend_RMA
+      private :: allocate_i8send_RMA, deallocate_i8send_RMA
 !
 ! ----------------------------------------------------------------------
 !
@@ -142,9 +155,8 @@
 !
 ! ----------------------------------------------------------------------
 !
-      subroutine init_window_4_SR_int(NB, NEIBPETOT, STACK_IMPORT)
+      subroutine init_window_4_SR_int(NEIBPETOT, STACK_IMPORT)
 !
-      integer(kind=kint ), intent(in) :: NB
       integer(kind=kint ), intent(in) :: NEIBPETOT
 !        total neighboring pe count
       integer(kind=kint ), intent(in) :: STACK_IMPORT(0:NEIBPETOT)
@@ -152,14 +164,34 @@
 !
 !
       allocate (iWRecieve(STACK_IMPORT(NEIBPETOT)))
-      size_window = NB*STACK_IMPORT(NEIBPETOT) * kint
+      size_window = STACK_IMPORT(NEIBPETOT) * kint
 !
-      call MPI_WIN_CREATE(WRecieve, size_window, kint,                  &
+      call MPI_WIN_CREATE(iWRecieve, size_window, kint,                 &
      &    MPI_INFO_NULL, CALYPSO_COMM, iwin, ierr_MPI)
 !
-      iflag_iwin = NB*STACK_IMPORT(NEIBPETOT)
+      iflag_iwin = STACK_IMPORT(NEIBPETOT)
 !
       end subroutine init_window_4_SR_int
+!
+! ----------------------------------------------------------------------
+!
+      subroutine init_window_4_SR_int8(NEIBPETOT, STACK_IMPORT)
+!
+      integer(kind=kint ), intent(in) :: NEIBPETOT
+!        total neighboring pe count
+      integer(kind=kint ), intent(in) :: STACK_IMPORT(0:NEIBPETOT)
+!        imported node count for each neighbor pe (i-th pe)
+!
+!
+      allocate (i8WRecieve(STACK_IMPORT(NEIBPETOT)))
+      size_window = STACK_IMPORT(NEIBPETOT) * kint_d
+!
+      call MPI_WIN_CREATE(iWRecieve, size_window, kint_d,               &
+     &    MPI_INFO_NULL, CALYPSO_COMM, i8win, ierr_MPI)
+!
+      iflag_i8win = STACK_IMPORT(NEIBPETOT)
+!
+      end subroutine init_window_4_SR_int8
 !
 ! ----------------------------------------------------------------------
 !
@@ -187,10 +219,22 @@
 !
 ! ----------------------------------------------------------------------
 !
+      subroutine delete_window_4_SR_int8
+!
+!
+      call MPI_WIN_FREE(i8win)
+      deallocate (i8WRecieve)
+!
+      iflag_i8win = 0
+!
+      end subroutine delete_window_4_SR_int8
+!
+! ----------------------------------------------------------------------
+!
       subroutine deallocate_import_table
 !
 !
-      deallocate( import_a )
+      deallocate(import_a)
       iflag_init = 0
 !
       end subroutine deallocate_import_table
@@ -233,6 +277,23 @@
       end subroutine resize_isend_RMA
 !
 ! ----------------------------------------------------------------------
+!
+      subroutine resize_i8send_RMA(ntot_send)
+!
+      integer(kind=kint), intent(in) :: ntot_send
+!
+      if (iflag_i8ws .lt. 0) then
+        call allocate_i8send_RMA(ntot_send)
+!
+      else if (iflag_i8ws .ge. 0                                        &
+     &       .and. iflag_i8ws .lt. ntot_send ) then
+        call deallocate_i8send_RMA
+        call allocate_i8send_RMA(ntot_send)
+      end if
+!
+      end subroutine resize_i8send_RMA
+!
+! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------
 !
       subroutine allocate_wsend_RMA(nb, ntot_send)
@@ -256,6 +317,17 @@
       end subroutine allocate_isend_RMA
 !
 ! ----------------------------------------------------------------------
+!
+      subroutine allocate_i8send_RMA(ntot_send)
+!
+      integer(kind=kint), intent(in) :: ntot_send
+!
+      iflag_i8ws = ntot_send
+      allocate (i8WS(iflag_i8ws))
+!
+      end subroutine allocate_i8send_RMA
+!
+! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------
 !
       subroutine deallocate_wsend_RMA
@@ -273,6 +345,15 @@
       iflag_iws = -1
 !
       end subroutine deallocate_isend_RMA
+!
+! ----------------------------------------------------------------------
+!
+      subroutine deallocate_i8send_RMA
+!
+      deallocate (i8WS)
+      iflag_i8ws = -1
+!
+      end subroutine deallocate_i8send_RMA
 !
 ! ----------------------------------------------------------------------
 !

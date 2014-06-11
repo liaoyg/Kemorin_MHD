@@ -23,6 +23,8 @@
 !!
 !!      subroutine set_to_send_buf_int(nnod_org,                        &
 !!     &          nnod_send, inod_export, iX_org, iWS)
+!!      subroutine set_to_send_buf_int8(nnod_org,                       &
+!!     &          nnod_send, inod_export, i8X_org, i8WS)
 !!@endverbatim
 !!
 !!@n @param  NB    Number of components for communication
@@ -36,7 +38,12 @@
 !!@n @param  inod_export(nnod_send)
 !!                    local node ID to copy in send buffer
 !!@n
-!!@n @param  X_org(NB*nnod_org)   Send data
+!!@n @param  X_org(NB*nnod_org)     Send data
+!!@n @param  WS(nnod_send)          Send buffer
+!!@n @param  iX_org(NB*nnod_org)    Send data with integer
+!!@n @param  iWS(nnod_send)         Send buffer with integer
+!!@n @param  i8X_org(NB*nnod_org)   Send data with 8-byte integer
+!!@n @param  i8WS(nnod_send)        Send buffer with 8-byte integer
 !
       module set_to_send_buffer
 !
@@ -245,6 +252,30 @@
 !$omp end parallel do
 !
       end subroutine set_to_send_buf_int
+!
+! ----------------------------------------------------------------------
+!
+      subroutine set_to_send_buf_int8(nnod_org,                         &
+     &          nnod_send, inod_export, i8X_org, i8WS)
+!
+      integer(kind = kint), intent(in) :: nnod_org, nnod_send
+      integer(kind = kint), intent(in) :: inod_export(nnod_send)
+!
+      integer (kind=kint_d), intent(in)::    i8X_org(nnod_org)
+!
+      integer (kind=kint_d), intent(inout):: i8WS(nnod_send)
+!
+      integer (kind = kint) :: k, j
+!
+!
+!$omp parallel do private(k,j)
+      do k = 1, nnod_send
+          j = inod_export(k)
+          i8WS(k  )= i8X_org(j  )
+      end do
+!$omp end parallel do
+!
+      end subroutine set_to_send_buf_int8
 !
 ! ----------------------------------------------------------------------
 !

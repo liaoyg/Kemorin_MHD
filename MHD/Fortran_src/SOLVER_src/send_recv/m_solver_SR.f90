@@ -14,13 +14,17 @@
 !!
 !!      subroutine resize_work_4_SR(NB, NEIBPETOT, NTOT_SEND, NTOT_RECV)
 !!      subroutine resize_iwork_4_SR(NEIBPETOT, NTOT_SEND, NTOT_RECV)
+!!      subroutine resize_i8work_4_SR(NEIBPETOT, NTOT_SEND, NTOT_RECV)
 !!
 !!      subroutine resize_work_itp_SR(NB, NPE_SEND, NPE_RECV, NTOT_RECV)
 !!      subroutine resize_iwork_itp_SR(NPE_SEND, NPE_RECV, NTOT_RECV)
+!!      subroutine resize_i8work_itp_SR(NPE_SEND, NPE_RECV, NTOT_RECV)
 !!
 !!      subroutine resize_work_sph_SR(NB, NPE_SEND, NPE_RECV,           &
 !!     &          NTOT_SEND, NTOT_RECV)
 !!      subroutine resize_iwork_sph_SR(NPE_SEND, NPE_RECV,              &
+!!     &          NTOT_SEND, NTOT_RECV)
+!!      subroutine resize_i8work_sph_SR(NPE_SEND, NPE_RECV,             &
 !!     &          NTOT_SEND, NTOT_RECV)
 !!@endverbatim
 !!
@@ -61,6 +65,11 @@
 !>       work array for integer recieving
       integer(kind = kint), allocatable :: iWR(:)
 !
+!>       work array for integer sending
+      integer(kind = kint_d), allocatable :: i8WS(:)
+!>       work array for integer recieving
+      integer(kind = kint_d), allocatable :: i8WR(:)
+!
 !
 !>       number of subdomains to export to verify size
       integer(kind = kint) :: iflag_snd_flags = -1
@@ -75,13 +84,19 @@
       integer(kind = kint) :: iflag_iws = -1
 !>       size of integer import array to verify
       integer(kind = kint) :: iflag_iwr = -1
+!>       size of 8 byte integer export array to verify
+      integer(kind = kint) :: iflag_i8ws = -1
+!>       size of 8 byte integer import array to verify
+      integer(kind = kint) :: iflag_i8wr = -1
 !
       private :: iflag_snd_flags, iflag_rcv_flags
       private :: iflag_ws, iflag_wr, iflag_iws, iflag_iwr
+      private :: iflag_i8ws, iflag_i8wr
 !
       private :: resize_flag_4_SR
-      private :: resize_wsend_SR, resize_wrecv_SR
-      private :: resize_isend_SR, resize_irecv_SR
+      private :: resize_wsend_SR,  resize_wrecv_SR
+      private :: resize_isend_SR,  resize_irecv_SR
+      private :: resize_i8send_SR, resize_i8recv_SR
 !
       private :: allocate_sendflag_4_SR, deallocate_sendflag_4_SR
       private :: allocate_recvflag_4_SR, deallocate_recvflag_4_SR
@@ -89,6 +104,8 @@
       private :: allocate_wrecv_SR,  deallocate_wrecv_SR
       private :: allocate_isend_SR,  deallocate_isend_SR
       private :: allocate_irecv_SR,  deallocate_irecv_SR
+      private :: allocate_i8send_SR, deallocate_i8send_SR
+      private :: allocate_i8recv_SR, deallocate_i8recv_SR
 !
 ! ----------------------------------------------------------------------
 !
@@ -144,6 +161,20 @@
       end subroutine resize_iwork_4_SR
 !
 ! ----------------------------------------------------------------------
+!
+      subroutine resize_i8work_4_SR(NEIBPETOT, NTOT_SEND, NTOT_RECV)
+!
+      integer(kind = kint), intent(in) ::  NEIBPETOT
+      integer(kind = kint), intent(in) ::  NTOT_SEND, NTOT_RECV
+!
+!
+      call resize_flag_4_SR( NEIBPETOT, NEIBPETOT )
+      call resize_i8send_SR(NTOT_SEND)
+      call resize_i8recv_SR(NTOT_RECV)
+!
+      end subroutine resize_i8work_4_SR
+!
+! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------
 !
       subroutine resize_work_itp_SR(NB, NPE_SEND, NPE_RECV, NTOT_RECV)
@@ -169,6 +200,19 @@
       call resize_irecv_SR(NTOT_RECV)
 !
       end subroutine resize_iwork_itp_SR
+!
+! ----------------------------------------------------------------------
+!
+      subroutine resize_i8work_itp_SR(NPE_SEND, NPE_RECV, NTOT_RECV)
+!
+      integer(kind = kint), intent(in) ::  NPE_SEND, NPE_RECV
+      integer(kind = kint), intent(in) ::  NTOT_RECV
+!
+!
+      call resize_flag_4_SR(NPE_SEND, NPE_RECV)
+      call resize_i8recv_SR(NTOT_RECV)
+!
+      end subroutine resize_i8work_itp_SR
 !
 ! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------
@@ -200,6 +244,21 @@
       call resize_irecv_SR(NTOT_RECV+1)
 !
       end subroutine resize_iwork_sph_SR
+!
+! ----------------------------------------------------------------------
+!
+      subroutine resize_i8work_sph_SR(NPE_SEND, NPE_RECV,               &
+     &          NTOT_SEND, NTOT_RECV)
+!
+      integer(kind = kint), intent(in) ::  NPE_SEND, NPE_RECV
+      integer(kind = kint), intent(in) ::  NTOT_SEND, NTOT_RECV
+!
+!
+      call resize_flag_4_SR(NPE_SEND, NPE_RECV)
+      call resize_i8send_SR(NTOT_SEND  )
+      call resize_i8recv_SR(NTOT_RECV+1)
+!
+      end subroutine resize_i8work_sph_SR
 !
 ! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------
@@ -240,7 +299,6 @@
      &       .and. iflag_ws .lt. (NB*NTOT_SEND) ) then
         call deallocate_wsend_SR
         call allocate_wsend_SR(NB, NTOT_SEND)
-!
       end if
 !
       end subroutine resize_wsend_SR
@@ -258,7 +316,6 @@
      &       .and. iflag_wr .lt. (NB*ntot_recv) ) then
         call deallocate_wrecv_SR
         call allocate_wrecv_SR(NB, ntot_recv)
-!
       end if
 !
       end subroutine resize_wrecv_SR
@@ -276,7 +333,6 @@
      &       .and. iflag_iws .lt. NTOT_SEND ) then
         call deallocate_isend_SR
         call allocate_isend_SR(NTOT_SEND)
-!
       end if
 !
       end subroutine resize_isend_SR
@@ -294,10 +350,43 @@
      &       .and. iflag_iwr .lt. ntot_recv ) then
         call deallocate_irecv_SR
         call allocate_irecv_SR(ntot_recv)
-!
       end if
 !
       end subroutine resize_irecv_SR
+!
+! ----------------------------------------------------------------------
+!
+      subroutine resize_i8send_SR(NTOT_SEND)
+!
+      integer(kind=kint), intent(in) :: NTOT_SEND
+!
+      if (iflag_i8ws .lt. 0) then
+        call allocate_i8send_SR(NTOT_SEND)
+!
+      else if (iflag_i8ws .ge. 0                                        &
+     &       .and. iflag_i8ws .lt. NTOT_SEND ) then
+        call deallocate_i8send_SR
+        call allocate_i8send_SR(NTOT_SEND)
+      end if
+!
+      end subroutine resize_i8send_SR
+!
+! ----------------------------------------------------------------------
+!
+      subroutine resize_i8recv_SR(ntot_recv)
+!
+      integer(kind=kint), intent(in) :: ntot_recv
+!
+      if (iflag_i8wr .lt. 0) then
+        call allocate_i8recv_SR(ntot_recv)
+!
+      else if (iflag_i8wr .ge. 0                                        &
+     &       .and. iflag_i8wr .lt. ntot_recv ) then
+        call deallocate_i8recv_SR
+        call allocate_i8recv_SR(ntot_recv)
+      end if
+!
+      end subroutine resize_i8recv_SR
 !
 ! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------
@@ -381,6 +470,28 @@
       end subroutine allocate_irecv_SR
 !
 ! ----------------------------------------------------------------------
+!
+      subroutine allocate_i8send_SR(NTOT_SEND)
+!
+      integer(kind=kint), intent(in) :: NTOT_SEND
+!
+      iflag_i8ws = NTOT_SEND
+      allocate (i8WS(iflag_i8ws))
+!
+      end subroutine allocate_i8send_SR
+!
+! ----------------------------------------------------------------------
+!
+      subroutine allocate_i8recv_SR(ntot_recv)
+!
+      integer(kind=kint), intent(in) :: ntot_recv
+!
+      iflag_i8wr = ntot_recv
+      allocate (i8WR(iflag_i8wr))
+!
+      end subroutine allocate_i8recv_SR
+!
+! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------
 !
        subroutine deallocate_sendflag_4_SR
@@ -432,6 +543,24 @@
       iflag_iwr = -1
 !
       end subroutine deallocate_irecv_SR
+!
+! ----------------------------------------------------------------------
+!
+      subroutine deallocate_i8send_SR
+!
+      deallocate (i8WS)
+      iflag_i8ws = -1
+!
+      end subroutine deallocate_i8send_SR
+!
+! ----------------------------------------------------------------------
+!
+      subroutine deallocate_i8recv_SR
+!
+      deallocate (i8WR)
+      iflag_i8wr = -1
+!
+      end subroutine deallocate_i8recv_SR
 !
 ! ----------------------------------------------------------------------
 !

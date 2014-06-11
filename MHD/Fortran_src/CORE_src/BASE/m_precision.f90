@@ -20,5 +20,8 @@
 !>  character length for file name          ( 2047 byte )
       integer, parameter   ::  len_fname = 2047
 !
+!>  kind parameter for long integer type variable (  8 byte )
+      integer, parameter   ::  kint_d  =    8
+!
       end module m_precision
 

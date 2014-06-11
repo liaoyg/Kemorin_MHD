@@ -21,6 +21,8 @@
 !!
 !!      subroutine set_from_recv_buf_int(nnod_new,                      &
 !!     &          nnod_recv, inod_import, iWR, iX_new)
+!!      subroutine set_from_recv_buf_int8(nnod_new,                     &
+!!     &          nnod_recv, inod_import, i8WR, i8X_new)
 !!@endverbatim
 !!
 !!@n @param  NB    Number of components for communication
@@ -33,7 +35,12 @@
 !!@n @param  inod_import(nnod_recv)
 !!                    local node ID to copy from receive buffer
 !!@n
-!!@n @param  X_new(NB*nnod_new)   Received data
+!!@n @param  WR(nnod_recv)          Received buffer
+!!@n @param  X_new(NB*nnod_new)     Received data
+!!@n @param  iWR(nnod_recv)         Received buffer with integer
+!!@n @param  iX_new(NB*nnod_new)    Received data with integer
+!!@n @param  i8WR(nnod_recv)        Received buffer with 8-byte integer
+!!@n @param  i8X_new(NB*nnod_new)   Received data with 8-byte integer
 !
       module set_from_recv_buffer
 !
@@ -211,6 +218,30 @@
 !$omp end parallel do
 !
       end subroutine set_from_recv_buf_int
+!
+! ----------------------------------------------------------------------
+!
+      subroutine set_from_recv_buf_int8(nnod_new,                       &
+     &          nnod_recv, inod_import, i8WR, i8X_new)
+!
+      integer(kind = kint), intent(in) :: nnod_new, nnod_recv
+      integer(kind = kint), intent(in) :: inod_import(nnod_recv)
+!
+      integer(kind = kint_d), intent(in):: i8WR(nnod_recv)
+!
+      integer(kind = kint_d), intent(inout):: i8X_new(nnod_new)
+!
+      integer (kind = kint) :: k, j
+!
+!
+!$omp parallel do private(k,j)
+      do k= 1, nnod_recv
+        j = inod_import(k)
+        i8X_new(j  ) = i8WR(k  )
+      end do
+!$omp end parallel do
+!
+      end subroutine set_from_recv_buf_int8
 !
 ! ----------------------------------------------------------------------
 !

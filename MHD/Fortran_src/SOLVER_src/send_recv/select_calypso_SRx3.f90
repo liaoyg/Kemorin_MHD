@@ -114,6 +114,7 @@
      &                         irev_import, X1_org, X2_org, X3_org,     &
      &                                      X1_new, X2_new, X3_new)
 !
+      use m_solver_SR
       use calypso_SR_N
       use calypso_SR_rev_N
 !
@@ -145,6 +146,9 @@
       real (kind=kreal), intent(inout):: X3_new(NB*nnod_new)
 !
 !
+      call resize_work_sph_SR( (3*NB), npe_send, npe_recv,              &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_3xN(NB, nnod_org, nnod_new,          &
      &                       npe_send, isend_self,                      &
@@ -163,6 +167,8 @@
      &                       X1_new, X2_new, X3_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv_3xN
 !
 !-----------------------------------------------------------------------
@@ -176,6 +182,7 @@
      &                         irev_import, X1_org, X2_org, X3_org,     &
      &                                      X1_new, X2_new, X3_new)
 !
+      use m_solver_SR
       use calypso_SR_6
       use calypso_SR_rev_6
 !
@@ -206,6 +213,9 @@
       real (kind=kreal), intent(inout):: X3_new(isix*nnod_new)
 !
 !
+      call resize_work_sph_SR((ithree*isix), npe_send, npe_recv,        &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_3x6(nnod_org, nnod_new,              &
      &                       npe_send, isend_self,                      &
@@ -224,6 +234,8 @@
      &                       X1_new, X2_new, X3_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv_3x6
 !
 !-----------------------------------------------------------------------
@@ -237,6 +249,7 @@
      &                         irev_import, X1_org, X2_org, X3_org,     &
      &                                      X1_new, X2_new, X3_new)
 !
+      use m_solver_SR
       use calypso_SR_3
       use calypso_SR_rev_3
 !
@@ -267,6 +280,9 @@
       real (kind=kreal), intent(inout):: X3_new(ithree*nnod_new)
 !
 !
+      call resize_work_sph_SR(inine, npe_send, npe_recv,                &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_3x3(nnod_org, nnod_new,              &
      &                       npe_send, isend_self,                      &
@@ -285,6 +301,8 @@
      &                       X1_new, X2_new, X3_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv_3x3
 !
 !-----------------------------------------------------------------------
@@ -298,6 +316,7 @@
      &                         irev_import, X1_org, X2_org, X3_org,     &
      &                                      X1_new, X2_new, X3_new)
 !
+      use m_solver_SR
       use calypso_SR_2
       use calypso_SR_rev_2
 !
@@ -328,6 +347,9 @@
       real (kind=kreal), intent(inout):: X3_new(itwo*nnod_new)
 !
 !
+      call resize_work_sph_SR(isix, npe_send, npe_recv,                 &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_3x2(nnod_org, nnod_new,              &
      &                       npe_send, isend_self,                      &
@@ -346,6 +368,8 @@
      &                       X1_new, X2_new, X3_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv_3x2
 !
 ! ----------------------------------------------------------------------
@@ -359,6 +383,7 @@
      &                         irev_import, X1_org, X2_org, X3_org,     &
      &                                      X1_new, X2_new, X3_new)
 !
+      use m_solver_SR
       use calypso_SR
       use calypso_SR_rev
 !
@@ -389,6 +414,9 @@
       real (kind=kreal), intent(inout):: X3_new(nnod_new)
 !
 !
+      call resize_work_sph_SR(ithree, npe_send, npe_recv,               &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_3x1(nnod_org, nnod_new,              &
      &                       npe_send, isend_self,                      &
@@ -406,6 +434,8 @@
      &                       X1_org, X2_org, X3_org,                    &
      &                       X1_new, X2_new, X3_new)
       end if
+!
+      call finish_calypso_send_recv(npe_send, isend_self)
 !
       end subroutine sel_calypso_send_recv_3x1
 !
