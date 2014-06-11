@@ -12,6 +12,9 @@
 !!      subroutine  solver_send_recv_i                                  &
 !!     &          (N, NEIBPETOT, NEIBPE, STACK_IMPORT, NOD_IMPORT,      &
 !!     &           STACK_EXPORT, NOD_EXPORT, ix)
+!!      subroutine  solver_send_recv_i8                                 &
+!!     &          (N, NEIBPETOT, NEIBPE, STACK_IMPORT, NOD_IMPORT,      &
+!!     &           STACK_EXPORT, NOD_EXPORT, i8X)
 !!@endverbatim
 !!
 !!@n @param  N     Number of data points
@@ -27,7 +30,8 @@
 !!@n @param  NOD_EXPORT(STACK_IMPORT(NEIBPETOT))
 !!                    local node ID to copy in export buffer
 !!
-!!@n @param  ix(N)     integer data with NB components
+!!@n @param  iX(N)      integer data with NB components
+!!@n @param  i8X(N)     8-byte integer data with NB components
 !
       module solver_SR_int
 !
@@ -82,11 +86,11 @@
         
         do k= istart+1, istart+inum
            iWS(k)= iX(NOD_EXPORT(k))
-        enddo
+        end do
         call MPI_ISEND (iWS(istart+1), inum, CALYPSO_INTEGER,           &
      &                  NEIBPE(neib), 0, CALYPSO_COMM,                  &
      &                  req1(neib), ierr_MPI)
-      enddo
+      end do
 
 !C
 !C-- RECEIVE
@@ -97,21 +101,95 @@
         call MPI_IRECV (iWR(istart+1), inum, CALYPSO_INTEGER,           &
      &                  NEIBPE(neib), 0, CALYPSO_COMM,                  &
      &                  req2(neib), ierr_MPI)
-      enddo
+      end do
 
       call MPI_WAITALL (NEIBPETOT, req2(1), sta2(1,1), ierr_MPI)
    
       do neib= 1, NEIBPETOT
         istart= STACK_IMPORT(neib-1)
         inum  = STACK_IMPORT(neib  ) - istart
-      do k= istart+1, istart+inum
-        iX(NOD_IMPORT(k))= iWR(k)
-      enddo
-      enddo
+        do k= istart+1, istart+inum
+          iX(NOD_IMPORT(k))= iWR(k)
+        end do
+      end do
 
       call MPI_WAITALL (NEIBPETOT, req1(1), sta1(1,1), ierr_MPI)
 
       end subroutine solver_send_recv_i
+!
+!  ---------------------------------------------------------------------
+!
+      subroutine  solver_send_recv_i8                                   &
+     &          (N, NEIBPETOT, NEIBPE, STACK_IMPORT, NOD_IMPORT,        &
+     &           STACK_EXPORT, NOD_EXPORT, i8X)
+!
+      use calypso_mpi
+      use m_solver_SR
+!
+!>       number of nodes
+      integer(kind=kint )                , intent(in)   ::  N
+!>       total neighboring pe count
+      integer(kind=kint )                , intent(in)   ::  NEIBPETOT
+!>       neighboring pe id                        (i-th pe)
+      integer(kind=kint ), dimension(NEIBPETOT) :: NEIBPE
+!>       imported node count for each neighbor pe (i-th pe)
+      integer(kind=kint ), dimension(0:NEIBPETOT) :: STACK_IMPORT
+!>       imported node                            (i-th dof)
+      integer(kind=kint ), dimension(STACK_IMPORT(NEIBPETOT))           &
+     &        :: NOD_IMPORT
+!>       exported node count for each neighbor pe (i-th pe)
+      integer(kind=kint ), dimension(0:NEIBPETOT) :: STACK_EXPORT
+!>       exported node                            (i-th dof)
+      integer(kind=kint ), dimension(STACK_EXPORT(NEIBPETOT))           &
+     &        :: NOD_EXPORT
+!>       communicated result vector
+      integer (kind=kint_d), dimension(N)  , intent(inout):: i8X
+!C
+!
+      integer (kind = kint) :: neib, istart, inum, k
+!
+!
+      call resize_i8work_4_SR(NEIBPETOT,                                &
+     &    STACK_EXPORT(NEIBPETOT), STACK_IMPORT(NEIBPETOT) )
+!
+!C-- SEND
+      
+      do neib= 1, NEIBPETOT
+        istart= STACK_EXPORT(neib-1)
+        inum  = STACK_EXPORT(neib  ) - istart
+        
+        do k= istart+1, istart+inum
+           i8WS(k)= i8X(NOD_EXPORT(k))
+        end do
+        call MPI_ISEND (i8WS(istart+1), inum, CALYPSO_INTEGER,          &
+     &                  NEIBPE(neib), 0, CALYPSO_COMM,                  &
+     &                  req1(neib), ierr_MPI)
+      end do
+
+!C
+!C-- RECEIVE
+      
+      do neib= 1, NEIBPETOT
+        istart= STACK_IMPORT(neib-1)
+        inum  = STACK_IMPORT(neib  ) - istart
+        call MPI_IRECV (i8WR(istart+1), inum, CALYPSO_INTEGER8,         &
+     &                  NEIBPE(neib), 0, CALYPSO_COMM,                  &
+     &                  req2(neib), ierr_MPI)
+      end do
+
+      call MPI_WAITALL (NEIBPETOT, req2(1), sta2(1,1), ierr_MPI)
+!
+      do neib= 1, NEIBPETOT
+        istart= STACK_IMPORT(neib-1)
+        inum  = STACK_IMPORT(neib  ) - istart
+        do k= istart+1, istart+inum
+          i8X(NOD_IMPORT(k))= i8WR(k)
+        end do
+      end do
+
+      call MPI_WAITALL (NEIBPETOT, req1(1), sta1(1,1), ierr_MPI)
+
+      end subroutine solver_send_recv_i8
 !
 !  ---------------------------------------------------------------------
 !

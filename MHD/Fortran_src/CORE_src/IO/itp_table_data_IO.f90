@@ -97,7 +97,7 @@
         write(id_file,'(4i10)') istack_itp_type_org_IO(1:4)
 !
         do inod = 1, ntot_table_org_IO
-          write(id_file,'(3i10,1p3e23.12)')                             &
+          write(id_file,'(i23,2i10,1p3e23.12)')                         &
      &        inod_gl_dest_4_org_IO(inod), iele_org_4_org_IO(inod),     &
      &        itype_inter_org_IO(inod), coef_inter_org_IO(inod,1:3)
         end do

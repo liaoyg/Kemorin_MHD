@@ -10,6 +10,8 @@
 !!      subroutine set_reverse_import_table(nnod_new, nnod_recv,        &
 !!     &          inod_import, irev_import)
 !!
+!!      subroutine finish_calypso_send_recv(npe_send, isend_self)
+!!
 !!      subroutine sel_calypso_send_recv_N(iflag_SR,                    &
 !!     &                         NB, nnod_org, nnod_new,                &
 !!     &                         npe_send, isend_self,                  &
@@ -58,6 +60,14 @@
 !!     &                       npe_recv, irecv_self,                    &
 !!     &                       id_pe_recv, istack_recv, inod_import,    &
 !!     &                       irev_import, iX_org, iX_new)
+!!
+!!      subroutine sel_calypso_send_recv_int8(iflag_SR,                 &
+!!     &                       nnod_org, nnod_new,                      &
+!!     &                       npe_send, isend_self,                    &
+!!     &                       id_pe_send, istack_send, inod_export,    &
+!!     &                       npe_recv, irecv_self,                    &
+!!     &                       id_pe_recv, istack_recv, inod_import,    &
+!!     &                       irev_import, i8X_org, i8X_new)
 !!@endverbatim
 !!
 !!@n @param  NB    Number of components for communication
@@ -148,6 +158,24 @@
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
 !
+      subroutine finish_calypso_send_recv(npe_send, isend_self)
+!
+      use m_solver_SR
+      use calypso_mpi
+!
+      integer(kind = kint), intent(in) :: npe_send, isend_self
+      integer (kind = kint) :: ncomm_send
+!
+!
+      ncomm_send = npe_send - isend_self
+      if(ncomm_send .le. 0) return
+      call MPI_WAITALL(ncomm_send, req1, sta1, ierr_MPI)
+!
+      end subroutine finish_calypso_send_recv
+!
+!-----------------------------------------------------------------------
+!-----------------------------------------------------------------------
+!
       subroutine sel_calypso_send_recv_N(iflag_SR,                      &
      &                         NB, nnod_org, nnod_new,                  &
      &                         npe_send, isend_self,                    &
@@ -156,6 +184,7 @@
      &                         id_pe_recv, istack_recv, inod_import,    &
      &                         irev_import, X_org, X_new)
 !
+      use m_solver_SR
       use calypso_SR_N
       use calypso_SR_rev_N
 !
@@ -183,6 +212,9 @@
       real (kind=kreal), intent(inout):: X_new(NB*nnod_new)
 !
 !
+      call resize_work_sph_SR(NB, npe_send, npe_recv,                   &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_N(NB, nnod_org, nnod_new,            &
      &                       npe_send, isend_self,                      &
@@ -199,6 +231,8 @@
      &                       X_org, X_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv_N
 !
 !-----------------------------------------------------------------------
@@ -211,6 +245,7 @@
      &                         id_pe_recv, istack_recv, inod_import,    &
      &                         irev_import, X_org, X_new)
 !
+      use m_solver_SR
       use calypso_SR_6
       use calypso_SR_rev_6
 !
@@ -237,6 +272,9 @@
       real (kind=kreal), intent(inout):: X_new(6*nnod_new)
 !
 !
+      call resize_work_sph_SR(isix, npe_send, npe_recv,                 &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_6(nnod_org, nnod_new,                &
      &                       npe_send, isend_self,                      &
@@ -253,6 +291,8 @@
      &                       X_org, X_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv_6
 !
 !-----------------------------------------------------------------------
@@ -265,6 +305,7 @@
      &                         id_pe_recv, istack_recv, inod_import,    &
      &                         irev_import, X_org, X_new)
 !
+      use m_solver_SR
       use calypso_SR_3
       use calypso_SR_rev_3
 !
@@ -291,6 +332,9 @@
       real (kind=kreal), intent(inout):: X_new(3*nnod_new)
 !
 !
+      call resize_work_sph_SR(ithree, npe_send, npe_recv,               &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_3(nnod_org, nnod_new,                &
      &                       npe_send, isend_self,                      &
@@ -307,6 +351,8 @@
      &                       X_org, X_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv_3
 !
 !-----------------------------------------------------------------------
@@ -319,6 +365,7 @@
      &                         id_pe_recv, istack_recv, inod_import,    &
      &                         irev_import, X_org, X_new)
 !
+      use m_solver_SR
       use calypso_SR_2
       use calypso_SR_rev_2
 !
@@ -345,6 +392,9 @@
       real (kind=kreal), intent(inout):: X_new(2*nnod_new)
 !
 !
+      call resize_work_sph_SR(itwo, npe_send, npe_recv,                 &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_2(nnod_org, nnod_new,                &
      &                       npe_send, isend_self,                      &
@@ -361,6 +411,8 @@
      &                       X_org, X_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv_2
 !
 ! ----------------------------------------------------------------------
@@ -373,6 +425,7 @@
      &                         id_pe_recv, istack_recv, inod_import,    &
      &                         irev_import, X_org, X_new)
 !
+      use m_solver_SR
       use calypso_SR
       use calypso_SR_rev
 !
@@ -399,6 +452,9 @@
       real (kind=kreal), intent(inout):: X_new(nnod_new)
 !
 !
+      call resize_work_sph_SR(ione, npe_send, npe_recv,                 &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev(nnod_org, nnod_new,                  &
      &                       npe_send, isend_self,                      &
@@ -415,6 +471,8 @@
      &                       X_org, X_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv
 !
 ! ----------------------------------------------------------------------
@@ -428,6 +486,7 @@
      &                       id_pe_recv, istack_recv, inod_import,      &
      &                       irev_import, iX_org, iX_new)
 !
+      use m_solver_SR
       use calypso_SR_int
       use calypso_SR_rev_int
 !
@@ -454,6 +513,9 @@
       integer (kind=kint), intent(inout):: iX_new(nnod_new)
 !
 !
+      call resize_iwork_sph_SR(npe_send, npe_recv,                      &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
       if(iflag_SR .eq. iflag_import_rev) then
         call calypso_send_recv_rev_int(nnod_org, nnod_new,              &
      &                       npe_send, isend_self,                      &
@@ -470,7 +532,69 @@
      &                       iX_org, iX_new)
       end if
 !
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
       end subroutine sel_calypso_send_recv_int
+!
+! ----------------------------------------------------------------------
+!
+      subroutine sel_calypso_send_recv_int8(iflag_SR,                   &
+     &                       nnod_org, nnod_new,                        &
+     &                       npe_send, isend_self,                      &
+     &                       id_pe_send, istack_send, inod_export,      &
+     &                       npe_recv, irecv_self,                      &
+     &                       id_pe_recv, istack_recv, inod_import,      &
+     &                       irev_import, i8X_org, i8X_new)
+!
+      use m_solver_SR
+      use calypso_SR_int
+      use calypso_SR_rev_int
+!
+      integer(kind = kint), intent(in) :: iflag_SR
+!
+      integer(kind = kint), intent(in) :: nnod_org
+      integer(kind = kint), intent(in) :: nnod_new
+!
+      integer(kind = kint), intent(in) :: npe_send, isend_self
+      integer(kind = kint), intent(in) :: id_pe_send(npe_send)
+      integer(kind = kint), intent(in) :: istack_send(0:npe_send)
+      integer(kind = kint), intent(in)                                  &
+     &                      :: inod_export( istack_send(npe_send) )
+!
+      integer(kind = kint), intent(in) :: npe_recv, irecv_self
+      integer(kind = kint), intent(in) :: id_pe_recv(npe_recv)
+      integer(kind = kint), intent(in) :: istack_recv(0:npe_recv)
+      integer(kind = kint), intent(in)                                  &
+     &                      :: inod_import( istack_recv(npe_recv) )
+      integer(kind = kint), intent(in) :: irev_import(nnod_new)
+!
+      integer (kind=kint_d), intent(in):: i8X_org(nnod_org)
+!
+      integer (kind=kint_d), intent(inout):: i8X_new(nnod_new)
+!
+!
+      call resize_i8work_sph_SR(npe_send, npe_recv,                     &
+     &    istack_send(npe_send), istack_recv(npe_recv))
+!
+      if(iflag_SR .eq. iflag_import_rev) then
+        call calypso_send_recv_rev_int8(nnod_org, nnod_new,             &
+     &                       npe_send, isend_self,                      &
+     &                       id_pe_send, istack_send, inod_export,      &
+     &                       npe_recv, irecv_self,                      &
+     &                       id_pe_recv, istack_recv, irev_import,      &
+     &                       i8X_org, i8X_new)
+      else
+        call calypso_send_recv_int8(nnod_org, nnod_new,                 &
+     &                       npe_send, isend_self,                      &
+     &                       id_pe_send, istack_send, inod_export,      &
+     &                       npe_recv, irecv_self,                      &
+     &                       id_pe_recv, istack_recv, inod_import,      &
+     &                       i8X_org, i8X_new)
+      end if
+!
+      call finish_calypso_send_recv(npe_send, isend_self)
+!
+      end subroutine sel_calypso_send_recv_int8
 !
 ! ----------------------------------------------------------------------
 !

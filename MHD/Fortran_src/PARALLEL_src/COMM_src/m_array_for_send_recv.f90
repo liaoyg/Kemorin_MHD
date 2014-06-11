@@ -15,7 +15,9 @@
 !!      subroutine deallocate_vector_for_solver
 !!
 !!      subroutine allocate_iccg_int_matrix(N)
+!!      subroutine allocate_iccg_int_matrix(N)
 !!      subroutine deallocate_iccg_int_matrix
+!!      subroutine deallocate_iccg_int8_matrix
 !!@endverbatim
 !!
 !!@param  N    length of vector
@@ -37,6 +39,8 @@
 !
 !>      Work area for integer data
       integer(kind=kint), allocatable :: ix_vec(:)
+!>      Work area for 8-byte integer data
+      integer(kind=kint_d), allocatable :: i8x_vec(:)
 !
       private :: isize_solver_vect
 !
@@ -101,9 +105,21 @@
 !
 !
        allocate(ix_vec(N))
-       ix_vec  = 0
+       if(N .gt. 0) ix_vec  = 0
 !
        end subroutine allocate_iccg_int_matrix
+!
+!  ---------------------------------------------------------------------
+!
+       subroutine allocate_iccg_int8_matrix(N)
+!
+       integer(kind = kint), intent(in) :: N
+!
+!
+       allocate(i8x_vec(N))
+       if(N .gt. 0) i8x_vec  = 0
+!
+       end subroutine allocate_iccg_int8_matrix
 !
 !  ---------------------------------------------------------------------
 !
@@ -112,6 +128,14 @@
        deallocate(ix_vec)
 !
        end subroutine deallocate_iccg_int_matrix
+!
+!  ---------------------------------------------------------------------
+!
+       subroutine deallocate_iccg_int8_matrix
+!
+       deallocate(i8x_vec)
+!
+       end subroutine deallocate_iccg_int8_matrix
 !
 !  ---------------------------------------------------------------------
 !

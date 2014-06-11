@@ -1,8 +1,12 @@
+!>@file   interpolate_imark_1pe.f90
+!!@brief  module interpolate_imark_1pe
+!!
+!!@author H. Matsui
+!!@date Programmed in Sep., 2006
 !
-!     module interpolate_imark_1pe
-!
-!     Written by H. Matsui on Sep., 2006
-!
+!>@brief  interpolation for each domain
+!!
+!!@verbatim
 !!      subroutine s_interporate_imark_para(np_smp, numnod, numele,     &
 !!     &          nnod_4_ele, ie, imark_org, istack_tbl_wtype_smp,      &
 !!     &          num_points, iele_gauss, itype_gauss, imark)

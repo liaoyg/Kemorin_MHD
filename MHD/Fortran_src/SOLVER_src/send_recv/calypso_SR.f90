@@ -95,9 +95,6 @@
       integer (kind = kint) :: ist_send, ist_recv
 !
 !
-      call resize_work_sph_SR(ione, npe_send, npe_recv,                 &
-     &    istack_send(npe_send), istack_recv(npe_recv))
-!
       ncomm_send = npe_send - isend_self
       ncomm_recv = npe_recv - irecv_self
 !
@@ -138,10 +135,6 @@
 !
       call set_from_recv_buf_1(nnod_new,                                &
      &    istack_recv(npe_recv), inod_import, WR, X_new)
-!
-      if(ncomm_send .gt. 0) then
-        call MPI_WAITALL (ncomm_send, req1, sta1, ierr_MPI)
-      end if
 !
       end subroutine calypso_send_recv
 !
@@ -189,9 +182,6 @@
       integer (kind = kint) :: ist_send, ist_recv
 !
 !
-      call resize_work_sph_SR( ithree, npe_send, npe_recv,              &
-     &    istack_send(npe_send), istack_recv(npe_recv))
-!
       ncomm_send = npe_send - isend_self
       ncomm_recv = npe_recv - irecv_self
 !
@@ -232,10 +222,6 @@
 !
       call set_from_recv_buf_3x1(nnod_new, istack_recv(npe_recv),       &
      &    inod_import, WR, X1_new, X2_new, X3_new)
-!
-      if(ncomm_send .gt. 0) then
-        call MPI_WAITALL (ncomm_send, req1, sta1, ierr_MPI)
-      end if
 !
       end subroutine calypso_send_recv_3x1
 !

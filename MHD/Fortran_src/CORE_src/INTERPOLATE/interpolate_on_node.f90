@@ -1,11 +1,26 @@
+!>@file   interpolate_on_node.f90
+!!@brief  module interpolate_on_node
+!!
+!!@author H. Matsui
+!!@date Programmed in Sep., 2006
 !
-!     module interpolate_on_node
-!
-!     Written by H. Matsui on Sep., 2006
-!
+!>@brief  interpolation on node
+!!
+!!@verbatim
+!!      subroutine s_interpolate_scalar_node(np_smp, numnod, numele,    &
+!!     &          nnod_4_ele, ie, v_org, istack_smp, num_points,        &
+!!     &          iele_gauss, inod_gauss, vect)
+!!      subroutine s_interpolate_vector_node(np_smp, numnod, numele,    &
+!!     &          nnod_4_ele, ie, v_org, istack_smp, num_points,        &
+!!     &          iele_gauss, inod_gauss, vect)
+!!
 !!      subroutine s_interpolate_imark_node(np_smp, numnod, numele,     &
 !!     &          nnod_4_ele, ie, imark_org, istack_smp, num_points,    &
 !!     &          iele_gauss, inod_gauss, imark)
+!!      subroutine s_interpolate_i8mark_node(np_smp, numnod, numele,    &
+!!     &          nnod_4_ele, ie, i8mark_org, istack_smp, num_points,   &
+!!     &          iele_gauss, inod_gauss, i8mark)
+!!@endverbatim
 !
       module interpolate_on_node
 !
@@ -130,12 +145,50 @@
           i1 = ie(iele,k1)
 !
           imark(ig  ) =  imark_org(i1)
-!
         end do
       end do
 !$omp end parallel do
 !
       end subroutine s_interpolate_imark_node
+!
+! ----------------------------------------------------------------------
+!
+      subroutine s_interpolate_i8mark_node(np_smp, numnod, numele,      &
+     &          nnod_4_ele, ie, i8mark_org, istack_smp, num_points,     &
+     &          iele_gauss, inod_gauss, i8mark)
+!
+      integer (kind = kint), intent(in) :: np_smp
+      integer (kind = kint), intent(in) :: numnod, numele, nnod_4_ele
+      integer (kind = kint), intent(in) :: ie(numele,nnod_4_ele)
+      integer (kind = kint), intent(in) :: istack_smp(0:np_smp)
+      integer (kind = kint), intent(in) :: num_points
+      integer (kind = kint), intent(in) :: iele_gauss(num_points)
+      integer (kind = kint), intent(in) :: inod_gauss(num_points)
+!
+      integer (kind = kint_d), intent(in) :: i8mark_org(numnod)
+!
+      integer (kind = kint_d), intent(inout) :: i8mark(num_points)
+!
+      integer (kind = kint) :: ip, ist, ied
+      integer (kind = kint) :: iele, i1, k1
+      integer (kind = kint) :: ig
+!
+!
+!$omp parallel do private(ist,ied,ig,iele,k1,i1)
+      do ip = 1, np_smp
+        ist = istack_smp(ip-1) + 1
+        ied = istack_smp(ip)
+        do ig = ist, ied
+          iele =  iele_gauss(ig)
+          k1 = inod_gauss(ig)
+          i1 = ie(iele,k1)
+!
+          i8mark(ig  ) =  i8mark_org(i1)
+        end do
+      end do
+!$omp end parallel do
+!
+      end subroutine s_interpolate_i8mark_node
 !
 ! ----------------------------------------------------------------------
 !
