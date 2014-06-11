@@ -23,7 +23,7 @@
 !
       integer(kind = kint) :: ntot_table_org_IO
       integer(kind = kint), allocatable :: inod_itp_send_IO(:)
-      integer(kind = kint), allocatable :: inod_gl_dest_4_org_IO(:)
+      integer(kind = kint_d), allocatable :: inod_gl_dest_4_org_IO(:)
       integer(kind = kint), allocatable :: iele_org_4_org_IO(:)
       integer(kind = kint), allocatable :: itype_inter_org_IO(:)
       real(kind = kreal), allocatable :: coef_inter_org_IO(:,:)

@@ -92,7 +92,7 @@
 !
       use m_interpolate_table_org_IO
 !
-      integer(kind = kint) :: i, inod
+      integer(kind = kint) :: inod
 !
 !
       write(textbuf,'(a,a1)') '!', char(0)
@@ -115,7 +115,7 @@
         call write_gz_multi_int_8i10(ifour, istack_itp_type_org_IO(1) )
 !
         do inod = 1, ntot_table_org_IO
-          write(textbuf,'(3i10,1p3e23.12,a1)')                          &
+          write(textbuf,'(i23,2i10,1p3e23.12,a1)')                      &
      &        inod_gl_dest_4_org_IO(inod), iele_org_4_org_IO(inod),     &
      &        itype_inter_org_IO(inod), coef_inter_org_IO(inod,1:3),    &
      &        char(0)
@@ -173,7 +173,7 @@
 !
       use m_interpolate_table_org_IO
 !
-      integer(kind = kint) :: i, inod, nchara
+      integer(kind = kint) :: inod, nchara
 !
 !
       if (num_dest_domain_IO .eq. 0) return
