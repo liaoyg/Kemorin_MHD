@@ -70,7 +70,7 @@
             call sel_read_itp_table_dest(my_rank_2nd, ierr)
 !
             if (ierr.ne.0) then
-              call calypso_MPI_abort(ierr,'Check work file')
+              call calypso_MPI_abort(int(ierr),'Check work file')
             end if
 !
           end if
@@ -87,7 +87,9 @@
 !
         call sel_read_itp_table_dest(my_rank, ierr)
 !
-        if (ierr.ne.0) call calypso_MPI_abort(ierr,'Check work file')
+        if(ierr.ne.0) then
+          call calypso_MPI_abort(int(ierr),'Check work file')
+        end if
 !
         num_dest_domain_IO = 0
 !
@@ -120,7 +122,9 @@
 !
         call sel_read_itp_table_dest(n_dest_rank, ierr)
 !
-        if (ierr.ne.0) call calypso_MPI_abort(ierr,'Check work file')
+        if (ierr.ne.0) then
+          call calypso_MPI_abort(int(ierr),'Check work file')
+        end if
 !
         call count_num_interpolation_4_orgin(n_org_rank, n_dest_rank)
 !
@@ -150,7 +154,9 @@
         n_dest_rank = mod(n_org_rank+ip,nprocs_dest)
         table_file_header = work_header
         call sel_read_itp_coefs_dest(n_dest_rank, ierr)
-        if (ierr.ne.0) call calypso_MPI_abort(ierr,'Check work file')
+        if (ierr.ne.0) then
+          call calypso_MPI_abort(int(ierr),'Check work file')
+        end if
 !
         call set_interpolation_4_orgin(n_org_rank)
       end do

@@ -54,7 +54,7 @@
       subroutine check_integrated_values(my_rank)
 !
       integer(kind = kint) :: my_rank
-      integer(kind = kint) :: i, ii, is, j, k
+      integer(kind = kint) :: i
 !
       write(50+my_rank,*) 'f_mom_full'
       write(50+my_rank,'(1p5e16.8)') (f_mom_full(i),i=0,nfilter6_1)

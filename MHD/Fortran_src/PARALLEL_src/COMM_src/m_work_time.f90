@@ -12,12 +12,14 @@
 !!
 !!      subroutine start_eleps_time(iflag_elps)
 !!      subroutine end_eleps_time(iflag_elps)
-!!      subroutine copy_COMM_TIME_to_eleps(iflag_elps)
+!!        NOTE::  iflag_elps should be 4-byte integer!!
+!!      subroutine copy_COMM_TIME_to_eleps(iflag_4_comm)
 !!
 !!      subroutine output_elapsed_times
 !!@endverbatim
 !!
 !!@params  timer ID
+!!@params  iflag_elps   4-byte integer flag for elapsed time evaluation
 !
       module m_work_time
 !
@@ -88,7 +90,7 @@
 !
       use calypso_mpi
 !
-      integer(kind = kint), intent(in) :: iflag_elps
+      integer, intent(in) :: iflag_elps
 !
 !
       start_times(iflag_elps) = MPI_WTIME()
@@ -101,7 +103,7 @@
 !
       use calypso_mpi
 !
-      integer(kind = kint), intent(in) :: iflag_elps
+      integer, intent(in) :: iflag_elps
 !
 !
       elapsed(iflag_elps) = MPI_WTIME() - start_times(iflag_elps)       &
@@ -111,14 +113,14 @@
 !
 ! ----------------------------------------------------------------------
 !
-      subroutine copy_COMM_TIME_to_eleps(iflag_elps)
+      subroutine copy_COMM_TIME_to_eleps(iflag_4_comm)
 !
       use calypso_mpi
 !
-      integer(kind = kint), intent(in) :: iflag_elps
+      integer(kind = kint), intent(in) :: iflag_4_comm
 !
 !
-      elapsed(iflag_elps) = SendRecvtime
+      elapsed(iflag_4_comm) = SendRecvtime
 !
       end subroutine copy_COMM_TIME_to_eleps
 !

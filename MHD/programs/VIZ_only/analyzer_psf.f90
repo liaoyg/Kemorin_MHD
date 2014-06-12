@@ -42,7 +42,7 @@
 !
 !  VIZ Initialization
       call init_visualize_surface
-      if(ierr .gt. 0) call calypso_MPI_abort(ierr, e_message)
+      if(ierr .gt. 0) call calypso_MPI_abort(int(ierr), e_message)
 !
       end subroutine init_analyzer
 !

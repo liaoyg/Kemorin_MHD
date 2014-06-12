@@ -43,6 +43,7 @@
 !
       subroutine set_matrix_4_border
 !
+      use m_constants
       use m_geometry_parameter
       use m_commute_filter_z
       use m_crs_matrix
@@ -50,8 +51,7 @@
       use m_neibor_data_z
       use m_filter_values
 !
-      integer (kind = kint) :: kk, kfact, inod, i, k1, ii, jj, k2
-      real(kind = kreal), parameter :: zero = 0.0d0, one = 1.0d0
+      integer (kind = kint) :: inod, i
 !
 !
 !   components for normalization on node

@@ -45,7 +45,7 @@
 !
       if (iflag_debug.eq.1) write(*,*) 's_set_control_nodal_data'
       call s_set_control_nodal_data(ierr)
-      if (ierr .ne. 0) call calypso_MPI_abort(ierr, e_message)
+      if (ierr .ne. 0) call calypso_MPI_abort(int(ierr), e_message)
 !
       if (iflag_debug.eq.1) write(*,*) 's_set_ctl_4_diff_udt_steps'
       call s_set_ctl_4_diff_udt_steps
@@ -75,7 +75,7 @@
 !
       if (iflag_debug.eq.1) write(*,*) 's_set_control_nodal_data'
       call s_set_control_nodal_data(ierr)
-      if (ierr .ne. 0) call calypso_MPI_abort(ierr, e_message)
+      if (ierr .ne. 0) call calypso_MPI_abort(int(ierr), e_message)
 !
       if (iflag_debug.eq.1) write(*,*) 's_set_ctl_4_diff_udt_steps'
       call s_set_ctl_4_diff_udt_steps

@@ -11,6 +11,7 @@
 !!      subroutine calypso_MPI_init
 !!      subroutine calypso_MPI_finalize
 !!      subroutine calypso_MPI_abort(code, message)
+!!        Note::  error code shold be 4-byte integer
 !!
 !!      subroutine calypso_MPI_barrier
 !!@endverbatim
@@ -46,7 +47,7 @@
       integer(kind=kint) :: nprocs
 !
 !>      error flag for MPI
-      integer(kind=kint) :: ierr_MPI
+      integer(kind = 4) :: ierr_MPI
 !
 ! ----------------------------------------------------------------------
 !

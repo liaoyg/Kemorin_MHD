@@ -131,7 +131,7 @@
         call read_sph_trans_params_ctl
 !
         call read_viz_control_data(ierr)
-        if(ierr .gt. 0) call calypso_MPI_abort(ierr, e_message)
+        if(ierr .gt. 0) call calypso_MPI_abort(int(ierr), e_message)
       end do
 !
       end subroutine read_sph_trans_control_data

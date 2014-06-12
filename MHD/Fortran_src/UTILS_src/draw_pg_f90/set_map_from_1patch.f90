@@ -62,10 +62,10 @@
       real(kind = kreal), intent(in) :: xx_psf(nnod_pg,3)
       real(kind = kreal), intent(in) :: scalar_psf(nnod_pg)
 !
-      real(kind = kreal) :: x_map(5,3)
+      real :: x_map(5,3)
       real :: d_map(9)
       integer(kind = kint) :: inod, i, j, jj, k
-      real(kind = kreal) :: y1, y2, y3
+      real :: y1, y2, y3
 !
 !
       do i = 1, 3
@@ -76,7 +76,7 @@
           if(abs(x_map(i,j)) .lt. EPSILON) then
             x_map(i,j) = 0.0d0
           else
-            x_map(i,j) = xx_psf(inod,j)
+            x_map(i,j) = real(xx_psf(inod,j))
           end if
         end do
       end do

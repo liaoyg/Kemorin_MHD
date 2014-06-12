@@ -35,14 +35,14 @@
       call read_control_data_vizs(ierr)
       call set_control_params_4_viz(my_rank, ierr)
 !
-      if(ierr .gt. 0) call calypso_MPI_abort(ierr, e_message)
+      if(ierr .gt. 0) call calypso_MPI_abort(int(ierr), e_message)
 !
 !  FEM Initialization
       call FEM_initialize_fline
 !
 !  VIZ Initialization
       call init_visualize_fline
-      if(ierr .gt. 0) call calypso_MPI_abort(ierr, e_message)
+      if(ierr .gt. 0) call calypso_MPI_abort(int(ierr), e_message)
 !
       end subroutine initialize_fline
 !

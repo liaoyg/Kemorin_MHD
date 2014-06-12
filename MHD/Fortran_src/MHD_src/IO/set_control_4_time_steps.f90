@@ -147,7 +147,7 @@
       integer(kind = kint) :: ierr
 !
       call s_set_fixed_time_step_params(ierr, e_message)
-      if(ierr .gt. 0) call calypso_MPI_abort(ierr, e_message)
+      if(ierr .gt. 0) call calypso_MPI_abort(int(ierr), e_message)
 !
       i_step_sgs_coefs = 1
       if (iflag_dynamic_SGS .ne. id_SGS_DYNAMIC_OFF) then

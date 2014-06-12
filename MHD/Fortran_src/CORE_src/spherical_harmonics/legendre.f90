@@ -124,7 +124,7 @@
       do 10 l = 0 ,nth
         dc(0,l) = 1.0
         do 11 m = 1 ,l
-          dc(m,l) = ( 2.0d0 / factorial(l-m,l+m,1) )**0.5d0
+          dc(m,l) = (two / factorial(l-m,l+m,ione) )**half
   11    continue
   10  continue
 !*

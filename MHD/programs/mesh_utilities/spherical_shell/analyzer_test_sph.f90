@@ -65,7 +65,7 @@
 !
 !
       call allocate_idx_sph_recieve
-      call allocate_real_sph_test(8)
+      call allocate_real_sph_test(NB)
 !
       call add_int_suffix(my_rank, check_header, fname_tmp)
       call add_dat_extension(fname_tmp, file_name)

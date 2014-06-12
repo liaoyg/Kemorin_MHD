@@ -243,7 +243,7 @@
       integer(kind = kint) :: j,k,inod
 !
 !
-      j = find_local_sph_mode_address(l, m)
+      j = find_local_sph_mode_address(int(l), int(m))
       if(j .eq. 0) return
 !
       write(*,*) 'field ID, l, m: ', is_field, l, m

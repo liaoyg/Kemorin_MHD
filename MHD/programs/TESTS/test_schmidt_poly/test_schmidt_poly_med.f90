@@ -11,8 +11,8 @@
 !
       implicit none
 !
-      integer(kind = kint) :: j, l, m, i, itime
-      integer(kind = 4) :: iend, istart, t_rate, t_max, lst, led
+      integer(kind = kint) :: j, l, m, i, itime, lst, led
+      integer(kind = 4) :: iend, istart, t_rate, t_max
 !
 !
       write(*,*) 'input num. of points'

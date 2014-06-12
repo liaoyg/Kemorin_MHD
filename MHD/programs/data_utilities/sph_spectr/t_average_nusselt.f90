@@ -17,8 +17,7 @@
       real(kind = kreal) :: sdev_Nu(2)
       integer(kind = kint), parameter :: id_pick = 15
 !
-      integer(kind = kint) :: i_step, ierr, icou, ipick, nd, i
-      integer(kind = kint) :: istep_start
+      integer(kind = kint) :: i_step, ierr, icou, i
       real(kind = kreal) :: acou, time, prev_time
       real(kind = kreal) :: start_time, end_time, true_start
 !

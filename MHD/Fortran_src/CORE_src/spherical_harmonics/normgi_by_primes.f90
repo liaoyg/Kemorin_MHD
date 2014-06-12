@@ -122,10 +122,10 @@
       ksl(1) = l1+m1
       ksl(2) = l2-m2
 !*
-      call quicksort_int(5,kil(0),1,5)
-      call quicksort_int(3,kiu(0),1,3)
-      call quicksort_int(3,ksl(0),1,3)
-      call quicksort_int(5,ksu(0),1,5)
+      call quicksort_int(ifive,  kil(0), ione, ifive)
+      call quicksort_int(ithree, kiu(0), ione, ithree)
+      call quicksort_int(ithree, ksl(0), ione, ithree)
+      call quicksort_int(ifive,  ksu(0), ione, ifive)
 !
 !
       iexp_gi = 0
@@ -167,8 +167,8 @@
         ktl(4) = it
 !*
 !*
-        call quicksort_int(3,ktu(0),1,3)
-        call quicksort_int(5,ktl(0),1,5)
+        call quicksort_int(ithree, ktu(0), ione, ithree)
+        call quicksort_int(ifive,  ktl(0), ione, ifive)
 !*
         iexp_ti = 0
         do m = 1, 2
@@ -247,10 +247,10 @@
       ksl(1) = l1+m1
       ksl(2) = l2-m2
 !*
-      call quicksort_int(5,kil(0),1,5)
-      call quicksort_int(3,kiu(0),1,3)
-      call quicksort_int(3,ksl(0),1,3)
-      call quicksort_int(5,ksu(0),1,5)
+      call quicksort_int(ifive,  kil(0), ione, ifive)
+      call quicksort_int(ithree, kiu(0), ione, ithree)
+      call quicksort_int(ithree, ksl(0), ione, ithree)
+      call quicksort_int(ifive,  ksu(0), ione, ifive)
 !
       num_fact = max(kil(4),kiu(2),ksu(4),ksl(2))
 !
@@ -264,8 +264,8 @@
         ktl(3) = l3-m3-it
         ktl(4) = it
 !*
-        call quicksort_int(3,ktu(0),1,3)
-        call quicksort_int(5,ktl(0),1,5)
+        call quicksort_int(ithree, ktu(0), ione, ithree)
+        call quicksort_int(ifive,  ktl(0), ione, ifive)
 !*
         num_fact = max(num_fact,ktu(2),ktl(4))
       end do

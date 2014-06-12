@@ -35,9 +35,7 @@
       integer(kind = kint), intent(in) :: iele_tri(nele_tri)
 !
       integer(kind = kint) :: inum, iele, isurf, icou, iflag
-      integer(kind = kint) :: k1, inod
       integer(kind = kint) :: isf1, isf2, isf3, isf4, isf5, isf6
-      integer(kind = kint) :: imk1, imk2, imk3, imk4, imk5, imk6
 !
 !
       allocate(imark_sf(numsurf))
@@ -243,7 +241,6 @@
 !
       integer(kind = kint) :: iele, isurf, icou
       integer(kind = kint) :: isf1, isf2, isf3, isf4, isf5, isf6
-      integer(kind = kint) :: imk1, imk2, imk3, imk4, imk5, imk6
 !
 !
       imark_sf =  0

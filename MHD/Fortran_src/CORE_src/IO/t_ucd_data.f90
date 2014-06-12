@@ -105,7 +105,9 @@
 !>        Real work array for HDF data output
         real(kind=kreal), pointer :: fld_hdf5(:)
 !>        Integer array for HDF data output
-        integer(kind=kint), pointer :: ie_hdf5(:)
+!!          NOTE:: ie_hdf5 has default integer precision.
+!!                 Data could be broken if there are 2^31 nodes!!
+        integer, pointer :: ie_hdf5(:)
       end type merged_ucd_data
 !
 ! -----------------------------------------------------------------------

@@ -8,6 +8,7 @@
 !         Modified  by  H.Matsui (U. Chicago)  on Jan. 2007 (ver 2.0)
 !
       use m_precision
+      use m_constants
 !
       use const_surface_mesh
       use getarg_kemo
@@ -23,11 +24,11 @@
         write(*,*) ' Please input header of mesh  !!'
         read (*,*) file_head
       else
-        call getarg_k(1, file_head)
+        call getarg_k(ione, file_head)
       end if
 !
       call choose_surface_mesh(file_head)
 !
-      stop ' //// program normally terminated //// '
+      stop ' //// program normally finished //// '
 !
       end program pick_surface 

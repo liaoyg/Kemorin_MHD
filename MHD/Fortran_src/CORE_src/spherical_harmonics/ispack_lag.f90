@@ -78,8 +78,8 @@
 !
       integer(kind = kint), intent(in) :: MM, IM, JM, KM
 !
-      integer(kind = kint) :: JH, K, J, M, N, L, I, P1, P0
-      real(kind = kreal) :: RD, A, B, Z
+      integer(kind = kint) :: JH, K, J, M, N, L, I
+      real(kind = kreal) :: RD, A, B
       real(kind = kreal), parameter :: PI = 3.1415926535897932385D0
 !
 !*/ CHECK JM /*
@@ -339,8 +339,8 @@
       real(kind = kreal) :: E(NB)
       real(kind = kreal), parameter :: PI = 3.1415926535897932385D0
 !
-      integer(kind = kint) :: JH, I, J, N, P0, P1, IFLAG
-      real(kind = kreal) :: EPS, Z, DZ, DP
+      integer(kind = kint) :: JH, I, J, N, IFLAG
+      real(kind = kreal) :: EPS, Z, DZ, DP, P0, P1
 !
 !
       JH=JM/2

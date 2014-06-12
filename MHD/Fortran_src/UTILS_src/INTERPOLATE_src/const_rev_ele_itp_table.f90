@@ -73,7 +73,7 @@
 !
             call sel_read_itp_table_dest(my_rank_2nd, ierr)
             if (ierr .ne. 0) then
-              call calypso_MPI_abort(ierr,'Check work file')
+              call calypso_MPI_abort(int(ierr),'Check work file')
             end if
 !
           end if
@@ -93,7 +93,9 @@
         table_file_header = work_header
         call sel_read_itp_table_dest(my_rank, ierr)
 !
-        if (ierr.ne.0) call calypso_MPI_abort(ierr,'Check work file')
+        if (ierr.ne.0) then
+          call calypso_MPI_abort(int(ierr),'Check work file')
+        end if
 !
         num_dest_domain_IO = 0
         ntot_table_org_IO =  0
