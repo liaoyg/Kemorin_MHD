@@ -50,7 +50,7 @@
 !
 !* interface arg.
       character(len=kchara), intent(in) :: fhead
-      integer, intent(in) :: ihpixf, jvpixf
+      integer(kind = kint), intent(in) :: ihpixf, jvpixf
 ! RGB data array
       character(len=1), intent(in) :: rgb(3,ihpixf,jvpixf)
 !* local
@@ -70,8 +70,8 @@
       icnt = 0
 ! here, j (vertical address) runs from top to bottom.
 !* image data
-      do j = jvpixf, 1, -1
-        do i = 1, ihpixf, 1
+      do j = int(jvpixf), 1, -1
+        do i = 1, int(ihpixf), 1
           do k = 1, 3
             itmp = ichar(rgb(k,i,j))
             icnt = icnt + 4
@@ -96,7 +96,7 @@
 !
 !* interface arg.
       character(len=kchara), intent(in) :: fhead
-      integer, intent(in) :: ihpixf, jvpixf
+      integer(kind = kint), intent(in) :: ihpixf, jvpixf
 ! RGB data array
       character(len=1), intent(in) :: rgb(3,ihpixf,jvpixf)
 !
@@ -114,11 +114,11 @@
 !* header
       write(id_img,'(''P6'', 2(1x,i4),'' 255 '',$)') ihpixf, jvpixf
 !* image data
-      itmp = ihpixf * jvpixf * 3
+      itmp = int(ihpixf * jvpixf) * 3
 ! make output "format"
       write(frmtstr,'(''('',i8.8,''A,$)'')') itmp
       write(id_img,fmt=frmtstr)                                         &
-     &                ((rgb(1:3,i,j),i=1,ihpixf),j=jvpixf,1,-1)
+     &            ((rgb(1:3,i,j),i=1,int(ihpixf)),j=int(jvpixf),1,-1)
 ! some compiler may not accept this line.
 ! here, j (vertical address) runs from top to bottom.
      close(id_img)
@@ -130,7 +130,7 @@
        subroutine pixout_BMP(fhead, ihpixf, jvpixf, rgb)
 !* interface arg.
        character(len=kchara), intent(in) :: fhead
-       integer, intent(in) :: ihpixf, jvpixf
+       integer(kind = kint), intent(in) :: ihpixf, jvpixf
 ! RGB data array
        character(len=1), intent(in) :: rgb(3,ihpixf,jvpixf)
 !* local
@@ -145,7 +145,7 @@
 !
 !* BMP (24bit depth)... this part works only when width is multiple of 4.
 
-      itmp = mod(ihpixf, 4)
+      itmp = mod(int(ihpixf), 4)
       if (itmp .NE. 0) then
         write(*,*) 'width must be multiple of 4'
         stop
@@ -161,7 +161,8 @@
       write(*,*) 'Now writing BMP(24bit) file : ', fname
 !* header 1 (file header ; 1--14 byte)
       headmsw( 1: 2) = 'BM'             ! declaring this is BMP file
-      itmp = 54 + ihpixf * jvpixf * 3 ! total file size = header + data
+! total file size = header + data
+      itmp = 54 + int(ihpixf * jvpixf) * 3
       call num2bit4(itmp,byt4)
       headmsw( 3: 6) = byt4(1:4)
       itmp = 0                        ! may be 0
@@ -177,10 +178,10 @@
       itmp = 40                       ! must be 40 : length of bit-map header
       call num2bit4(itmp,byt4)
       headmsw(15:18) = byt4(1:4)
-      itmp = ihpixf                   ! width
+      itmp = int(ihpixf)              ! width
       call num2bit4(itmp,byt4)
       headmsw(19:22) = byt4(1:4)
-      itmp = jvpixf                   ! height
+      itmp = int(jvpixf)              ! height
       call num2bit4(itmp,byt4)
       headmsw(23:26) = byt4(1:4)
       itmp = 1                        ! must be 1
@@ -211,9 +212,10 @@
 !* writing header part
       write(id_img,'(a54,$)') headmsw(1:54)
 !* image data
-      itmp = ihpixf * jvpixf * 3
+      itmp = int(ihpixf * jvpixf) * 3
       write(frmtstr,'(''('',i8.8,''A,$)'')') itmp
-      write(id_img,fmt=frmtstr) ((rgb(3:1:-1,i,j),i=1,ihpixf),j=1,jvpixf)
+      write(id_img,fmt=frmtstr)                                         &
+     &            ((rgb(3:1:-1,i,j),i=1,int(ihpixf)),j=1,int(jvpixf))
 ! writing in BGR order, not RGB.
       close(id_img)
 !

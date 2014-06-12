@@ -28,7 +28,7 @@
       integer(kind = kint), intent(in) :: ncl
       real(kind = kreal), intent(in) :: xmax, xmin
 !
-      integer :: ic
+      integer(kind = kint) :: ic
 !*
 !*  ------   set normarize factor   ---------------
 !*

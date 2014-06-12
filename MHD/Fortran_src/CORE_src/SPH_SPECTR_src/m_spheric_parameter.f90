@@ -38,6 +38,10 @@
 !!      subroutine check_spheric_param_rtm(my_rank)
 !!      subroutine check_spheric_param_rlm(my_rank)
 !!      subroutine check_spheric_param_rj(my_rank)
+!!
+!!      integer(kind = kint) function find_local_sph_mode_address(l, m)
+!!        NOTE: l and m have to be default integer
+!!      integer(kind = kint) function local_sph_data_address(kr, j_lc)
 !!@endverbatim
 !!
 !!@n @param  my_rank     Running rank ID
@@ -691,9 +695,9 @@
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
 !
-      integer function find_local_sph_mode_address(l, m)
+      integer(kind = kint) function find_local_sph_mode_address(l, m)
 !
-      integer(kind = kint), intent(in) :: l, m
+      integer, intent(in) :: l, m
 !
       integer(kind = kint) :: j
 !
@@ -711,7 +715,7 @@
 !
 !-----------------------------------------------------------------------
 !
-      integer function local_sph_data_address(kr, j_lc)
+      integer(kind = kint) function local_sph_data_address(kr, j_lc)
 !
       integer(kind = kint), intent(in) :: kr, j_lc
 !

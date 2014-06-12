@@ -1,17 +1,18 @@
 !
       program test_legendre_by_ACDC
 !
+      use m_precision
       use ACDC_Legendre_Poly
       use ACDC_Theta_Derivatives
 !
       implicit none
 !
-      integer(kind = 4) :: ltr, ntheta
+      integer(kind = kint) :: ltr, ntheta
 !
       Integer, Allocatable :: m_vals(:)
 !
-      integer(kind = 4) :: i, j, l, m, lc, mc, lm, itime
-      integer(kind = 4) :: iend, istart, t_rate, t_max
+      integer(kind = kint) :: i, j, l, m, lc, mc, lm, itime
+      integer(kind = kint) :: iend, istart, t_rate, t_max
 !
 !
       write(*,*) 'imput number of points'

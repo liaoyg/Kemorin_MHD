@@ -107,7 +107,7 @@
         write(*,'(10a1)', advance='NO') (char(8),i=1,10)
         write(*,'(i10)', advance='NO') istep
 !
-        call sel_read_udt_file(-1, istep, psf_ucd)
+        call sel_read_udt_file(iminus, istep, psf_ucd)
         call cal_range_rms_ave_4_psf                                    &
      &     (icomp_ref_field, iflag_ref, ref_value, area_res)
         call cal_minmax_psf
@@ -118,6 +118,6 @@
       write(*,*)
       call close_psf_ave_rms_data
 !
-      stop ' //// program normally terminated //// '
+      stop ' //// program normally finished //// '
 !
       end program psf_range_rms_aves

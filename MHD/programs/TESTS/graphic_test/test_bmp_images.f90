@@ -22,7 +22,7 @@
 !
       implicit none
 !
-      integer ihpixf, jvpixf
+      integer(kind = kint) :: ihpixf, jvpixf
       parameter(ihpixf = 128, jvpixf = 128) ! pixel size
       character(len=1) rgb(3,ihpixf,jvpixf) ! RGB image array
       integer nframe
@@ -57,9 +57,12 @@
 !* --------------------------------------------
 
        subroutine mkbitmap(rgb,nframe, ihpixf, jvpixf)
+!
+       use m_precision
+!
        implicit none
        integer nframe
-       integer ::  ihpixf, jvpixf
+       integer(kind = kint) ::  ihpixf, jvpixf
 !      RGB pixel data array
        character(len=1) :: rgb(3,ihpixf,jvpixf)
 !* local
@@ -67,7 +70,7 @@
        integer ired, igre, iblu
        real*8  ofst
        parameter(ofst = 0.7D+00)
-       integer i, j, itmp
+       integer(kind = kint) ::  i, j, itmp
        real*8   aa, bb, cc, rr, xx, yy, tt
        integer ichoice
        parameter(ichoice = 1) ! .... choice

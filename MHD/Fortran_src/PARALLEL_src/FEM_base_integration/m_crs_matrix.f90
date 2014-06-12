@@ -31,7 +31,8 @@
       integer(kind = kint), dimension(10) ::  INTARRAY_crs = 0
       integer(kind=kint )                  ::  errno
 !
-      integer                ::  PRESET_crs = 2, ITERactual
+      integer(kind=kint ) :: ITERactual
+      integer(kind=kint ), parameter ::  PRESET_crs = 2
 !
 !  ---------------------------------------------------------------------
 !

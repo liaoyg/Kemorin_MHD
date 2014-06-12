@@ -148,8 +148,8 @@
       integer(kind = kint), intent(inout) :: IW(NP)
 !
 !
-      integer(kind = kint) :: i, j, k, ik, ic
-      integer(kind = kint) :: kst, ked, in, kn
+      integer(kind = kint) :: i, k, ik, ic
+      integer(kind = kint) :: kst, ked
       integer(kind = kint) :: ITEMcou, icou, icouK, icoug, icol
       integer(kind = kint), parameter :: NODmin = 1
 

@@ -24,8 +24,8 @@
 !
       implicit none
 !
-      integer(kind = kint), parameter :: nbuf = 65535
-      integer (kind =kint) :: num_word, nchara
+      integer, parameter :: nbuf = 65535
+      integer :: num_word, nchara
       character(len=nbuf) :: textbuf, tbuf2
       character(len=1), private :: chara_flag
 !
@@ -148,7 +148,7 @@
       integer(kind = kint), intent(in) :: num
       real(kind = kreal), intent(inout) :: real_input(num)
 !
-      integer(kind = kint) :: ist
+      integer :: ist
 !
 !
       if(num .le. 0) return
@@ -156,7 +156,7 @@
       call skip_gz_comment_get_nword
       read(textbuf,*) real_input(1:num_word)
 !
-      if(num .gt. num_word) then
+      if(int(num) .gt. num_word) then
         ist = num_word
         do
           call get_one_line_from_gz(nbuf, num_word, nchara, textbuf)
@@ -175,7 +175,7 @@
       integer(kind = kint), intent(in) :: num
       integer(kind = kint), intent(inout) :: int_input(num)
 !
-      integer(kind = kint) :: ist
+      integer :: ist
 !
 !
       if(num .le. 0) return
@@ -183,13 +183,13 @@
       call skip_gz_comment_get_nword
       read(textbuf,*) int_input(1:num_word)
 !
-      if(num .gt. num_word) then
+      if(int(num) .gt. num_word) then
         ist = num_word
         do
           call get_one_line_from_gz(nbuf, num_word, nchara, textbuf)
           read(textbuf,*) int_input(ist+1:ist+num_word)
           ist = ist + num_word
-          if(ist .ge. num) exit
+          if(ist .ge. int(num)) exit
         end do
       end if
 !
@@ -203,13 +203,13 @@
       integer(kind = kint) :: num
       integer(kind = kint) :: int_output(num)
 !
-      integer(kind = kint) :: ist, n
+      integer :: ist, n
       character(len=kchara) :: fmt_txt
 !
 !
       ist = 0
       do
-        n = min((num-ist-1),7) + 1
+        n = min((int(num) - ist-1),7) + 1
         write(fmt_txt,'(a1,i2,a7)') '(', n, 'i10,a1)'
         write(textbuf,fmt_txt) int_output(ist+1:ist+n), char(0)
         call write_compress_txt(nbuf, textbuf)
@@ -226,13 +226,13 @@
       integer(kind = kint) :: num
       integer(kind = kint) :: int_output(num)
 !
-      integer(kind = kint) :: ist, n
+      integer :: ist, n
       character(len=kchara) :: fmt_txt
 !
 !
       ist = 0
       do
-        n = min((num-ist-1),9) + 1
+        n = min((int(num) - ist-1),9) + 1
         write(fmt_txt,'(a1,i3,a6)') '(', n, 'i8,a1)'
         write(textbuf,fmt_txt) int_output(ist+1:ist+n), char(0)
         call write_compress_txt(nbuf, textbuf)
@@ -249,13 +249,13 @@
       integer(kind = kint) :: num
       integer(kind = kint) :: int_output(num)
 !
-      integer(kind = kint) :: ist, n
+      integer :: ist, n
       character(len=kchara) :: fmt_txt
 !
 !
       ist = 0
       do
-        n = min((num-ist-1),9) + 1
+        n = min((int(num) - ist-1),9) + 1
         write(fmt_txt,'(a1,i3,a7)') '(', n, 'i12,a1)'
         write(textbuf,fmt_txt) int_output(ist+1:ist+n), char(0)
         call write_compress_txt(nbuf, textbuf)

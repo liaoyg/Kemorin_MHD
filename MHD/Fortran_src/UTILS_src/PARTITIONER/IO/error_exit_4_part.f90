@@ -1,15 +1,16 @@
 !error_exit_4_part.f90
 !      module error_exit_4_part
 !
-      module error_exit_4_part
-!
 !      Written by H. Matsui on Sep., 2007
+!
+!      subroutine ERROR_EXIT (IFLAG, nn)
+!         IFLAG is 4-byte integer!!
+!
+      module error_exit_4_part
 !
       use m_precision
 !
       implicit none
-!
-!      subroutine ERROR_EXIT (IFLAG, nn)
 !
 !   --------------------------------------------------------------------
 !
@@ -19,7 +20,8 @@
 !
       subroutine ERROR_EXIT (IFLAG, nn)
 !
-      integer(kind = kint), intent(in) :: IFLAG, nn
+      integer, intent(in) :: IFLAG
+      integer(kind = kint), intent(in) :: nn
 !
       write (*,'(/,a)')                                                 &
      &        "********** Error MESSAGE from Partitioner **********"

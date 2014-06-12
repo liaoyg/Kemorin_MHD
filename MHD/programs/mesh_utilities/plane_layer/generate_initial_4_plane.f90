@@ -41,8 +41,8 @@
 !
       implicit none
 !
-      integer(kind=kint) :: i, ip, my_rank, inod
-      integer(kind=kint) :: np, jst, jed
+      integer(kind=kint) :: ip, my_rank, inod
+      integer(kind=kint) :: nd, jst, jed
 !
 !
       pi = four*atan(one)
@@ -76,11 +76,11 @@
 !
 !   set up of physical values
 !
-        do np = 1, merged_fld%num_phys
-          jst = merged_fld%istack_component(i-1)
-          jed = merged_fld%istack_component(i)
+        do nd = 1, merged_fld%num_phys
+          jst = merged_fld%istack_component(nd-1)
+          jed = merged_fld%istack_component(nd)
 !
-          if (merged_fld%phys_name(np) .eq. fhd_temp) then
+          if (merged_fld%phys_name(nd) .eq. fhd_temp) then
 !
             do inod = 1, merged%node%numnod
               if (xx(inod,3).eq.zmin) then
@@ -96,14 +96,14 @@
               end if
             end do
 !
-          else if (merged_fld%phys_name(np) .eq. fhd_vecp) then
+          else if (merged_fld%phys_name(nd) .eq. fhd_vecp) then
 !
             do inod = 1, merged%node%numnod
               merged_fld%d_fld(inod,jst+1) = 0.01d0*sin(pi*xx(inod,3)   &
      &                            / (zmax-zmin))
             end do
 !
-          else if (merged_fld%phys_name(np) .eq. fhd_magne) then
+          else if (merged_fld%phys_name(nd) .eq. fhd_magne) then
 !
             do inod = 1, merged%node%numnod
               merged_fld%d_fld(inod,jst+2) = (0.01d0*pi/two)            &

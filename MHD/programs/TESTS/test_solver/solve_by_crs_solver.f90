@@ -39,8 +39,6 @@
       call MPI_BARRIER  (CALYPSO_COMM,ierr_MPI)
       STARTTIME= MPI_WTIME()
  
-      PRESET_crs= 2
-
       call  solve                                                       &
      &                  (internal_node, numnod, ntot_crs_l, ntot_crs_u, &
      &                   D_crs, AL_crs, istack_crs_l, item_crs_l,       &
@@ -64,8 +62,6 @@
       call MPI_BARRIER  (CALYPSO_COMM,ierr_MPI)
       STARTTIME= MPI_WTIME()
  
-      PRESET_crs= 2
-
       call  solve33                                                     &
      &                  (internal_node, numnod, ntot_crs_l, ntot_crs_u, &
      &                   D_crs, AL_crs, istack_crs_l, item_crs_l,       &
@@ -89,8 +85,6 @@
       call MPI_BARRIER  (CALYPSO_COMM,ierr_MPI)
       STARTTIME= MPI_WTIME()
  
-      PRESET_crs= 2
-
       call  solveNN                                                     &
      &                  (internal_node, numnod, NB_crs,                 &
      &                   ntot_crs_l, ntot_crs_u, D_crs, AL_crs,         &

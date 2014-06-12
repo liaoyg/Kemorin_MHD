@@ -21,11 +21,15 @@
       integer(kind = kint), intent(in) :: i
       character(len=*), intent(out) :: argc
 !
+      integer :: i4
+!
+!
+      i4 = int(i)
       call getarg(0, argc)
       if(argc == "") then
-        call getarg(i + 1, argc)
+        call getarg( (i4+1), argc)
       else
-        call getarg(i, argc)
+        call getarg(i4, argc)
       end if
       end subroutine getarg_k
 !

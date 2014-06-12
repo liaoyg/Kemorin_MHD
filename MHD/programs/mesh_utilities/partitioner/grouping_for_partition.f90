@@ -9,6 +9,7 @@
       module grouping_for_partition
 !
       use m_precision
+      use m_constants
 !
       implicit  none
 !
@@ -116,7 +117,7 @@
       else if (NTYP_div .eq. iPART_MeTiS_RSB) then
         write(*,*) 'read_group_by_metis'
         call read_group_by_metis(ierr, numnod, internal_node)
-        if (ierr .eq. 32) call ERROR_EXIT(32,0)
+        if (ierr .eq. 32) call ERROR_EXIT(32,izero)
         write(*,*) 'copy_domain_list_from_IO'
         call copy_domain_list_from_IO
 !

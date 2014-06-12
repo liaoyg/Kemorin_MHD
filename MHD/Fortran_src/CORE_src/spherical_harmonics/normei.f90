@@ -86,29 +86,29 @@
         if ( m3+1.gt.l3 .or. abs(m2-1).gt.l2-1 )then
           gg(1) = zero
         else if (m2 .eq. 0 ) then
-          gg(1) =-gs(m3+1,l3,1,l2-1,m1,l1)
+          gg(1) =-gs(m3+ione, l3, ione, l2-ione, m1, l1)
         else
-          gg(1) = gs(m1,l1,m2-1,l2-1,m3+1,l3)
+          gg(1) = gs(m1, l1, m2-ione, l2-ione, m3+ione, l3)
         end if
 !*
         if ( m2 .gt.l2-1 )then
           gg(2) = zero
         else
-          gg(2) = gs(m1,l1,m2,l2-1,m3,l3)
+          gg(2) = gs(m1, l1, m2, l2-ione, m3, l3)
         end if
 !*
         if ( m2+1 .gt.l2 .or. abs(m3-1).gt.l3-1 )then
           gg(3) = zero
         else if ( m3 .eq. 0) then
-          gg(3) = -gs(m2+1,l2,1,l3-1,m1,l1)
+          gg(3) = -gs(m2+ione, l2, ione, l3-ione, m1, l1)
         else
-          gg(3) = gs(m1,l1,m2+1,l2,m3-1,l3-1)
+          gg(3) = gs(m1, l1, m2+ione, l2, m3-ione, l3-ione)
         end if
 !*
         if ( m3 .gt.l3-1  )then
           gg(4) = zero
         else
-          gg(4) = gs(m1,l1,m2,l2,m3,l3-1)
+          gg(4) = gs(m1, l1, m2, l2, m3, l3-ione)
         end if
 !*
         setei = leades(m2,l2,m3,l3,gg)

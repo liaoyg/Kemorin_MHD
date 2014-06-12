@@ -174,7 +174,7 @@
 !
       integer(kind = kint) :: iaxis_rot
       real(kind = kreal) :: rotation_axis(3), rev_lookat(3)
-      real(kind = kreal) :: movie_mat(4,4), angle_deg
+      real(kind = kreal) :: angle_deg
 !
 !
 !

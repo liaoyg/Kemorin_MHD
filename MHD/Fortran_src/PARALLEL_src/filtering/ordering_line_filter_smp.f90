@@ -28,7 +28,7 @@
 !
       integer (kind = kint) :: inod, inod0, inod1
       integer (kind = kint) :: ist, ied, nd, ii
-      integer (kind = kint) :: isum, ifil, idx, jdx, inum, ip, j0, i, j
+      integer (kind = kint) :: isum, idx, jdx, inum, ip, j0, i, j
 !
 !
       nsize_lf_smp = 0

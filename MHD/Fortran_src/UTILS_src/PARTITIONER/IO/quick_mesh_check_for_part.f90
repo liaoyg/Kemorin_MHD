@@ -31,26 +31,26 @@
       integer(kind=kint) ::  is, in, ik
 !
 !
-      if (numnod .le. 0) call ERROR_EXIT(1001,0)
-      if (numele .le. 0) call ERROR_EXIT(1001,0)
+      if (numnod .le. 0) call ERROR_EXIT(1001,izero)
+      if (numele .le. 0) call ERROR_EXIT(1001,izero)
 !
-      if (num_bc   .lt. 0) call ERROR_EXIT(1002,1)
-      if (num_mat  .lt. 0) call ERROR_EXIT(1002,2)
-      if (num_surf .lt. 0) call ERROR_EXIT(1002,3)
+      if (num_bc   .lt. 0) call ERROR_EXIT(1002,ione)
+      if (num_mat  .lt. 0) call ERROR_EXIT(1002,itwo)
+      if (num_surf .lt. 0) call ERROR_EXIT(1002,ithree)
 !
       if (num_bc .gt. 0) then
         do is= 1, bc_istack(num_bc)
           in= bc_item(is)
-          if (in .le. 0) call ERROR_EXIT(1003,1)
-          if (in .gt. numnod) call ERROR_EXIT(2002,1)
+          if (in .le. 0) call ERROR_EXIT(1003,ione)
+          if (in .gt. numnod) call ERROR_EXIT(2002,ione)
         end do
       end if
 !
       if (num_mat .gt. 0) then
         do is= 1, mat_istack(num_mat)
           in= mat_item(is)
-          if (in .le. 0) call ERROR_EXIT(1003,2)
-          if (in .gt. numele) call ERROR_EXIT(2002,2)
+          if (in .le. 0) call ERROR_EXIT(1003,itwo)
+          if (in .gt. numele) call ERROR_EXIT(2002,itwo)
         enddo
       endif
 !
@@ -58,9 +58,9 @@
         do is= 1, surf_istack(num_surf)
           in= surf_item(1,is)
           ik= surf_item(2,is)
-          if (in.le.0) call ERROR_EXIT(1003,3)
-          if (ik.le.0) call ERROR_EXIT(1003,3)
-          if (in.gt.numele) call ERROR_EXIT(2002,3)
+          if (in.le.0) call ERROR_EXIT(1003,ithree)
+          if (ik.le.0) call ERROR_EXIT(1003,ithree)
+          if (in.gt.numele) call ERROR_EXIT(2002,ithree)
         end do
       endif
 !
@@ -70,7 +70,7 @@
 !C +--------------+
 !C
       call set_num_node_for_ele_by_etype(ierr)
-      if (ierr.gt.0) call ERROR_EXIT(ierr, izero)
+      if (ierr.gt.0) call ERROR_EXIT(int(ierr), izero)
 !C
 !C-- check local surface ID
       if (num_surf.gt.0) then

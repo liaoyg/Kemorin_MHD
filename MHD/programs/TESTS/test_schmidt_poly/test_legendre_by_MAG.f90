@@ -5,9 +5,9 @@
 !
       implicit none
 !
-      integer(kind = 4) :: ltr, ntheta, lst, led
-      integer(kind = 4) :: i, j, l, m, lc, mc, lm
-      integer(kind = 4) :: iend, istart, t_rate, t_max
+      integer(kind = kint) :: ltr, ntheta, lst, led
+      integer(kind = kint) :: i, j, l, m, lc, mc, lm
+      integer(kind = kint) :: iend, istart, t_rate, t_max
 !
       write(*,*) 'imput number of points'
       read(*,*) ntheta

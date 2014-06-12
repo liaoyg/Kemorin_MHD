@@ -168,7 +168,7 @@
         else if ( idisp_mode.eq.ione .and. icolor_mode.eq.izero) then
           iflag_cline = itwo
         else if ( idisp_mode.eq.three ) then
-          iflag_cline = three
+          iflag_cline = ithree
         end if
 !
         call drawline_rb1(num_color_pg, iflag_cline, nnod_pg, nele_pg,  &

@@ -195,7 +195,8 @@
 !
       integer ( kind = kint), intent(in) :: isig
 !
-      integer ( kind = kint) :: inod, m, k, jj
+      integer :: m
+      integer(kind = kint) :: inod, k, jj
       real (kind = kreal) :: pi, xr, shell
 !
 !
@@ -224,9 +225,10 @@
       use m_spheric_parameter
       use m_sph_spectr_data
 !
-      integer ( kind = kint), intent(in) :: isig, is_fld
+      integer(kind = kint), intent(in) :: isig, is_fld
 !
-      integer ( kind = kint) :: inod, m, k, jj
+      integer :: m
+      integer(kind = kint) :: inod, k, jj
       real (kind = kreal) :: pi, xr, shell
 !
 !
@@ -273,11 +275,10 @@
 !
       real (kind = kreal) :: pi, rr
       integer(kind = kint) :: is, it, k, js, jt
-      integer(kind = kint), parameter :: ls = 1, lt = 2
 !
 !
-      js = find_local_sph_mode_address(ls,izero)
-      jt = find_local_sph_mode_address(lt,izero)
+      js = find_local_sph_mode_address(1, 0)
+      jt = find_local_sph_mode_address(2, 0)
 !
       pi = four * atan(one)
 !
