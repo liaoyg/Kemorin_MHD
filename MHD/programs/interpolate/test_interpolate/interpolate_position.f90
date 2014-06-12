@@ -264,32 +264,32 @@
 !
 !     initialize
 !
-      call verify_2nd_iccg_int8_mat(nnod_2nd)
+      call verify_2nd_iccg_int_mat(nnod_2nd)
 !
 !     communication
 !
 !
       if (iflag_debug.eq.1) write(*,*) 'sel_calypso_send_recv_int8'
-      call sel_calypso_send_recv_int8                                   &
+      call sel_calypso_send_recv_int                                    &
      &          (iflag_import_item, ntot_table_org, nnod_2nd,           &
      &           num_dest_domain, iflag_self_itp_send,                  &
      &           id_dest_domain, istack_nod_tbl_org, inod_itp_send,     &
      &           num_org_domain, iflag_self_itp_recv,                   &
      &           id_org_domain, istack_nod_tbl_dest,                    &
      &           inod_dest_4_dest, irev_dest_4_dest,                    &
-     &           inod_gl_dest_4_org, i8vec_2nd(1) )
+     &           inod_gl_dest_4_org, ivec_2nd(1) )
 !
 !
       if (iflag_debug.eq.1)  write(*,*) 'solver_send_recv_i'
       if (num_neib_2.gt.0) then
-        call solver_send_recv_i8                                        &
+        call solver_send_recv_i                                         &
      &                (nnod_2nd, num_neib_2, id_neib_2,                 &
      &                 istack_import_2, item_import_2,                  &
      &                 istack_export_2, item_export_2,                  &
-     &                 i8vec_2nd(1))
+     &                 ivec_2nd(1))
       end if
 !
-      inod_global_itp(1:nnod_2nd) = i8vec_2nd(1:nnod_2nd)
+      inod_global_itp(1:nnod_2nd) = ivec_2nd(1:nnod_2nd)
 !
       end subroutine s_interpolate_global_node
 !

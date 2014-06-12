@@ -10,7 +10,7 @@
       implicit none
 !
 !
-      integer(kind = kint_d), allocatable :: inod_global_itp(:)
+      integer(kind = kint), allocatable :: inod_global_itp(:)
 !
       real(kind = kreal), allocatable :: xx_interpolate(:,:)
 !

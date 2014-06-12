@@ -107,7 +107,7 @@
         integer(kind = kint) :: ied_rtp(3)
 !
 !>        global data address @f$ f(r,\theta,\phi) @f$
-        integer(kind = kint_d), pointer :: inod_global_rtp(:)
+        integer(kind = kint), pointer :: inod_global_rtp(:)
 !>        global address for each direction @f$ f(r,\theta,\phi) @f$
         integer(kind = kint), pointer :: idx_global_rtp(:,:)
 !
@@ -144,7 +144,7 @@
         integer(kind = kint) :: ied_rtm(3)
 !
 !>        global data address @f$ f(r,\theta,m) @f$
-        integer(kind = kint_d), pointer :: inod_global_rtm(:)
+        integer(kind = kint), pointer :: inod_global_rtm(:)
 !>        global address for each direction @f$ f(r,\theta,m) @f$
         integer(kind = kint), pointer :: idx_global_rtm(:,:)
 !
@@ -181,7 +181,7 @@
         integer(kind = kint) :: ied_rlm(2)
 !
 !>        global data address @f$ f(r,l,m) @f$
-        integer(kind = kint_d), pointer :: inod_global_rlm(:)
+        integer(kind = kint), pointer :: inod_global_rlm(:)
 !>        global address for each direction @f$ f(r,l,m) @f$
         integer(kind = kint), pointer :: idx_global_rlm(:,:)
 !
@@ -232,7 +232,7 @@
         integer(kind = kint) :: ied_rj(2)
 !
 !>        global data address @f$ f(r,j) @f$
-        integer(kind = kint_d), pointer :: inod_global_rj(:)
+        integer(kind = kint), pointer :: inod_global_rj(:)
 !>        global address for each direction @f$ f(r,j) @f$
         integer(kind = kint), pointer :: idx_global_rj(:,:)
 !

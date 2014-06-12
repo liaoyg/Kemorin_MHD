@@ -211,13 +211,13 @@
 !
 !
 !>      global data address @f$ f(r,\theta,\phi) @f$
-      integer(kind = kint_d), allocatable :: inod_global_rtp(:)
+      integer(kind = kint), allocatable :: inod_global_rtp(:)
 !>      global data address @f$ f(r,\theta,m) @f$
-      integer(kind = kint_d), allocatable :: inod_global_rtm(:)
+      integer(kind = kint), allocatable :: inod_global_rtm(:)
 !>      global data address @f$ f(r,l,m) @f$
-      integer(kind = kint_d), allocatable :: inod_global_rlm(:)
+      integer(kind = kint), allocatable :: inod_global_rlm(:)
 !>      global data address @f$ f(r,j) @f$
-      integer(kind = kint_d), allocatable :: inod_global_rj(:)
+      integer(kind = kint), allocatable :: inod_global_rj(:)
 !
 !>      global address for each direction @f$ f(r,\theta,\phi) @f$
       integer(kind = kint), allocatable :: idx_global_rtp(:,:)
