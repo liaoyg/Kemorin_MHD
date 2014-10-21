@@ -34,9 +34,9 @@
       elapse_labels(2) = 'Initialization time        '
       elapse_labels(3) = 'Time evolution loop time   '
       elapse_labels(4) = 'Data IO time               '
-      elapse_labels(5) = 'Communication for RHS      '
+      elapse_labels(5) = 'Evolution without IO time  '
 !
-      elapse_labels( 6) = 'snapshots_control         '
+      elapse_labels( 6) = 'Time for solvers          '
       elapse_labels( 7) = 'lead_fields_4_sph_mhd     '
       elapse_labels( 8) = 'output_sph_restart_control'
       elapse_labels( 9) = 'Field data output         '

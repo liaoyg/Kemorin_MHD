@@ -121,9 +121,7 @@
 !* obtain nonlinear terms for starting
 !*
        if(iflag_debug .gt. 0) write(*,*) 'first nonlinear'
-       call start_eleps_time(12)
        call nonlinear
-       call end_eleps_time(12)
 !
 !* -----  Open Volume integration data files -----------------
 !*
@@ -156,6 +154,8 @@
 !*  ----------  add time evolution -----------------
 !*
 !
+      call start_eleps_time(5)
+      call start_eleps_time(6)
       if(i_step .eq. 1) then
         if(iflag_debug.gt.0) write(*,*) 'cal_expricit_sph_euler'
         call cal_expricit_sph_euler(i_step)
@@ -167,12 +167,14 @@
 !*  ----------  time evolution by inplicit method ----------
 !*
       call s_cal_sol_sph_MHD_crank
+      call end_eleps_time(6)
 !*
 !*  ----------------lead nonlinear term ... ----------
 !*
       call start_eleps_time(12)
       call nonlinear
       call end_eleps_time(12)
+      call end_eleps_time(5)
 !
 !* ----  Update fields after time evolution ------------------------=
 !*
