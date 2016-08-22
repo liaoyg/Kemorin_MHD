@@ -51,9 +51,8 @@
 	NSOpenPanel *KemoviewOpenPanelObj	= [NSOpenPanel openPanel];
 	[KemoviewOpenPanelObj setTitle:@"Choose data for Kemoviewer"];
     [KemoviewOpenPanelObj setAllowedFileTypes:kemoviewFileTypes];
-	NSInteger KemoviewOpenInteger	= [KemoviewOpenPanelObj runModal];
 	
-	if(KemoviewOpenInteger == NSOKButton){
+	if([KemoviewOpenPanelObj runModal] == NSModalResponseOK){
 		NSString *kemoviewOpenFilename = [[KemoviewOpenPanelObj URL] path];
 		[self OpenKemoviewerFile:kemoviewOpenFilename];
 	};	
@@ -83,9 +82,8 @@
 	NSSavePanel *ViewMatrixOpenPanelObj	= [NSOpenPanel openPanel];
 	[ViewMatrixOpenPanelObj setTitle:@"Choose View Matrix data"];
     [ViewMatrixOpenPanelObj setAllowedFileTypes:MatrixFileTypes];
-	NSInteger ViewMatrixOpenInteger	= [ViewMatrixOpenPanelObj runModal];
 
-    if(ViewMatrixOpenInteger == NSOKButton){
+    if([ViewMatrixOpenPanelObj runModal] == NSModalResponseOK){
 		
 		NSString * ViewMatrixFilename = [[ ViewMatrixOpenPanelObj URL] path];
 		NSString * ViewMatrixDirectory = [[ ViewMatrixOpenPanelObj directoryURL] path];

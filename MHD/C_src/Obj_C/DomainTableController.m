@@ -73,9 +73,8 @@
 	NSOpenPanel *MeshOpenPanelObj	= [NSOpenPanel openPanel];
 	[MeshOpenPanelObj setTitle:@"Choose mesh data"];
     [MeshOpenPanelObj setAllowedFileTypes:meshFileTypes];
-	NSInteger MeshOpenInteger	= [MeshOpenPanelObj runModal];
 	
-	if(MeshOpenInteger == NSOKButton){
+	if([MeshOpenPanelObj runModal] == NSModalResponseOK){
 		NSString *MeshOpenDirectory = [[MeshOpenPanelObj directoryURL] path];
 		NSString *MeshOpenFilename = [[MeshOpenPanelObj URL] path];
 		NSString *MeshOpenFilehead = [MeshOpenFilename stringByDeletingPathExtension];

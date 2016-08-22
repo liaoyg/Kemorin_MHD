@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <QTKit/QTKit.h>
-
+#import <AVFoundation/AVFoundation.h>
 
 @interface KemoMovieControll : NSObject {
 

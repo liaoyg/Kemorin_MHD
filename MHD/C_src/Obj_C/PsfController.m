@@ -405,9 +405,8 @@
 	NSOpenPanel *PsfOpenPanelObj	= [NSOpenPanel openPanel];
 	[PsfOpenPanelObj setTitle:@"Choose Texture image data"];
     [PsfOpenPanelObj setAllowedFileTypes:psfFileTypes];
-	NSInteger PsfOpenInteger	= [PsfOpenPanelObj runModal];
 	
-	if(PsfOpenInteger == NSOKButton){
+	if([PsfOpenPanelObj runModal] == NSModalResponseOK){
 		PsfOpenDirectory = [[PsfOpenPanelObj directoryURL] path];
 		NSString *PsfOpenFilename =  [[PsfOpenPanelObj URL] path];
 		NSString *PsfOpenFileext =   [PsfOpenFilename pathExtension];
@@ -429,9 +428,8 @@
 	NSOpenPanel *PsfOpenPanelObj	= [NSOpenPanel openPanel];
 	[PsfOpenPanelObj setTitle:@"Choose surface rendering data"];
     [PsfOpenPanelObj setAllowedFileTypes:psfFileTypes];
-	NSInteger PsfOpenInteger	= [PsfOpenPanelObj runModal];
 	
-	if(PsfOpenInteger == NSOKButton){
+	if([PsfOpenPanelObj runModal] == NSModalResponseOK){
 		PsfOpenDirectory = [[PsfOpenPanelObj directoryURL] path];
 		NSString *PsfOpenFilename =  [[PsfOpenPanelObj URL] path];
 		NSString *PsfOpenFileext =   [PsfOpenFilename pathExtension];

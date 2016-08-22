@@ -154,9 +154,8 @@
 	NSOpenPanel *flineOpenPanelObj	= [NSOpenPanel openPanel];
 	[flineOpenPanelObj setTitle:@"Choose field line data"];
     [flineOpenPanelObj setAllowedFileTypes:flineFileTypes];
-	NSInteger FlineOpenInteger	= [flineOpenPanelObj runModal];
 	
-	if(FlineOpenInteger == NSOKButton){
+	if([flineOpenPanelObj runModal] == NSModalResponseOK){
 		FlineOpenDirectory = [[flineOpenPanelObj directoryURL] path];
 		self.FlineOpenFilename =  [[flineOpenPanelObj URL] path];
 		FlineOpenFileext =   [self.FlineOpenFilename pathExtension];
