@@ -9,7 +9,8 @@
 /* Begin PBXBuildFile section */
 		184DB8671277B00A00B1229A /* KemoMovieControll.m in Sources */ = {isa = PBXBuildFile; fileRef = 184DB8661277B00A00B1229A /* KemoMovieControll.m */; };
 		1873CB501D68CAC2006244F3 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1873CB4F1D68CAC2006244F3 /* AVFoundation.framework */; };
-		1875C599172350AB00ADDB43 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1875C598172350AB00ADDB43 /* QTKit.framework */; };
+		18CD834F1D6CE344000842A3 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18CD834E1D6CE344000842A3 /* CoreVideo.framework */; };
+		18CD83511D6CE3F5000842A3 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18CD83501D6CE3F5000842A3 /* CoreMedia.framework */; };
 		1DDD58160DA1D0A300B32029 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1DDD58140DA1D0A300B32029 /* MainMenu.xib */; };
 		256AC3DA0F4B6AC300CF3369 /* Kemo_MoviemakerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 256AC3D90F4B6AC300CF3369 /* Kemo_MoviemakerAppDelegate.m */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
@@ -24,7 +25,8 @@
 		184DB8651277B00A00B1229A /* KemoMovieControll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KemoMovieControll.h; sourceTree = "<group>"; };
 		184DB8661277B00A00B1229A /* KemoMovieControll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KemoMovieControll.m; sourceTree = "<group>"; };
 		1873CB4F1D68CAC2006244F3 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		1875C598172350AB00ADDB43 /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = ../../../../../../../../System/Library/Frameworks/QTKit.framework; sourceTree = "<group>"; };
+		18CD834E1D6CE344000842A3 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		18CD83501D6CE3F5000842A3 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		1DDD58150DA1D0A300B32029 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		256AC3D80F4B6AC300CF3369 /* Kemo_MoviemakerAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Kemo_MoviemakerAppDelegate.h; sourceTree = "<group>"; };
 		256AC3D90F4B6AC300CF3369 /* Kemo_MoviemakerAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Kemo_MoviemakerAppDelegate.m; sourceTree = "<group>"; };
@@ -41,9 +43,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18CD83511D6CE3F5000842A3 /* CoreMedia.framework in Frameworks */,
+				18CD834F1D6CE344000842A3 /* CoreVideo.framework in Frameworks */,
 				1873CB501D68CAC2006244F3 /* AVFoundation.framework in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
-				1875C599172350AB00ADDB43 /* QTKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,8 +67,9 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				18CD83501D6CE3F5000842A3 /* CoreMedia.framework */,
+				18CD834E1D6CE344000842A3 /* CoreVideo.framework */,
 				1873CB4F1D68CAC2006244F3 /* AVFoundation.framework */,
-				1875C598172350AB00ADDB43 /* QTKit.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 			);
 			name = "Linked Frameworks";

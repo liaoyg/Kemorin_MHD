@@ -7,8 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import <QTKit/QTKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import <CoreVideo/CoreVideo.h>
+#import <CoreMedia/CoreMedia.h>
+
 
 @interface KemoMovieControll : NSObject {
 
@@ -18,8 +20,6 @@
 	NSInteger evolutionIncrement;
 	NSInteger evolutionFPS;
 	
-	QTMovie *mMovie;
-	IBOutlet QTMovieView *movieView;
 	IBOutlet NSProgressIndicator *progreessBar;
 	NSString *movieFileName;
 	NSString *movieFileHead;

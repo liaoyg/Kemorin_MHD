@@ -8,7 +8,6 @@
 
 #import "KemoMovieControll.h"
 
-
 @implementation KemoMovieControll
 @synthesize evolutionCurrentStep;
 @synthesize evolutionStartStep;
@@ -48,33 +47,6 @@
         }
     }
     return cgImage;
-}
-
--(void) ImageToQTMovie{
-	NSImage *anImage;
-	NSDictionary *movieDict = nil;
-	QTTime duration = QTMakeTime(1, self.evolutionFPS);
-	
-	// when adding images we must provide a dictionary
-	// specifying the codec attributes
-	movieDict = [NSDictionary dictionaryWithObjectsAndKeys:@"mp4v",
-				 QTAddImageCodecType,
-				 [NSNumber numberWithLong:codecMaxQuality],
-				 QTAddImageCodecQuality,
-				 nil];
-
-	anImage = [[NSImage alloc] initWithContentsOfFile:imageFileName];
-	// [anImage setFlipped:YES];
-	// [anImage lockFocusOnRepresentation:bmpRep]; // This will flip the rep.
-	// [anImage unlockFocus];
-	
-	// Adds an image for the specified duration to the QTMovie
-	[mMovie addImage:anImage forDuration:duration withAttributes:movieDict];
-	[mMovie updateMovieFile];
-	// free up our image object
-	/* deallocate memory*/
-	[anImage release];
-	return;
 }
 
 - (CVPixelBufferRef)pixelBufferFromCGImage:(CGImageRef)cgImage
@@ -204,18 +176,6 @@
     [videoWriter addInput:writerInput]; 
     
     // Create a QTMovie with a writable data reference
-/*
-    NSLog(@"EvolutionImageFileName: %@", movieFileName);
-	mMovie = [[QTMovie alloc] initToWritableFile:movieFileName error:&overWriteflag];
-	
-	if(overWriteflag!= NULL ){
-		NSFileManager *fman = [NSFileManager defaultManager];
-		[fman removeFileAtPath:movieFileName handler: nil ];
-		mMovie = [[QTMovie alloc] initToWritableFile:movieFileName error:NULL];
-	}
-	// mark the movie as editable
-	[mMovie setAttribute:[NSNumber numberWithBool:YES] forKey:QTMovieFlatten];
-*/
     [videoWriter startWriting];
     [videoWriter startSessionAtSourceTime:kCMTimeZero];
     // pixel bufferを宣言
@@ -227,8 +187,6 @@
     // 各画像の表示する時間
     int durationForEachImage = 1;
     
-    // FPS
-    int32_t fps = 24;
     [progreessBar setIndeterminate:NO];
     [progreessBar startAnimation:(id)pSender];
 	for (self.evolutionCurrentStep = self.evolutionStartStep; 
@@ -242,10 +200,10 @@
         [progreessBar displayIfNeeded];
         @autoreleasepool {
             if (!adaptor.assetWriterInput.readyForMoreMediaData) {break;}
-            CMTime frameTime = CMTimeMake((int64_t)frameCount * self.evolutionFPS * durationForEachImage, fps);
+            CMTime frameTime = CMTimeMake((int64_t)frameCount * self.evolutionFPS * durationForEachImage, self.evolutionFPS);
 
             NSImage *anImage = [[NSImage alloc] initWithContentsOfFile:imageFileName];
-            CGImageRef cgImage = [self ]NSImageToCGimageref:anImage];
+            CGImageRef cgImage = [self NSImageToCGimageref:anImage];
             buffer = [self pixelBufferFromCGImage:cgImage];
             if (![adaptor appendPixelBuffer:buffer withPresentationTime:frameTime]) {
                 // Error!
@@ -254,11 +212,18 @@
             frameCount++;
         }
 		};
-			[self ImageToQTMovie];
 	};
 	[progreessBar setDoubleValue:(double)self.evolutionStartStep];
 	[progreessBar displayIfNeeded];
-	[mMovie release];
+    
+    [writerInput markAsFinished];
+    [videoWriter endSessionAtSourceTime:CMTimeMake((int64_t)(frameCount - 1) * self.evolutionFPS * durationForEachImage, self.evolutionFPS)];
+    
+    [videoWriter finishWritingWithCompletionHandler:^{
+        // Finish!
+    }];
+    
+    CVPixelBufferPoolRelease(adaptor.pixelBufferPool);
 	return;
 }
 
