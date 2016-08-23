@@ -29,6 +29,7 @@
 -(CGImageRef) NSImageToCGimageref:(NSImage*)nsImage{
 //    NSString *path = /* Take a path to load the file ... */
 //    NSImage *nsImage = [[NSImage alloc] initWithContentsOfFile:path];
+    CGImageRef cgImage;
     if (nsImage != nil) {
         NSSize size = [nsImage size];
         uint32_t width = (uint32_t) size.width, height = (uint32_t) size.height, components = 4;
@@ -38,7 +39,7 @@
             CGContextRef bitmapContext = CGBitmapContextCreate(pixels, width, height, 8, components * width, colorSpace, kCGImageAlphaPremultipliedLast);
             NSRect rect = NSMakeRect(0, 0, width, height);
             NSGraphicsContext *graphicsContext = (NSGraphicsContext *) [[NSGraphicsContext currentContext] graphicsPort];
-            CGImageRef cgImage = [nsImage CGImageForProposedRect:&rect context:graphicsContext hints:nil];
+            cgImage = [nsImage CGImageForProposedRect:&rect context:graphicsContext hints:nil];
             CGContextDrawImage(bitmapContext, NSRectToCGRect(rect), cgImage);
             CGContextRelease(bitmapContext);
             CGColorSpaceRelease(colorSpace);
@@ -76,15 +77,15 @@
 	return;
 }
 
-- (CVPixelBufferRef)pixelBufferFromCGImage:(CGImageRef)image
+- (CVPixelBufferRef)pixelBufferFromCGImage:(CGImageRef)cgImage
 {
     NSDictionary *options = @{ (NSString *)kCVPixelBufferCGImageCompatibilityKey: @YES,
                                (NSString *)kCVPixelBufferCGBitmapContextCompatibilityKey: @YES, };
     
     CVPixelBufferRef pxbuffer = NULL;
     
-    CGFloat width  = CGImageGetWidth(image);
-    CGFloat height = CGImageGetHeight(image);
+    CGFloat width  = CGImageGetWidth(cgImage);
+    CGFloat height = CGImageGetHeight(cgImage);
     CVPixelBufferCreate(kCFAllocatorDefault,
                         width,
                         height,
@@ -106,7 +107,7 @@
                                                  rgbColorSpace,
                                                  (CGBitmapInfo)kCGImageAlphaNoneSkipFirst);
     
-    CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), cgImage);
     CGColorSpaceRelease(rgbColorSpace);
     CGContextRelease(context);
     
@@ -114,6 +115,8 @@
     
     return pxbuffer;
 }
+
+
 
 -(IBAction) SaveImageEvolution:(id)pSender
 {
@@ -238,16 +241,18 @@
         [progreessBar incrementBy:(double)self.evolutionIncrement];
         [progreessBar displayIfNeeded];
         @autoreleasepool {
-               if (!adaptor.assetWriterInput.readyForMoreMediaData) {break;}
-                CMTime frameTime = CMTimeMake((int64_t)frameCount * self.evolutionFPS * durationForEachImage, fps);
-     
-                buffer = [self pixelBufferFromCGImage:image.CGImage];
-                if (![adaptor appendPixelBuffer:buffer withPresentationTime:frameTime]) {
+            if (!adaptor.assetWriterInput.readyForMoreMediaData) {break;}
+            CMTime frameTime = CMTimeMake((int64_t)frameCount * self.evolutionFPS * durationForEachImage, fps);
+
+            NSImage *anImage = [[NSImage alloc] initWithContentsOfFile:imageFileName];
+            CGImageRef cgImage = [self ]NSImageToCGimageref:anImage];
+            buffer = [self pixelBufferFromCGImage:cgImage];
+            if (![adaptor appendPixelBuffer:buffer withPresentationTime:frameTime]) {
                 // Error!
-                }
-                if (buffer) {CVBufferRelease(buffer);}
-                frameCount++;
             }
+            if (buffer) {CVBufferRelease(buffer);}
+            frameCount++;
+        }
 		};
 			[self ImageToQTMovie];
 	};
