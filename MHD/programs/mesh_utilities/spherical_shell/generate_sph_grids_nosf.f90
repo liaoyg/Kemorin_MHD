@@ -7,6 +7,7 @@
 !
       use t_sph_trans_comm_tbl
       use t_spheric_parameter
+      use t_field_data_IO
 !
       use m_read_ctl_gen_sph_shell
       use m_spheric_global_ranks
@@ -23,6 +24,8 @@
 !
 !>      Structure of grid and spectr data for spherical spectr method
       type(sph_grids), save :: sph_const
+!>      Structure of file name and formats
+      type(field_IO_params), save :: sph_file_prm_const
 !>      Structure for parallel spherical mesh table
       type(sph_comm_tbl), allocatable :: comm_rlm_mul(:)
       type(sph_comm_tbl), allocatable :: comm_rtm_mul(:)
@@ -32,8 +35,7 @@
 !
       call read_control_4_gen_shell_grids
       call s_set_control_4_gen_shell_grids                              &
-     &   (sph_const%sph_params, sph_const%sph_rtp, sph_const%sph_rj,    &
-     &    ierr)
+     &   (sph_const, sph_file_prm_const, ierr)
       if(ierr .gt. 0) then
         write(*,'(a)') e_message
         stop
@@ -44,6 +46,8 @@
      &    sph_const%sph_params%m_folding,                               &
      &    sph_const%sph_rtp, sph_const%sph_rtm,                         &
      &    sph_const%sph_rlm, sph_const%sph_rj)
+!
+!  =========  Set global resolutions ===================================
 !
       call check_global_spheric_parameter                               &
      &   (sph_const%sph_params, sph_const%sph_rtp)
