@@ -7,13 +7,15 @@
 !>@brief  Routine for doimain data IO
 !!
 !!@verbatim
-!!      subroutine read_domain_info_b
-!!      subroutine read_import_data_b
-!!      subroutine read_export_data_b
+!!      subroutine read_domain_info_b(my_rank_IO, comm_IO)
+!!      subroutine read_import_data_b(comm_IO)
+!!      subroutine read_export_data_b(comm_IO)
+!!        type(communication_table), intent(inout) :: comm_IO
 !!
-!!      subroutine write_domain_info_b
-!!      subroutine write_import_data_b
-!!      subroutine write_export_data_b
+!!      subroutine write_domain_info_b(my_rank_IO, comm_IO)
+!!      subroutine write_import_data_b(comm_IO)
+!!      subroutine write_export_data_b(comm_IO)
+!!        type(communication_table), intent(inout) :: comm_IO
 !!@endverbatim
 !!
 !@param id_file file ID
@@ -22,7 +24,8 @@
 !
       use m_precision
 !
-      use m_comm_data_IO
+      use t_comm_table
+      use binary_IO
 !
       implicit none
 !
@@ -32,62 +35,63 @@
 !
 !------------------------------------------------------------------
 !
-      subroutine read_domain_info_b
+      subroutine read_domain_info_b(my_rank_IO, comm_IO)
 !
-      use binary_IO
+      integer(kind = kint), intent(inout) :: my_rank_IO
+      type(communication_table), intent(inout) :: comm_IO
 !
 !
-      call read_fld_inthead_b(my_rank_IO)
-      call read_fld_inthead_b(num_neib_domain_IO)
+      call read_one_integer_b(my_rank_IO)
+      call read_one_integer_b(comm_IO%num_neib)
 !
-      call allocate_neib_domain_IO
+      call allocate_type_neib_id(comm_IO)
 !
-      call read_fld_mul_inthead_b                                       &
-     &   (num_neib_domain_IO, id_neib_domain_IO)
+      call read_mul_integer_b(comm_IO%num_neib, comm_IO%id_neib)
 !
       end subroutine read_domain_info_b
 !
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
 !
-      subroutine read_import_data_b
+      subroutine read_import_data_b(comm_IO)
 !
-      use binary_IO
+      type(communication_table), intent(inout) :: comm_IO
 !
 !
-      call allocate_import_stack_IO
-      if (num_neib_domain_IO .gt. 0) then
+      call allocate_type_import_num(comm_IO)
+      if (comm_IO%num_neib .gt. 0) then
 !
-        call read_fld_intstack_b(num_neib_domain_IO,                    &
-     &      istack_import_IO, ntot_import_IO)
+        call read_integer_stack_b(comm_IO%num_neib,                     &
+     &      comm_IO%istack_import, comm_IO%ntot_import)
 !
-        call allocate_import_item_IO
-        call read_fld_mul_inthead_b(ntot_import_IO, item_import_IO)
-!
+        call allocate_type_import_item(comm_IO)
+        call read_mul_integer_b                                         &
+     &     (comm_IO%ntot_import, comm_IO%item_import)
       else
-        ntot_import_IO = 0
-        call allocate_import_item_IO
+        comm_IO%ntot_import = 0
+        call allocate_type_import_item(comm_IO)
       end if
 !
       end subroutine read_import_data_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine read_export_data_b
+      subroutine read_export_data_b(comm_IO)
 !
-      use binary_IO
+      type(communication_table), intent(inout) :: comm_IO
 !
 !
-      call allocate_export_stack_IO
-      if (num_neib_domain_IO .gt. 0) then
-        call read_fld_intstack_b(num_neib_domain_IO,                    &
-     &      istack_export_IO, ntot_export_IO)
+      call allocate_type_export_num(comm_IO)
+      if (comm_IO%num_neib .gt. 0) then
+        call read_integer_stack_b(comm_IO%num_neib,                     &
+     &      comm_IO%istack_export, comm_IO%ntot_export)
 !
-        call allocate_export_item_IO
-        call read_fld_mul_inthead_b(ntot_export_IO, item_export_IO)
+        call allocate_type_export_item(comm_IO)
+        call read_mul_integer_b                                         &
+     &     (comm_IO%ntot_export, comm_IO%item_export)
       else
-        ntot_export_IO = 0
-        call allocate_export_item_IO
+        comm_IO%ntot_export = 0
+        call allocate_type_export_item(comm_IO)
       end if
 !
       end subroutine read_export_data_b
@@ -95,47 +99,51 @@
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
 !
-      subroutine write_domain_info_b
+      subroutine write_domain_info_b(my_rank_IO, comm_IO)
 !
-      use binary_IO
+      integer(kind = kint), intent(in) :: my_rank_IO
+      type(communication_table), intent(inout) :: comm_IO
 !
 !
-      call write_fld_inthead_b(my_rank_IO)
-      call write_fld_inthead_b(num_neib_domain_IO)
+      call write_one_integer_b(my_rank_IO)
+      call write_one_integer_b(comm_IO%num_neib)
 !
-      call write_fld_mul_inthead_b                                      &
-     &   (num_neib_domain_IO, id_neib_domain_IO)
+      call write_mul_integer_b(comm_IO%num_neib, comm_IO%id_neib)
 !
-      call deallocate_neib_domain_IO
+      call deallocate_type_neib_id(comm_IO)
 !
       end subroutine write_domain_info_b
 !
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
 !
-      subroutine write_import_data_b
+      subroutine write_import_data_b(comm_IO)
 !
-      use binary_IO
+      type(communication_table), intent(inout) :: comm_IO
 !
 !
-      call write_fld_intstack_b(num_neib_domain_IO, istack_import_IO)
-      call write_fld_mul_inthead_b(ntot_import_IO, item_import_IO)
+      call write_integer_stack_b                                        &
+    &    (comm_IO%num_neib, comm_IO%istack_import)
+      call write_mul_integer_b                                          &
+    &    (comm_IO%ntot_import, comm_IO%item_import)
 !
-      call deallocate_import_item_IO
+      call deallocate_type_import(comm_IO)
 !
       end subroutine write_import_data_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine write_export_data_b
+      subroutine write_export_data_b(comm_IO)
 !
-      use binary_IO
+      type(communication_table), intent(inout) :: comm_IO
 !
 !
-      call write_fld_intstack_b(num_neib_domain_IO, istack_export_IO)
-      call write_fld_mul_inthead_b(ntot_export_IO, item_export_IO)
+      call write_integer_stack_b                                        &
+     &   (comm_IO%num_neib, comm_IO%istack_export)
+      call write_mul_integer_b                                          &
+     &   (comm_IO%ntot_export, comm_IO%item_export)
 !
-      call deallocate_export_item_IO
+      call deallocate_type_export(comm_IO)
 !
       end subroutine write_export_data_b
 !

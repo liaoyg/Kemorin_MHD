@@ -140,12 +140,12 @@
       type(filter_coefficients_type), intent(inout) :: IO_filters
 !
 !
-      call read_fld_inthead_b(IO_filters%ngrp_node)
+      call read_one_integer_b(IO_filters%ngrp_node)
       call alloc_num_filtering_comb(ione, IO_filters)
 !
-      call read_fld_intstack_b(IO_filters%ngrp_node,                    &
+      call read_integer_stack_b(IO_filters%ngrp_node,                   &
      &    IO_filters%istack_node, IO_filters%ntot_nod)
-      call read_fld_mul_charhead_b                                      &
+      call read_mul_character_b                                         &
      &   (IO_filters%ngrp_node, IO_filters%group_name)
 !
       call s_cal_numbers_from_stack(IO_filters%ngrp_node,               &
@@ -153,9 +153,9 @@
 !
       call alloc_inod_filter_comb(IO_filters)
 !
-      call read_fld_mul_inthead_b                                       &
+      call read_mul_integer_b                                           &
      &   (IO_filters%ntot_nod, IO_filters%inod_filter)
-      call read_fld_intstack_b(IO_filters%ntot_nod,                     &
+      call read_integer_stack_b(IO_filters%ntot_nod,                    &
      &   IO_filters%istack_near_nod, IO_filters%ntot_near_nod)
 !
       call s_cal_numbers_from_stack(IO_filters%ntot_nod,                &
@@ -168,18 +168,20 @@
 !
       subroutine read_filter_geometry_b
 !
+      use m_comm_data_IO
+      use m_read_mesh_data
       use domain_data_IO_b
       use mesh_data_IO_b
 !
 !
-      call read_domain_info_b
-      call read_number_of_node_b
-      call read_geometry_info_b
+      call read_domain_info_b(my_rank_IO, comm_IO)
+      call read_number_of_node_b(nod_IO)
+      call read_geometry_info_b(nod_IO)
 !
 ! ----  import & export 
 !
-      call read_import_data_b
-      call read_export_data_b
+      call read_import_data_b(comm_IO)
+      call read_export_data_b(comm_IO)
 !
       end subroutine read_filter_geometry_b
 !
@@ -195,11 +197,10 @@
       call alloc_3d_filter_comb(IO_filters)
       call alloc_3d_filter_func(IO_filters)
 !
-      call read_fld_mul_inthead_b                                      &
+      call read_mul_integer_b                                           &
      &  (IO_filters%ntot_near_nod, IO_filters%inod_near)
-      call read_fld_realarray_b                                        &
-     &  (IO_filters%ntot_near_nod, IO_filters%func)
-      call read_fld_realarray_b                                        &
+      call read_1d_vector_b(IO_filters%ntot_near_nod, IO_filters%func)
+      call read_1d_vector_b                                             &
      &  (IO_filters%ntot_near_nod, IO_filters%weight)
 !
       end subroutine read_3d_filter_weights_coef_b
@@ -209,16 +210,18 @@
 !
       subroutine write_filter_geometry_b
 !
+      use m_comm_data_IO
+      use m_read_mesh_data
       use mesh_data_IO_b
       use domain_data_IO_b
 !
 !
-      call write_domain_info_b
+      call write_domain_info_b(my_rank_IO, comm_IO)
 !
-      call write_geometry_info_b
+      call write_geometry_info_b(nod_IO)
 !
-      call write_import_data_b
-      call write_export_data_b
+      call write_import_data_b(comm_IO)
+      call write_export_data_b(comm_IO)
 !
       end subroutine write_filter_geometry_b
 !
@@ -231,15 +234,15 @@
       type(filter_coefficients_type), intent(in) :: IO_filters
 !
 !
-      call write_fld_inthead_b(IO_filters%ngrp_node)
-      call write_fld_intstack_b                                         &
+      call write_one_integer_b(IO_filters%ngrp_node)
+      call write_integer_stack_b                                        &
      &   (IO_filters%ngrp_node, IO_filters%istack_node)
-      call write_fld_mul_charhead_b                                     &
+      call write_mul_character_b                                        &
      &   (IO_filters%ngrp_node, IO_filters%group_name)
 !
-      call write_fld_mul_inthead_b                                      &
+      call write_mul_integer_b                                          &
      &   (IO_filters%ntot_nod, IO_filters%inod_filter)
-      call write_fld_intstack_b                                         &
+      call write_integer_stack_b                                        &
      &   (IO_filters%ntot_nod, IO_filters%istack_near_nod)
 !
       end subroutine write_3d_filter_stack_b
@@ -253,11 +256,10 @@
       type(filter_coefficients_type), intent(in) :: IO_filters
 !
 !
-      call write_fld_mul_inthead_b                                      &
+      call write_mul_integer_b                                          &
      &  (IO_filters%ntot_near_nod, IO_filters%inod_near)
-      call write_fld_realarray_b                                        &
-     &  (IO_filters%ntot_near_nod, IO_filters%func)
-      call write_fld_realarray_b                                        &
+      call write_1d_vector_b(IO_filters%ntot_near_nod, IO_filters%func)
+      call write_1d_vector_b                                            &
      &  (IO_filters%ntot_near_nod, IO_filters%weight)
 !
       end subroutine write_3d_filter_weights_coef_b

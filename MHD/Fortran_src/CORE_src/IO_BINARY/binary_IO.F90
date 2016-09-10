@@ -14,24 +14,24 @@
 !!      subroutine seek_forward_binary_file(len_byte)
 !!
 !!      subroutine write_endian_flag
-!!      subroutine write_fld_inthead_b(int_dat)
-!!      subroutine write_fld_realhead_b(real_dat)
-!!      subroutine write_fld_mul_i8head_b(num, int_gl_dat)
-!!      subroutine write_fld_mul_inthead_b(num, int_dat)
-!!      subroutine write_fld_intstack_b(num, istack)
-!!      subroutine write_fld_mul_charhead_b(num, chara_dat)
-!!      subroutine write_fld_realarray_b(num, real_dat)
-!!      subroutine write_fld_realarray2_b(n1, n2, real_dat)
+!!      subroutine write_one_integer_b(int_dat)
+!!      subroutine write_one_real_b(real_dat)
+!!      subroutine write_mul_int8_b(num, int_gl_dat)
+!!      subroutine write_mul_integer_b(num, int_dat)
+!!      subroutine write_integer_stack_b(num, istack)
+!!      subroutine write_mul_character_b(num, chara_dat)
+!!      subroutine write_1d_vector_b(num, real_dat)
+!!      subroutine write_2d_vector_b(n1, n2, real_dat)
 !!
 !!      subroutine read_endian_flag(my_rank)
-!!      subroutine read_fld_inthead_b(int_dat)
-!!      subroutine read_fld_realhead_b(real_dat)
-!!      subroutine read_fld_mul_i8head_b(num, int_gl_dat)
-!!      subroutine read_fld_mul_inthead_b(num, int_dat)
-!!      subroutine read_fld_intstack_b(num, istack, ntot)
-!!      subroutine read_fld_mul_charhead_b(num, chara_dat)
-!!      subroutine read_fld_realarray_b(num, real_dat)
-!!      subroutine read_fld_realarray2_b(n1, n2, real_dat)
+!!      subroutine read_one_integer_b(int_dat)
+!!      subroutine read_one_real_b(real_dat)
+!!      subroutine read_mul_int8_b(num, int_gl_dat)
+!!      subroutine read_mul_integer_b(num, int_dat)
+!!      subroutine read_integer_stack_b(num, istack, ntot)
+!!      subroutine read_mul_character_b(num, chara_dat)
+!!      subroutine read_1d_vector_b(num, real_dat)
+!!      subroutine read_2d_vector_b(n1, n2, real_dat)
 !!@endverbatim
 !
       module binary_IO
@@ -162,7 +162,7 @@
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine write_fld_inthead_b(int_dat)
+      subroutine write_one_integer_b(int_dat)
 !
       integer(kind = kint), intent(in) :: int_dat
 !
@@ -174,11 +174,11 @@
       write(id_binary)  int_dat
 #endif
 !
-      end subroutine write_fld_inthead_b
+      end subroutine write_one_integer_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine write_fld_realhead_b(real_dat)
+      subroutine write_one_real_b(real_dat)
 !
       real(kind = kreal), intent(in) :: real_dat
 !
@@ -190,12 +190,12 @@
       write(id_binary)  real_dat
 #endif
 !
-      end subroutine write_fld_realhead_b
+      end subroutine write_one_real_b
 !
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
 !
-      subroutine write_fld_mul_i8head_b(num, int_gl_dat)
+      subroutine write_mul_int8_b(num, int_gl_dat)
 !
       integer(kind = kint), intent(in) :: num
       integer(kind = kint_gl), intent(in) :: int_gl_dat(num)
@@ -211,11 +211,11 @@
       write(id_binary)  int_gl_dat(1:num)
 #endif
 !
-      end subroutine write_fld_mul_i8head_b
+      end subroutine write_mul_int8_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine write_fld_mul_inthead_b(num, int_dat)
+      subroutine write_mul_integer_b(num, int_dat)
 !
       integer(kind = kint), intent(in) :: num
       integer(kind = kint), intent(in) :: int_dat(num)
@@ -231,23 +231,23 @@
       write(id_binary)  int_dat(1:num)
 #endif
 !
-      end subroutine write_fld_mul_inthead_b
+      end subroutine write_mul_integer_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine write_fld_intstack_b(num, istack)
+      subroutine write_integer_stack_b(num, istack)
 !
       integer(kind = kint), intent(in) :: num
       integer(kind = kint), intent(in) :: istack(0:num)
 !
 !
-      call write_fld_mul_inthead_b(num, istack(1))
+      call write_mul_integer_b(num, istack(1))
 !
-      end subroutine write_fld_intstack_b
+      end subroutine write_integer_stack_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine write_fld_mul_charhead_b(num, chara_dat)
+      subroutine write_mul_character_b(num, chara_dat)
 !
       integer(kind = kint), intent(in) :: num
       character(len=kchara), intent(in) :: chara_dat(num)
@@ -263,11 +263,11 @@
       write(id_binary)  chara_dat(1:num)
 #endif
 !
-      end subroutine write_fld_mul_charhead_b
+      end subroutine write_mul_character_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine write_fld_realarray_b(num, real_dat)
+      subroutine write_1d_vector_b(num, real_dat)
 !
       integer(kind = kint), intent(in) :: num
       real(kind = kreal), intent(in) :: real_dat(num)
@@ -283,11 +283,11 @@
       write(id_binary)  real_dat(1:num)
 #endif
 !
-      end subroutine write_fld_realarray_b
+      end subroutine write_1d_vector_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine write_fld_realarray2_b(n1, n2, real_dat)
+      subroutine write_2d_vector_b(n1, n2, real_dat)
 !
       integer(kind = kint), intent(in) :: n1, n2
       real(kind = kreal), intent(in) :: real_dat(n1,n2)
@@ -303,7 +303,7 @@
       write(id_binary)  real_dat(1:n1,1:n2)
 #endif
 !
-      end subroutine write_fld_realarray2_b
+      end subroutine write_2d_vector_b
 !
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
@@ -336,7 +336,7 @@
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine read_fld_inthead_b(int_dat)
+      subroutine read_one_integer_b(int_dat)
 !
       integer(kind = kint), intent(inout) :: int_dat
 !
@@ -347,11 +347,11 @@
       read(id_binary)  int_dat
 #endif
 !
-      end subroutine read_fld_inthead_b
+      end subroutine read_one_integer_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine read_fld_realhead_b(real_dat)
+      subroutine read_one_real_b(real_dat)
 !
       real(kind = kreal), intent(inout) :: real_dat
 !
@@ -362,12 +362,12 @@
       read(id_binary)  real_dat
 #endif
 !
-      end subroutine read_fld_realhead_b
+      end subroutine read_one_real_b
 !
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
 !
-      subroutine read_fld_mul_i8head_b(num, int_gl_dat)
+      subroutine read_mul_int8_b(num, int_gl_dat)
 !
       integer(kind = kint), intent(in) :: num
       integer(kind = kint_gl), intent(inout) :: int_gl_dat(num)
@@ -383,11 +383,11 @@
       read(id_binary)  int_gl_dat(1:num)
 #endif
 !
-      end subroutine read_fld_mul_i8head_b
+      end subroutine read_mul_int8_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine read_fld_mul_inthead_b(num, int_dat)
+      subroutine read_mul_integer_b(num, int_dat)
 !
       integer(kind = kint), intent(in) :: num
       integer(kind = kint), intent(inout) :: int_dat(num)
@@ -403,11 +403,11 @@
       read(id_binary)  int_dat(1:num)
 #endif
 !
-      end subroutine read_fld_mul_inthead_b
+      end subroutine read_mul_integer_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine read_fld_intstack_b(num, istack, ntot)
+      subroutine read_integer_stack_b(num, istack, ntot)
 !
       integer(kind = kint), intent(in) :: num
       integer(kind = kint), intent(inout) :: ntot
@@ -415,14 +415,14 @@
 !
 !
       istack(0) = 0
-      call read_fld_mul_inthead_b(num, istack(1))
+      call read_mul_integer_b(num, istack(1))
       ntot = istack(num)
 !
-      end subroutine read_fld_intstack_b
+      end subroutine read_integer_stack_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine read_fld_mul_charhead_b(num, chara_dat)
+      subroutine read_mul_character_b(num, chara_dat)
 !
       integer(kind = kint), intent(in) :: num
       character(len=kchara), intent(inout) :: chara_dat(num)
@@ -438,11 +438,11 @@
       read(id_binary)  chara_dat(1:num)
 #endif
 !
-      end subroutine read_fld_mul_charhead_b
+      end subroutine read_mul_character_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine read_fld_realarray_b(num, real_dat)
+      subroutine read_1d_vector_b(num, real_dat)
 !
       integer(kind = kint), intent(in) :: num
       real(kind = kreal), intent(inout) :: real_dat(num)
@@ -458,11 +458,11 @@
       read(id_binary)  real_dat(1:num)
 #endif
 !
-      end subroutine read_fld_realarray_b
+      end subroutine read_1d_vector_b
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine read_fld_realarray2_b(n1, n2, real_dat)
+      subroutine read_2d_vector_b(n1, n2, real_dat)
 !
       integer(kind = kint), intent(in) :: n1, n2
       real(kind = kreal), intent(inout) :: real_dat(n1,n2)
@@ -478,7 +478,7 @@
       read(id_binary)  real_dat(1:n1,1:n2)
 #endif
 !
-      end subroutine read_fld_realarray2_b
+      end subroutine read_2d_vector_b
 !
 ! -----------------------------------------------------------------------
 !

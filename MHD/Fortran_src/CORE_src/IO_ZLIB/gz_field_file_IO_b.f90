@@ -24,6 +24,7 @@
       use m_time_data_IO
       use t_field_data_IO
       use gz_field_data_IO_b
+      use gz_binary_IO
       use skip_gz_comment
 !
       implicit none
@@ -74,7 +75,7 @@
       call gz_read_step_data_b                                          &
      &   (my_rank, istack_merged, fld_IO%num_field_IO)
 !
-      call gz_read_fld_mul_inthead_b                                    &
+      call gz_read_mul_integer_b                                        &
      &   (fld_IO%num_field_IO, fld_IO%num_comp_IO)
 !
       call gz_read_field_data_b                                         &
@@ -105,7 +106,7 @@
      &   (my_rank, istack_merged, fld_IO%num_field_IO)
 !
       call alloc_phys_name_IO(fld_IO)
-      call gz_read_fld_mul_inthead_b                                    &
+      call gz_read_mul_integer_b                                        &
      &   (fld_IO%num_field_IO, fld_IO%num_comp_IO)
 !
       fld_IO%nnod_IO = int(istack_merged(1))
@@ -139,7 +140,7 @@
      &   (my_rank, istack_merged, fld_IO%num_field_IO)
 !
       call alloc_phys_name_IO(fld_IO)
-      call gz_read_fld_mul_inthead_b                                    &
+      call gz_read_mul_integer_b                                        &
      &   (fld_IO%num_field_IO, fld_IO%num_comp_IO)
 !
       call close_gzfile_f

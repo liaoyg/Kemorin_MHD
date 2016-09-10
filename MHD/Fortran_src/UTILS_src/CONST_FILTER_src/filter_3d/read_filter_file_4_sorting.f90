@@ -111,8 +111,8 @@
         call close_binary_file
       end if
 !
-      call deallocate_node_data_dummy
-      call deallocate_comm_item_IO
+      call dealloc_node_geometry_base(nod_IO)
+      call deallocate_type_comm_tbl(comm_IO)
       call deallocate_nod_ele_near_1nod
 !
       end subroutine s_read_filter_file_4_sorting

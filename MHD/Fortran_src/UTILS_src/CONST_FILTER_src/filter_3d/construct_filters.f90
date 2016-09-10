@@ -275,8 +275,8 @@
 !
         call open_read_binary_file(file_name, my_rank)
         call read_filter_geometry_b
-        call deallocate_node_data_dummy
-        call deallocate_comm_item_IO
+        call dealloc_node_geometry_base(nod_IO)
+        call deallocate_type_comm_tbl(comm_IO)
       end if
 !
 !
@@ -377,8 +377,8 @@
 !
         call open_read_binary_file(file_name, my_rank)
         call read_filter_geometry_b
-        call deallocate_node_data_dummy
-        call deallocate_comm_item_IO
+        call dealloc_node_geometry_base(nod_IO)
+        call deallocate_type_comm_tbl(comm_IO)
       end if
 !
 !  ---------------------------------------------------

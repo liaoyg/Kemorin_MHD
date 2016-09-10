@@ -40,11 +40,11 @@
       integer(kind=kint), intent(in) :: id_rank
 !
 !
-      call write_fld_inthead_b(id_rank)
-      call write_fld_inthead_b(i_time_step_IO)
+      call write_one_integer_b(id_rank)
+      call write_one_integer_b(i_time_step_IO)
 !
-      call write_fld_realhead_b(time_IO)
-      call write_fld_realhead_b(delta_t_IO)
+      call write_one_real_b(time_IO)
+      call write_one_real_b(delta_t_IO)
 !
       end subroutine write_step_data_b
 !
@@ -64,12 +64,12 @@
 !
 !
       istack_merged(1) = nnod
-      call write_fld_mul_i8head_b(ione, istack_merged)
-      call write_fld_inthead_b(num_field)
-      call write_fld_mul_inthead_b(num_field, ncomp_field)
+      call write_mul_int8_b(ione, istack_merged)
+      call write_one_integer_b(num_field)
+      call write_mul_integer_b(num_field, ncomp_field)
 !
-      call write_fld_mul_charhead_b(num_field, field_name)
-      call write_fld_realarray2_b(nnod, ntot_comp, d_nod)
+      call write_mul_character_b(num_field, field_name)
+      call write_2d_vector_b(nnod, ntot_comp, d_nod)
 !
       end subroutine write_field_data_b
 !
@@ -84,13 +84,13 @@
       integer(kind = kint) :: id_rank
 !
 !
-      call read_fld_inthead_b(id_rank)
-      call read_fld_inthead_b(i_time_step_IO)
-      call read_fld_realhead_b(time_IO)
-      call read_fld_realhead_b(delta_t_IO)
+      call read_one_integer_b(id_rank)
+      call read_one_integer_b(i_time_step_IO)
+      call read_one_real_b(time_IO)
+      call read_one_real_b(delta_t_IO)
 !
-      call read_fld_mul_i8head_b(ione, istack_merged)
-      call read_fld_inthead_b(num_field)
+      call read_mul_int8_b(ione, istack_merged)
+      call read_one_integer_b(num_field)
 !
       end subroutine read_step_data_b
 !
@@ -106,8 +106,8 @@
       real(kind = kreal), intent(inout) :: vect(nnod,ntot_comp)
 !
 !
-      call read_fld_mul_charhead_b(num_field, field_name)
-      call read_fld_realarray2_b(nnod, ntot_comp, vect)
+      call read_mul_character_b(num_field, field_name)
+      call read_2d_vector_b(nnod, ntot_comp, vect)
 !
       end subroutine read_field_data_b
 !
