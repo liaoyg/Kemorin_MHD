@@ -10,8 +10,6 @@
 !!      subroutine gz_write_fld_vecotr_mpi                              &
 !!     &         (id_fld, ioff_gl, nnod, ndir, vector)
 !!      subroutine gz_write_fld_header_mpi(id_fld, ioff_gl, header_txt)
-!!      subroutine gz_read_fld_vecotr_mpi                               &
-!!     &         (nprocs_in, id_rank, nnod, ndir, vector, istack_merged)
 !!
 !!      integer(kind = kint) function  gz_defleat_vector_txt            &
 !!     &                   (nnod, ndir, vector, ilen_gz, buffer)
@@ -21,8 +19,7 @@
 !!      subroutine gz_read_fld_1word_mpi(id_fld, ioff_gl, field_name)
 !!      subroutine gz_read_each_field_mpi(id_fld, nprocs_in, id_rank,   &
 !!     &          ioff_gl, nnod, ndir, vector)
-!!      subroutine gz_skip_each_field_mpi                               &
-!!     &         (id_fld, nprocs_in, id_rank, ioff_gl)
+!!      subroutine gz_skip_each_field_mpi(id_fld, nprocs_in, ioff_gl)
 !!@endverbatim
 !
       module gz_field_data_MPI_IO
@@ -52,7 +49,6 @@
 !
       integer, intent(in) ::  id_fld
 !
-      real(kind = kreal) :: v1(ndir)
       integer(kind = kint) :: ilen_gz, ilen_gzipped, ilength, ip
       integer(kind = kint) :: ilen_gzipped_gl(nprocs)
       integer(kind = kint_gl) :: istack_buffer(0:nprocs)
@@ -60,7 +56,6 @@
       character(len=1), allocatable :: gzip_buf(:)
 !
 !
-      v1(1:ndir) = 0.0d0
       ilength = len_each_field_data_buf(ndir)
       ilen_gz = int(real(nnod*ilength) * 1.01) + 24
       allocate(gzip_buf(ilen_gz))
@@ -121,34 +116,6 @@
       ioff_gl = ioff_gl + ilen_gzipped
 !
       end subroutine gz_write_fld_header_mpi
-!
-! -----------------------------------------------------------------------
-!
-      subroutine gz_read_fld_vecotr_mpi                                 &
-     &         (nprocs_in, id_rank, nnod, ndir, vector, istack_merged)
-!
-      use gz_field_data_IO
-      use skip_gz_comment
-!
-      integer(kind = kint_gl), intent(in) :: istack_merged(0:nprocs_in)
-      integer(kind = kint), intent(in) :: nprocs_in, id_rank
-      integer(kind = kint), intent(in) :: nnod, ndir
-      real(kind = kreal), intent(inout) :: vector(nnod,ndir)
-!
-      integer(kind = kint_gl) :: i
-!
-!
-      do i = 1, istack_merged(id_rank)
-        call get_one_line_from_gz_f
-      end do
-!
-      call read_gz_field_vect(nnod, ndir, vector)
-!
-      do i = istack_merged(id_rank+1)+1, istack_merged(nprocs_in)
-        call get_one_line_from_gz_f
-      end do
-!
-      end subroutine gz_read_fld_vecotr_mpi
 !
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
@@ -318,16 +285,19 @@
      &    izero, CALYPSO_COMM, ierr_MPI)
 !
 !
-      if(id_rank .ge. nprocs_in) return
+      if(id_rank .ge. nprocs_in) then
+        ioff_gl = ioff_gl + istack_buf(nprocs_in)
+        return
+      end if
 !
       ilen_gz = int(istack_buf(id_rank+1) - istack_buf(id_rank))
       ilength = len(textbuf_d)
       allocate(gzip_buf(ilen_gz))
 !
       ioffset = ioff_gl + istack_buf(id_rank)
+      ioff_gl = ioff_gl + istack_buf(nprocs_in)
       call calypso_mpi_seek_read_gz                                     &
      &         (id_fld, ioffset, ilen_gz, gzip_buf(1))
-      ioff_gl = ioff_gl + istack_buf(nprocs_in)
 !
       if(nnod .eq. 1) then
         call gzip_infleat_once                                          &
@@ -356,14 +326,13 @@
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine gz_skip_each_field_mpi                                 &
-     &         (id_fld, nprocs_in, id_rank, ioff_gl)
+      subroutine gz_skip_each_field_mpi(id_fld, nprocs_in, ioff_gl)
 !
       use field_data_IO
 !
       integer, intent(in) ::  id_fld
       integer(kind = kint_gl), intent(inout) :: ioff_gl
-      integer(kind = kint), intent(in) :: nprocs_in, id_rank
+      integer(kind = kint), intent(in) :: nprocs_in
 !
       integer(kind = kint) :: ilength
 !
@@ -378,8 +347,6 @@
      &   (id_fld, ioff_gl, ilength, textbuf_c)
       call read_bufer_istack_nod_buffer                                 &
      &   (textbuf_c, nprocs_in, istack_buf)
-!
-      if(id_rank .ge. nprocs_in) return
 !
       ioff_gl = ioff_gl + istack_buf(nprocs_in)
 !

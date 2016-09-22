@@ -22,6 +22,7 @@
       subroutine s_input_ctl_filter_comm_test(filtering, wk_filter)
 !
       use calypso_mpi
+      use t_filter_file_data
       use t_filtering_data
       use m_machine_parameter
       use m_ctl_data_filter_comm_test
@@ -34,7 +35,10 @@
 !
       type(filtering_data_type), intent(inout) :: filtering
       type(filtering_work_type), intent(inout) :: wk_filter
+!
+      type(filter_file_data) :: filter_IO_t
       character(len=kchara) :: file_name
+      integer(kind = kint) :: ierr
 !
 !
       if (iflag_debug.eq.1) write(*,*) 'read_control_filter_comm_test'
@@ -47,11 +51,17 @@
 !
       if (iflag_debug.eq.1) write(*,*) 'read_filter_geometry_file'
       filter_file_head = filter_3d_head
-      call read_filter_geometry_file(file_name, my_rank)
+      call read_filter_geometry_file                                    &
+     &   (file_name, my_rank, filter_IO_t, ierr)
+      if(ierr .gt. 0) then
+        call calypso_mpi_abort(ierr, 'Filter geometry data is wrong!!')
+      end if
 !
       if (iflag_debug.eq.1) write(*,*) 'copy_filter_comm_tbl_from_IO'
-      call copy_comm_tbl_type_from_IO(filtering%comm)
-      call copy_filtering_geometry_from_IO
+      call copy_filtering_geometry_from_IO(filter_IO_t%node)
+      call copy_comm_tbl_type(filter_IO_t%nod_comm, filtering%comm)
+      call dealloc_node_geometry_base(filter_IO_t%node)
+      call deallocate_type_comm_tbl(filter_IO_t%nod_comm)
 !
       call alloc_nod_data_4_filter(nnod_filtering, wk_filter)
 !

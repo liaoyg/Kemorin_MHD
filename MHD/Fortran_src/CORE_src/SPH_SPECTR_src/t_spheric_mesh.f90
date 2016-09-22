@@ -13,6 +13,8 @@
       use t_spheric_parameter
       use t_sph_trans_comm_tbl
       use t_group_data
+      use t_node_id_spherical_IO
+      use t_comm_table
 !
       implicit none
 !
@@ -35,6 +37,7 @@
       end type sph_group_data
 !
 !
+!> Structure of spherical transform mesh information
       type sph_mesh_data
 !>         spherical harmonics indexing data
         type(sph_grids) ::       sph
@@ -43,6 +46,5 @@
 !>         grouping data for harmonics indices
         type(sph_group_data) ::  sph_grps
       end type sph_mesh_data
-!
 !
       end module t_spheric_mesh

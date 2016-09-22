@@ -8,36 +8,36 @@
 !!
 !!@verbatim
 !!      subroutine gz_mpi_read_geom_rtp_data_b                          &
-!!     &         (id_file, nprocs_in, id_rank, ioff_gl)
+!!     &         (IO_param, comm_IO, sph_IO, sph_grps_IO)
 !!      subroutine gz_mpi_read_spectr_rj_data_b                         &
-!!     &         (id_file, nprocs_in, id_rank, ioff_gl)
+!!     &         (IO_param, comm_IO, sph_IO, sph_grps_IO)
 !!      subroutine gz_mpi_read_geom_rtm_data_b                          &
-!!     &         (id_file, nprocs_in, id_rank, ioff_gl)
+!!     &         (IO_param, comm_IO, sph_IO)
 !!      subroutine gz_mpi_read_modes_rlm_data_b                         &
-!!     &         (id_file, nprocs_in, id_rank, ioff_gl)
+!!     &         (IO_param, comm_IO, sph_IO)
 !!
 !!      subroutine gz_mpi_write_geom_rtp_data_b                         &
-!!     &         (id_file, nprocs_in, ioff_gl)
+!!     &         (IO_param, comm_IO, sph_IO, sph_grps_IO)
 !!      subroutine gz_mpi_write_spectr_rj_data_b                        &
-!!     &         (id_file, nprocs_in, ioff_gl)
+!!     &         (IO_param, comm_IO, sph_IO, sph_grps_IO)
 !!      subroutine gz_mpi_write_geom_rtm_data_b                         &
-!!     &         (id_file, nprocs_in, ioff_gl)
+!!     &         (IO_param, comm_IO, sph_IO)
 !!      subroutine gz_mpi_write_modes_rlm_data_b                        &
-!!     &         (id_file, nprocs_in, ioff_gl)
+!!     &         (IO_param, comm_IO, sph_IO)
+!!        type(communication_table), intent(inout) :: comm_IO
+!!        type(sph_IO_data), intent(inout) :: sph_IO
+!!        type(sph_group_data), intent(inout) :: sph_grps_IO
 !!@endverbatim
-!!
-!!@param nprocs_in  Number of subdomain
-!!@param id_rank    Domain ID
-!!@param file_name  file name for IO (.gz is appended in this module)
 !
       module gz_MPI_sph_modes_data_IO_b
 !
       use m_precision
       use m_machine_parameter
 !
-      use m_comm_data_IO
-      use m_node_id_spherical_IO
-      use m_group_data_sph_specr_IO
+      use t_comm_table
+      use t_node_id_spherical_IO
+      use t_spheric_mesh
+      use t_calypso_mpi_IO_param
       use gz_MPI_domain_data_IO_b
       use gz_MPI_spherical_model_IO_b
       use gz_MPI_sph_gl_1d_idx_IO_b
@@ -53,127 +53,108 @@
 !------------------------------------------------------------------
 !
       subroutine gz_mpi_read_geom_rtp_data_b                            &
-     &         (id_file, nprocs_in, id_rank, ioff_gl)
+     &         (IO_param, comm_IO, sph_IO, sph_grps_IO)
 !
-      integer, intent(in) ::  id_file
-      integer(kind=kint), intent(in) :: id_rank, nprocs_in
-      integer(kind = kint_gl), intent(inout) :: ioff_gl
+      type(calypso_MPI_IO_params), intent(inout) :: IO_param
+!
+      type(communication_table), intent(inout) :: comm_IO
+      type(sph_IO_data), intent(inout) :: sph_IO
+      type(sph_group_data), intent(inout) :: sph_grps_IO
 !
 !
-      sph_IO1%numdir_sph =  3
+      sph_IO%numdir_sph =  3
 !
-      call gz_mpi_read_domain_info_b                                    &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, comm_IO)
-      call gz_mpi_read_gl_reso_sph_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_read_rank_4_sph_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
-      call gz_mpi_read_rtp_gl_1d_table_b                                &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
+      call gz_mpi_read_domain_info_b(IO_param, comm_IO)
+      call gz_mpi_read_gl_reso_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_rank_4_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_rtp_gl_1d_table_b(IO_param, sph_IO)
 !
-      call gz_mpi_read_gl_nodes_sph_b                                   &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
-      call gz_mpi_read_import_data_b                                    &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, comm_IO)
+      call gz_mpi_read_gl_nodes_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_import_data_b(IO_param, comm_IO)
 !
       call gz_mpi_read_group_data_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_grp_IO%bc_rtp_grp)
+     &   (IO_param, sph_grps_IO%bc_rtp_grp)
       call gz_mpi_read_group_data_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl,                         &
-     &    sph_grp_IO%radial_rtp_grp)
+     &   (IO_param, sph_grps_IO%radial_rtp_grp)
       call gz_mpi_read_group_data_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl,                         &
-     &    sph_grp_IO%theta_rtp_grp)
+     &   (IO_param, sph_grps_IO%theta_rtp_grp)
       call gz_mpi_read_group_data_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl,                         &
-     &    sph_grp_IO%zonal_rtp_grp)
+     &   (IO_param, sph_grps_IO%zonal_rtp_grp)
 !
       end subroutine gz_mpi_read_geom_rtp_data_b
 !
 !------------------------------------------------------------------
 !
       subroutine gz_mpi_read_spectr_rj_data_b                           &
-     &         (id_file, nprocs_in, id_rank, ioff_gl)
+     &         (IO_param, comm_IO, sph_IO, sph_grps_IO)
 !
-      integer, intent(in) ::  id_file
-      integer(kind=kint), intent(in) :: id_rank, nprocs_in
-      integer(kind = kint_gl), intent(inout) :: ioff_gl
+      type(calypso_MPI_IO_params), intent(inout) :: IO_param
+!
+      type(communication_table), intent(inout) :: comm_IO
+      type(sph_IO_data), intent(inout) :: sph_IO
+      type(sph_group_data), intent(inout) :: sph_grps_IO
 !
 !
-      sph_IO1%numdir_sph =  2
+      sph_IO%numdir_sph =  2
 !
-      call gz_mpi_read_domain_info_b                                    &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, comm_IO)
-      call gz_mpi_read_gl_reso_sph_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_read_rank_4_sph_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
-      call gz_mpi_read_rj_gl_1d_table_b                                 &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
+      call gz_mpi_read_domain_info_b(IO_param, comm_IO)
+      call gz_mpi_read_gl_reso_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_rank_4_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_rj_gl_1d_table_b(IO_param, sph_IO)
 !
-      call gz_mpi_read_gl_nodes_sph_b                                   &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
-      call gz_mpi_read_import_data_b                                    &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, comm_IO)
+      call gz_mpi_read_gl_nodes_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_import_data_b(IO_param, comm_IO)
 !
       call gz_mpi_read_group_data_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl,                         &
-     &    sph_grp_IO%radial_rj_grp)
+     &   (IO_param, sph_grps_IO%radial_rj_grp)
       call gz_mpi_read_group_data_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl,                         &
-     &    sph_grp_IO%sphere_rj_grp)
+     &   (IO_param, sph_grps_IO%sphere_rj_grp)
 !
       end subroutine gz_mpi_read_spectr_rj_data_b
 !
 !------------------------------------------------------------------
 !
       subroutine gz_mpi_read_geom_rtm_data_b                            &
-     &         (id_file, nprocs_in, id_rank, ioff_gl)
+     &         (IO_param, comm_IO, sph_IO)
 !
-      integer, intent(in) ::  id_file
-      integer(kind=kint), intent(in) :: id_rank, nprocs_in
-      integer(kind = kint_gl), intent(inout) :: ioff_gl
+      type(calypso_MPI_IO_params), intent(inout) :: IO_param
+!
+      type(communication_table), intent(inout) :: comm_IO
+      type(sph_IO_data), intent(inout) :: sph_IO
 !
 !
-      sph_IO1%numdir_sph =  3
+      sph_IO%numdir_sph =  3
 !
-      call gz_mpi_read_domain_info_b                                    &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, comm_IO)
-      call gz_mpi_read_gl_reso_sph_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_read_rank_4_sph_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
-      call gz_mpi_read_rtp_gl_1d_table_b                                &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
+      call gz_mpi_read_domain_info_b(IO_param, comm_IO)
+      call gz_mpi_read_gl_reso_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_rank_4_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_rtp_gl_1d_table_b(IO_param, sph_IO)
 !
-      call gz_mpi_read_gl_nodes_sph_b                                   &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
-      call gz_mpi_read_import_data_b                                    &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, comm_IO)
+      call gz_mpi_read_gl_nodes_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_import_data_b(IO_param, comm_IO)
 !
       end subroutine gz_mpi_read_geom_rtm_data_b
 !
 !------------------------------------------------------------------
 !
       subroutine gz_mpi_read_modes_rlm_data_b                           &
-     &         (id_file, nprocs_in, id_rank, ioff_gl)
+     &         (IO_param, comm_IO, sph_IO)
 !
-      integer, intent(in) ::  id_file
-      integer(kind=kint), intent(in) :: id_rank, nprocs_in
-      integer(kind = kint_gl), intent(inout) :: ioff_gl
+      type(calypso_MPI_IO_params), intent(inout) :: IO_param
+!
+      type(communication_table), intent(inout) :: comm_IO
+      type(sph_IO_data), intent(inout) :: sph_IO
 !
 !
-      sph_IO1%numdir_sph =  2
+      sph_IO%numdir_sph =  2
 !
-      call gz_mpi_read_domain_info_b                                    &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, comm_IO)
-      call gz_mpi_read_gl_reso_sph_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_read_rank_4_sph_b                                     &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
-      call gz_mpi_read_rj_gl_1d_table_b                                 &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
+      call gz_mpi_read_domain_info_b(IO_param, comm_IO)
+      call gz_mpi_read_gl_reso_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_rank_4_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_rj_gl_1d_table_b(IO_param, sph_IO)
 !
-      call gz_mpi_read_gl_nodes_sph_b                                   &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, sph_IO1)
-      call gz_mpi_read_import_data_b                                    &
-     &   (id_file, nprocs_in, id_rank, ioff_gl, comm_IO)
+      call gz_mpi_read_gl_nodes_sph_b(IO_param, sph_IO)
+      call gz_mpi_read_import_data_b(IO_param, comm_IO)
 !
       end subroutine gz_mpi_read_modes_rlm_data_b
 !
@@ -181,102 +162,104 @@
 !------------------------------------------------------------------
 !
       subroutine gz_mpi_write_geom_rtp_data_b                           &
-     &         (id_file, nprocs_in, ioff_gl)
+     &         (IO_param, comm_IO, sph_IO, sph_grps_IO)
 !
-      integer, intent(in) ::  id_file
-      integer(kind=kint), intent(in) :: nprocs_in
-      integer(kind = kint_gl), intent(inout) :: ioff_gl
+      type(calypso_MPI_IO_params), intent(inout) :: IO_param
+!
+      type(communication_table), intent(inout) :: comm_IO
+      type(sph_IO_data), intent(inout) :: sph_IO
+      type(sph_group_data), intent(inout) :: sph_grps_IO
 !
 !
-      call gz_mpi_write_domain_info_b                                   &
-     &   (id_file, nprocs_in, ioff_gl, comm_IO)
-      call gz_mpi_write_gl_reso_sph_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_write_rank_4_sph_b(id_file, ioff_gl, sph_IO1)
+      call gz_mpi_write_domain_info_b(IO_param, comm_IO)
+      call gz_mpi_write_gl_reso_sph_b(IO_param, sph_IO)
+      call gz_mpi_write_rank_4_sph_b(IO_param, sph_IO)
 !
-      call gz_mpi_write_rtp_gl_1d_table_b(id_file, ioff_gl, sph_IO1)
+      call gz_mpi_write_rtp_gl_1d_table_b(IO_param, sph_IO)
+      call gz_mpi_write_gl_nodes_sph_b(IO_param, sph_IO)
 !
-      call gz_mpi_write_gl_nodes_sph_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_write_import_data_b(id_file, ioff_gl, comm_IO)
+      call gz_mpi_write_import_data_b(IO_param, comm_IO)
 !
-      call gz_mpi_write_grp_data_b(id_file, ioff_gl,                    &
-     &    sph_grp_IO%bc_rtp_grp)
-      call gz_mpi_write_grp_data_b(id_file, ioff_gl,                    &
-     &    sph_grp_IO%radial_rtp_grp)
-      call gz_mpi_write_grp_data_b(id_file, ioff_gl,                    &
-     &    sph_grp_IO%theta_rtp_grp)
-      call gz_mpi_write_grp_data_b(id_file, ioff_gl,                    &
-     &    sph_grp_IO%zonal_rtp_grp)
+      call gz_mpi_write_grp_data_b                                      &
+     &   (IO_param, sph_grps_IO%bc_rtp_grp)
+      call gz_mpi_write_grp_data_b                                      &
+     &   (IO_param, sph_grps_IO%radial_rtp_grp)
+      call gz_mpi_write_grp_data_b                                      &
+     &   (IO_param, sph_grps_IO%theta_rtp_grp)
+      call gz_mpi_write_grp_data_b                                      &
+     &   (IO_param, sph_grps_IO%zonal_rtp_grp)
 !
       end subroutine gz_mpi_write_geom_rtp_data_b
 !
 !------------------------------------------------------------------
 !
       subroutine gz_mpi_write_spectr_rj_data_b                          &
-     &         (id_file, nprocs_in, ioff_gl)
+     &         (IO_param, comm_IO, sph_IO, sph_grps_IO)
 !
-      integer, intent(in) ::  id_file
-      integer(kind=kint), intent(in) :: nprocs_in
-      integer(kind = kint_gl), intent(inout) :: ioff_gl
+      type(calypso_MPI_IO_params), intent(inout) :: IO_param
+!
+      type(communication_table), intent(inout) :: comm_IO
+      type(sph_IO_data), intent(inout) :: sph_IO
+      type(sph_group_data), intent(inout) :: sph_grps_IO
 !
 !
-      call gz_mpi_write_domain_info_b                                   &
-     &   (id_file, nprocs_in, ioff_gl, comm_IO)
-      call gz_mpi_write_gl_reso_sph_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_write_rank_4_sph_b(id_file, ioff_gl, sph_IO1)
+      call gz_mpi_write_domain_info_b(IO_param, comm_IO)
+      call gz_mpi_write_gl_reso_sph_b(IO_param, sph_IO)
+      call gz_mpi_write_rank_4_sph_b(IO_param, sph_IO)
 !
-      call gz_mpi_write_rj_gl_1d_table_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_write_gl_nodes_sph_b(id_file, ioff_gl, sph_IO1)
+      call gz_mpi_write_rj_gl_1d_table_b(IO_param, sph_IO)
+      call gz_mpi_write_gl_nodes_sph_b(IO_param, sph_IO)
 !
-      call gz_mpi_write_import_data_b(id_file, ioff_gl, comm_IO)
+      call gz_mpi_write_import_data_b(IO_param, comm_IO)
 !
-      call gz_mpi_write_grp_data_b(id_file, ioff_gl,                    &
-     &    sph_grp_IO%radial_rj_grp)
       call gz_mpi_write_grp_data_b                                      &
-     &   (id_file, ioff_gl, sph_grp_IO%sphere_rj_grp)
+     &   (IO_param, sph_grps_IO%radial_rj_grp)
+      call gz_mpi_write_grp_data_b                                      &
+     &   (IO_param, sph_grps_IO%sphere_rj_grp)
 !
       end subroutine gz_mpi_write_spectr_rj_data_b
 !
 !------------------------------------------------------------------
 !
       subroutine gz_mpi_write_geom_rtm_data_b                           &
-     &         (id_file, nprocs_in, ioff_gl)
+     &         (IO_param, comm_IO, sph_IO)
 !
-      integer, intent(in) ::  id_file
-      integer(kind=kint), intent(in) :: nprocs_in
-      integer(kind = kint_gl), intent(inout) :: ioff_gl
+      type(calypso_MPI_IO_params), intent(inout) :: IO_param
+!
+      type(communication_table), intent(inout) :: comm_IO
+      type(sph_IO_data), intent(inout) :: sph_IO
 !
 !
-      call gz_mpi_write_domain_info_b                                   &
-     &   (id_file, nprocs_in, ioff_gl, comm_IO)
-      call gz_mpi_write_gl_reso_sph_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_write_rank_4_sph_b(id_file, ioff_gl, sph_IO1)
+      call gz_mpi_write_domain_info_b(IO_param, comm_IO)
+      call gz_mpi_write_gl_reso_sph_b(IO_param, sph_IO)
+      call gz_mpi_write_rank_4_sph_b(IO_param, sph_IO)
 !
-      call gz_mpi_write_rtp_gl_1d_table_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_write_gl_nodes_sph_b(id_file, ioff_gl, sph_IO1)
+      call gz_mpi_write_rtp_gl_1d_table_b(IO_param, sph_IO)
+      call gz_mpi_write_gl_nodes_sph_b(IO_param, sph_IO)
 !
-      call gz_mpi_write_import_data_b(id_file, ioff_gl, comm_IO)
+      call gz_mpi_write_import_data_b(IO_param, comm_IO)
 !
       end subroutine gz_mpi_write_geom_rtm_data_b
 !
 !------------------------------------------------------------------
 !
       subroutine gz_mpi_write_modes_rlm_data_b                          &
-     &         (id_file, nprocs_in, ioff_gl)
+     &         (IO_param, comm_IO, sph_IO)
 !
-      integer, intent(in) ::  id_file
-      integer(kind=kint), intent(in) :: nprocs_in
-      integer(kind = kint_gl), intent(inout) :: ioff_gl
+      type(calypso_MPI_IO_params), intent(inout) :: IO_param
+!
+      type(communication_table), intent(inout) :: comm_IO
+      type(sph_IO_data), intent(inout) :: sph_IO
 !
 !
-      call gz_mpi_write_domain_info_b                                   &
-     &   (id_file, nprocs_in, ioff_gl, comm_IO)
-      call gz_mpi_write_gl_reso_sph_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_write_rank_4_sph_b(id_file, ioff_gl, sph_IO1)
+      call gz_mpi_write_domain_info_b(IO_param, comm_IO)
+      call gz_mpi_write_gl_reso_sph_b(IO_param, sph_IO)
+      call gz_mpi_write_rank_4_sph_b(IO_param, sph_IO)
 !
-      call gz_mpi_write_rj_gl_1d_table_b(id_file, ioff_gl, sph_IO1)
-      call gz_mpi_write_gl_nodes_sph_b(id_file, ioff_gl, sph_IO1)
+      call gz_mpi_write_rj_gl_1d_table_b(IO_param, sph_IO)
+      call gz_mpi_write_gl_nodes_sph_b(IO_param, sph_IO)
 !
-      call gz_mpi_write_import_data_b(id_file, ioff_gl, comm_IO)
+      call gz_mpi_write_import_data_b(IO_param, comm_IO)
 !
       end subroutine gz_mpi_write_modes_rlm_data_b
 !
