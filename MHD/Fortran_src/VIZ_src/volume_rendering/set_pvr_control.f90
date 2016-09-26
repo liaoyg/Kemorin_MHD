@@ -4,13 +4,14 @@
 !     Written by H. Matsui on May., 2006
 !
 !!      subroutine s_set_pvr_control                                    &
-!!     &       (num_pvr, num_mat, mat_name, num_nod_phys, phys_nod_name,&
-!!     &        file_params, fld_params, view_params, color_params,     &
-!!     &        cbar_params)
+!!     &       (num_pvr, ele_grp, surf_grp, num_nod_phys, phys_nod_name,&
+!!     &        file_params, fld_params, view_params,                   &
+!!     &        field_pvr, color_params, cbar_params)
 !
       module set_pvr_control
 !
       use m_precision
+      use calypso_mpi
 !
       use m_control_data_pvrs
       use m_control_data_4_pvr
@@ -29,16 +30,19 @@
 !  ---------------------------------------------------------------------
 !
       subroutine s_set_pvr_control                                      &
-     &       (num_pvr, num_mat, mat_name, num_nod_phys, phys_nod_name,  &
-     &        file_params, fld_params, view_params, color_params,       &
-     &        cbar_params)
+     &       (num_pvr, ele_grp, surf_grp, num_nod_phys, phys_nod_name,  &
+     &        file_params, fld_params, view_params,                     &
+     &        field_pvr, color_params, cbar_params)
 !
+      use t_group_data
       use t_control_params_4_pvr
+      use t_geometries_in_pvr_screen
+      use t_control_data_pvr_misc
       use set_control_each_pvr
       use set_field_comp_for_viz
 !
-      integer(kind = kint), intent(in) :: num_mat
-      character(len=kchara), intent(in) :: mat_name(num_mat)
+      type(group_data), intent(in) :: ele_grp
+      type(surface_group_data), intent(in) :: surf_grp
 !
       integer(kind = kint), intent(in) :: num_nod_phys
       character(len=kchara), intent(in) :: phys_nod_name(num_nod_phys)
@@ -47,12 +51,13 @@
       type(pvr_output_parameter), intent(inout) :: file_params(num_pvr)
       type(pvr_field_parameter), intent(inout) :: fld_params(num_pvr)
       type(pvr_view_parameter), intent(inout) :: view_params(num_pvr)
+      type(pvr_projected_field), intent(inout) :: field_pvr(num_pvr)
       type(pvr_colormap_parameter), intent(inout)                       &
      &                  :: color_params(num_pvr)
       type(pvr_colorbar_parameter), intent(inout)                       &
      &                  :: cbar_params(num_pvr)
 !
-      integer(kind = kint) :: i_pvr
+      integer(kind = kint) :: i_pvr, i_psf
 !
 !
       ctl_file_code = pvr_ctl_file_code
@@ -63,6 +68,11 @@
         call read_control_pvr(i_pvr)
         call read_control_modelview(i_pvr)
         call read_control_colormap(i_pvr)
+!
+        do i_psf = 1, pvr_ctl_struct(i_pvr)%num_pvr_sect_ctl
+          call read_control_pvr_section_def                             &
+     &       (pvr_ctl_struct(i_pvr)%pvr_sect_ctl(i_psf))
+        end do
       end do
 !
       do i_pvr = 1, num_pvr
@@ -71,14 +81,15 @@
      &      num_nod_phys, phys_nod_name, file_params(i_pvr))
 !
         if(iflag_debug .gt. 0) write(*,*) 'set_control_pvr', i_pvr
-        call set_control_pvr(pvr_ctl_struct(i_pvr), num_mat,            &
-     &      mat_name, num_nod_phys, phys_nod_name,                      &
-     &      fld_params(i_pvr), view_params(i_pvr),                      &
+        call set_control_pvr(pvr_ctl_struct(i_pvr),                     &
+     &      ele_grp, surf_grp, num_nod_phys, phys_nod_name,             &
+     &      fld_params(i_pvr), view_params(i_pvr), field_pvr(i_pvr),    &
      &      color_params(i_pvr), cbar_params(i_pvr))
         if(iflag_debug .gt. 0) write(*,*)                               &
      &                       'deallocate_cont_dat_pvr', i_pvr
         call deallocate_cont_dat_pvr(pvr_ctl_struct(i_pvr))
-     end do
+        call calypso_mpi_barrier
+      end do
 !
       call deallocate_pvr_file_header_ctl
 !
@@ -134,6 +145,7 @@
       subroutine read_control_colormap(i_pvr)
 !
       use calypso_mpi
+      use t_ctl_data_pvr_colormap
 !
       integer(kind = kint), intent(in) :: i_pvr
 !
@@ -148,7 +160,7 @@
 !
       open(pvr_ctl_file_code,                                           &
      &     file=pvr_ctl_struct(i_pvr)%color_file_ctl,  status='old')
-      call read_control_data_colormap(pvr_ctl_struct(i_pvr))
+      call read_control_data_colormap(pvr_ctl_struct(i_pvr)%color)
       close(pvr_ctl_file_code)
 !
       end subroutine read_control_colormap

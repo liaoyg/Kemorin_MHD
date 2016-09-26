@@ -5,12 +5,14 @@
 !      Written by H. Matsui on Aug., 2011
 !
 !!      subroutine s_ray_trace_4_each_image                             &
-!!     &     (numnod, numele, numsurf, nnod_4_surf, ie_surf,            &
-!!     &      isf_4_ele, iele_4_surf, interior_ele, xx,                 &
-!!     &      iflag_pvr_used_ele, x_nod_screen, d_nod_pvr, grad_ele_pvr,&
-!!     &      viewpoint_vec, color_param, ray_vec, num_pvr_ray,         &
-!!     &      icount_pvr_trace, isf_pvr_ray_start, xi_pvr_start,        &
-!!     &      xx_pvr_start, xx_pvr_ray_start, rgba_ray)
+!!     &         (numnod, numele, numsurf, nnod_4_surf,                 &
+!!     &          ie_surf, isf_4_ele, iele_4_surf, interior_ele,        &
+!!     &          xx, vnorm_surf, iflag_pvr_used_ele,                   &
+!!     &          x_nod_screen, d_nod_pvr, grad_ele_pvr,                &
+!!     &          viewpoint_vec, arccos_sf, color_param,                &
+!!     &          ray_vec, num_pvr_ray, icount_pvr_trace,               &
+!!     &          isf_pvr_ray_start, xi_pvr_start, xx_pvr_start,        &
+!!     &          xx_pvr_ray_start, rgba_ray)
 !!      subroutine blend_overlapped_area(num_pvr_ray,                   &
 !!     &         id_pixel_start, xx_pvr_ray_start, rgba_ray,            &
 !!     &         num_pixel_xy, iflag_mapped, rgba_lc, depth_lc)
@@ -26,6 +28,8 @@
 !
       implicit  none
 !
+      real(kind = kint), parameter :: SMALL = 0.1
+!
       private :: ray_trace_each_pixel
 !
 !  ---------------------------------------------------------------------
@@ -35,13 +39,14 @@
 !  ---------------------------------------------------------------------
 !
       subroutine s_ray_trace_4_each_image                               &
-     &     (numnod, numele, numsurf, nnod_4_surf, ie_surf,              &
-     &      isf_4_ele, iele_4_surf, interior_ele, xx,                   &
-     &      iflag_pvr_used_ele, x_nod_screen, d_nod_pvr, grad_ele_pvr,  &
-     &      viewpoint_vec, color_param, ray_vec, num_pvr_ray,           &
-     &      icount_pvr_trace, isf_pvr_ray_start, xi_pvr_start,          &
-     &      xx_pvr_start, xx_pvr_ray_start, rgba_ray)
+     &         (numnod, numele, numsurf, nnod_4_surf,                   &
+     &          ie_surf, isf_4_ele, iele_4_surf, interior_ele,          &
+     &          xx, vnorm_surf,  x_nod_screen, viewpoint_vec,           &
+     &          field_pvr, color_param, ray_vec, num_pvr_ray,           &
+     &          icount_pvr_trace, isf_pvr_ray_start, xi_pvr_start,      &
+     &          xx_pvr_start, xx_pvr_ray_start, rgba_ray)
 !
+      use t_geometries_in_pvr_screen
       use t_control_params_4_pvr
 !
       integer(kind = kint), intent(in) :: numnod, numele, numsurf
@@ -51,12 +56,11 @@
       integer(kind = kint), intent(in) :: iele_4_surf(numsurf,2,2)
       integer(kind = kint), intent(in) :: interior_ele(numele)
       real(kind = kreal), intent(in) :: xx(numnod,3)
+      real(kind = kreal), intent(in) :: vnorm_surf(numsurf,3)
 !
-      integer(kind = kint), intent(in) :: iflag_pvr_used_ele(numele)
       real(kind = kreal), intent(in) :: x_nod_screen(numnod,4)
-      real(kind = kreal), intent(in) :: d_nod_pvr(numnod)
-      real(kind = kreal), intent(in) :: grad_ele_pvr(numele,3)
 !
+      type(pvr_projected_field), intent(in) :: field_pvr
       type(pvr_colormap_parameter), intent(in) :: color_param
 !
       real(kind = kreal), intent(in) :: viewpoint_vec(3)
@@ -81,10 +85,9 @@
       do inum = 1, num_pvr_ray
         rgba_tmp(1:4) = zero
           call ray_trace_each_pixel                                     &
-     &      (numnod, numele, numsurf, nnod_4_surf, ie_surf,             &
-     &       isf_4_ele, iele_4_surf, interior_ele, xx,                  &
-     &       iflag_pvr_used_ele, x_nod_screen, d_nod_pvr, grad_ele_pvr, &
-     &       viewpoint_vec, color_param, ray_vec,                       &
+     &      (numnod, numele, numsurf, nnod_4_surf, ie_surf, isf_4_ele,  &
+     &       iele_4_surf, interior_ele, xx, vnorm_surf, x_nod_screen,   &
+     &       viewpoint_vec, field_pvr, color_param, ray_vec,            &
      &       isf_pvr_ray_start(1,inum), xx_pvr_ray_start(1,inum),       &
      &       xx_pvr_start(1,inum), xi_pvr_start(1,inum),                &
      &       rgba_tmp(1), icount_pvr_trace(inum), iflag_comm)
@@ -136,16 +139,18 @@
 !
 !  ---------------------------------------------------------------------
 !
-      subroutine ray_trace_each_pixel(numnod, numele, numsurf,          &
-     &        nnod_4_surf, ie_surf, isf_4_ele, iele_4_surf,             &
-     &        interior_ele, xx, iflag_used_ele, x_nod_screen,           &
-     &        color_nod, grad_ele, viewpoint_vec, color_param,          &
+      subroutine ray_trace_each_pixel                                   &
+     &       (numnod, numele, numsurf,  nnod_4_surf, ie_surf,           &
+     &        isf_4_ele, iele_4_surf, interior_ele, xx, vnorm_surf,     &
+     &        x_nod_screen, viewpoint_vec, field_pvr, color_param,      &
      &        ray_vec, isurf_org, screen_st, xx_st, xi, rgba_ray,       &
      &        icount_line, iflag_comm)
 !
+      use t_geometries_in_pvr_screen
       use t_control_params_4_pvr
       use cal_field_on_surf_viz
       use cal_fline_in_cube
+      use set_coefs_of_sections
 !
       integer(kind = kint), intent(in) :: numnod, numele, numsurf
       integer(kind = kint), intent(in) :: nnod_4_surf
@@ -154,14 +159,14 @@
       integer(kind = kint), intent(in) :: iele_4_surf(numsurf,2,2)
       integer(kind = kint), intent(in) :: interior_ele(numele)
       real(kind = kreal), intent(in) :: xx(numnod,3)
+      real(kind = kreal), intent(in) :: vnorm_surf(numsurf,3)
 !
-      integer(kind = kint), intent(in) :: iflag_used_ele(numele)
       real(kind = kreal), intent(in) :: x_nod_screen(numnod,4)
-      real(kind = kreal), intent(in) :: color_nod(numnod)
-      real(kind = kreal), intent(in) :: grad_ele(numele,3)
+!
       real(kind = kreal), intent(in) :: viewpoint_vec(3)
       real(kind = kreal), intent(in) :: ray_vec(3)
 !
+      type(pvr_projected_field), intent(in) :: field_pvr
       type(pvr_colormap_parameter), intent(in) :: color_param
 !
       integer(kind = kint), intent(inout) :: isurf_org(3)
@@ -172,8 +177,9 @@
 !
       integer(kind = kint), parameter :: iflag_back = 0
       integer(kind = kint) :: isf_tgt, isurf_end, iele, isf_org
+      integer(kind = kint) :: i_iso, i_psf
       real(kind = kreal) :: screen_tgt(3), c_tgt(1), c_org(1)
-      real(kind = kreal) :: grad_tgt(3), xx_tgt(3)
+      real(kind = kreal) :: grad_tgt(3), xx_tgt(3), rflag, rflag2
 !
 !
       if(isurf_org(1) .eq. 0) return
@@ -181,15 +187,15 @@
       iele =    isurf_org(1)
       isf_org = isurf_org(2)
       isurf_end = abs(isf_4_ele(iele,isf_org))
-      call cal_field_on_surf_scalar(numnod, numsurf,                    &
-     &      nnod_4_surf, ie_surf, isurf_end, xi, color_nod, c_org(1) )
+      call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,       &
+     &    ie_surf, isurf_end, xi, field_pvr%d_pvr, c_org(1) )
 !
       do
         icount_line = icount_line + 1
         iele =    isurf_org(1)
         isf_org = isurf_org(2)
 !
-        if(iflag_used_ele(iele).eq.0) then
+        if(field_pvr%iflag_used_ele(iele).eq.0) then
           iflag_comm = 2
           exit
         end if
@@ -220,12 +226,45 @@
         call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,     &
      &      ie_surf, isurf_end, xi, xx, xx_tgt)
         call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,     &
-     &      ie_surf, isurf_end, xi, color_nod, c_tgt(1))
-        grad_tgt(1:3) = grad_ele(iele,1:3)
-!
-        c_tgt(1) = half*(c_tgt(1) + c_org(1))
+     &      ie_surf, isurf_end, xi, field_pvr%d_pvr, c_tgt(1))
 !
         if(interior_ele(iele) .gt. 0) then
+          if(field_pvr%arccos_sf(isurf_end) .gt. SMALL) then
+            grad_tgt(1:3) = vnorm_surf(isurf_end,1:3)
+            call plane_rendering_with_light                             &
+     &         (viewpoint_vec, xx_tgt, grad_tgt,                        &
+     &          field_pvr%arccos_sf(isurf_end),  color_param, rgba_ray)
+          end if
+!
+          do i_psf = 1, field_pvr%num_sections
+            rflag =  side_of_plane(field_pvr%coefs(1:10,i_psf), xx_st)  &
+     &             * side_of_plane(field_pvr%coefs(1:10,i_psf), xx_tgt)
+            rflag2 = side_of_plane(field_pvr%coefs(1:10,i_psf), xx_tgt)
+            if(rflag2 .eq. zero .or. rflag .lt. zero) then
+              call cal_normal_of_plane                                  &
+     &           (field_pvr%coefs(1:10,i_psf), xx_tgt, grad_tgt)
+              call color_plane_with_light                               &
+     &           (viewpoint_vec, xx_tgt, c_tgt(1), grad_tgt,            &
+     &            field_pvr%sect_opacity(i_psf), color_param, rgba_ray)
+            end if
+          end do
+!
+          do i_iso = 1, field_pvr%num_isosurf
+            rflag =  (c_org(1) - field_pvr%iso_value(i_iso))            &
+     &             * (c_tgt(1) - field_pvr%iso_value(i_iso))
+            if((c_tgt(1) - field_pvr%iso_value(i_iso)) .eq. zero        &
+     &        .or. rflag .lt. zero) then
+              grad_tgt(1:3) = field_pvr%grad_ele(iele,1:3)              &
+     &                       * field_pvr%itype_isosurf(i_iso)
+              call color_plane_with_light                               &
+     &           (viewpoint_vec, xx_tgt, field_pvr%iso_value(i_iso),    &
+     &            grad_tgt, field_pvr%iso_opacity(i_iso),               &
+     &            color_param, rgba_ray)
+            end if
+          end do
+!
+          grad_tgt(1:3) = field_pvr%grad_ele(iele,1:3)
+          c_tgt(1) = half*(c_tgt(1) + c_org(1))
           call s_set_rgba_4_each_pixel(viewpoint_vec, xx_st, xx_tgt,    &
      &        c_tgt(1), grad_tgt, color_param, rgba_ray)
         end if
