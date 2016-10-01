@@ -8,6 +8,13 @@
 !!
 !!@verbatim
 !!      subroutine reset_pvr_view_parameteres(view_param)
+!!      subroutine alloc_pvr_element_group(fld_prm)
+!!      subroutine dealloc_pvr_element_group(fld_prm)
+!!
+!!      subroutine alloc_pvr_color_parameteres(color)
+!!      subroutine alloc_pvr_opacity_list(color)
+!!      subroutine alloc_light_posi_in_view(color)
+!!      subroutine dealloc_pvr_color_parameteres(color)
 !!@endverbatim
 !
       module t_control_params_4_pvr
@@ -16,6 +23,11 @@
       use m_constants
 !
       implicit  none
+!
+!
+      integer(kind = kint), parameter :: IFLAG_NORMAL = 0
+      integer(kind = kint), parameter :: IFLAG_LEFT =  -1
+      integer(kind = kint), parameter :: IFLAG_RIGHT =  1
 !
 !>  Structure for field parameter for PVR
       type pvr_output_parameter
@@ -27,6 +39,8 @@
         integer(kind = kint) :: id_pvr_transparent = 0
 !>    Monitoring mode flag
         integer(kind = kint) :: iflag_monitoring = 0
+!>    Flag to make an anaglyph
+        integer(kind = kint) :: iflag_anaglyph = 0
       end type pvr_output_parameter
 !
 !>  Structure for field parameter for PVR
@@ -102,11 +116,6 @@
 !>    Position to look at
         real(kind = kreal) :: lookat_vec(3) = (/zero,zero,zero/)
 !
-!>    Defined flag for viewpoint
-        integer(kind = kint) :: iflag_viewpoint = 0
-!>    Position of viewpoint
-        real(kind = kreal) :: viewpoint_vec(3) = (/zero,zero,zero/)
-!
 !>    Defined flag for up-direction
         integer(kind = kint) :: iflag_updir = 0
 !>    Vector for up-direction
@@ -118,6 +127,8 @@
         real(kind = kreal) :: projection_left(4,4)
 !>    Perspective projection matrix for right eye
         real(kind = kreal) :: projection_right(4,4)
+!>    Original projection matrix for backup
+        real(kind = kreal) :: projection_saved(4,4)
 !
 !>    Focal length for streo view
         real(kind = kreal) :: focalLength = one

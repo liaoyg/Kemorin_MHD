@@ -1,11 +1,5 @@
-!m_ctl_data_4_view_transfer.f90
-!      module m_ctl_data_4_view_transfer
-!
-!        programmed by H.Matsui on May. 2006
-!
-!
-!>@file   m_ctl_data_4_view_transfer.f90
-!!@brief  module m_ctl_data_4_view_transfer
+!>@file   t_ctl_data_4_view_transfer.f90
+!!@brief  module t_ctl_data_4_view_transfer
 !!
 !!@author  H. Matsui
 !!@date Programmed in May. 2006
@@ -14,7 +8,7 @@
 !!
 !!@verbatim
 !!      subroutine read_view_transfer_ctl(mat)
-!!      subroutine reset_view_transfer_ctl(mat)
+!!      subroutine dealloc_view_transfer_ctl(mat)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!  Input example
 !
@@ -94,13 +88,19 @@
 !!      perspective_near_ctl       0.5
 !!      perspective_far_ctl     1000.0
 !!    end projection_matrix_ctl
+!!
+!!    begin streo_view_parameter_ctl
+!!      focal_point_ctl           40.0
+!!      eye_separation_ctl        0.5
+!!    end streo_view_parameter_ctl
+!!
 !!  end view_transform_ctl
 !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!@endverbatim
 !!
 !
-      module m_ctl_data_4_view_transfer
+      module t_ctl_data_4_view_transfer
 !
       use m_precision
 !
@@ -390,20 +390,37 @@
 !  ---------------------------------------------------------------------
 !  ---------------------------------------------------------------------
 !
-      subroutine reset_view_transfer_ctl(mat)
+      subroutine dealloc_view_transfer_ctl(mat)
 !
       type(modeview_ctl), intent(inout) :: mat
 !
 !
       mat%i_view_transform = 0
 !
+      call dealloc_control_array_c2_r(mat%modelview_mat_ctl)
       mat%modelview_mat_ctl%num =    0
-      mat%lookpoint_ctl%num =        0
-      mat%viewpoint_ctl%num =        0
-      mat%up_dir_ctl%num =           0
+      mat%modelview_mat_ctl%icou =   0
+!
+      call dealloc_control_array_c_r(mat%lookpoint_ctl)
+      call dealloc_control_array_c_r(mat%viewpoint_ctl)
+      call dealloc_control_array_c_r(mat%up_dir_ctl)
+      mat%lookpoint_ctl%num =   0
+      mat%viewpoint_ctl%num =   0
+      mat%up_dir_ctl%num =      0
+      mat%lookpoint_ctl%icou =  0
+      mat%viewpoint_ctl%icou =  0
+      mat%up_dir_ctl%icou =     0
+!
+      call dealloc_control_array_c_r(mat%view_rot_vec_ctl)
+      call dealloc_control_array_c_r(mat%scale_vector_ctl)
+      call dealloc_control_array_c_r(mat%viewpt_in_viewer_ctl)
       mat%view_rot_vec_ctl%num =     0
       mat%scale_vector_ctl%num =     0
       mat%viewpt_in_viewer_ctl%num = 0
+      mat%view_rot_vec_ctl%icou =     0
+      mat%scale_vector_ctl%icou =     0
+      mat%viewpt_in_viewer_ctl%icou = 0
+!
 !
       mat%perspective_angle_ctl%realvalue =    0.0d0
       mat%perspective_xy_ratio_ctl%realvalue = 0.0d0
@@ -419,16 +436,8 @@
       mat%scale_factor_ctl%realvalue =           1.0d0
 !
 !
-      mat%modelview_mat_ctl%icou =   0
       mat%i_project_mat = 0
 !
-      mat%lookpoint_ctl%icou =  0
-      mat%viewpoint_ctl%icou =  0
-      mat%up_dir_ctl%icou =     0
-!
-      mat%view_rot_vec_ctl%icou =     0
-      mat%scale_vector_ctl%icou =     0
-      mat%viewpt_in_viewer_ctl%icou = 0
 !
       mat%view_rotation_deg_ctl%iflag = 0
       mat%scale_factor_ctl%iflag = 0
@@ -436,8 +445,8 @@
       mat%i_image_size =  0
       mat%i_stereo_view = 0
 !
-      end subroutine reset_view_transfer_ctl
+      end subroutine dealloc_view_transfer_ctl
 !
 !  ---------------------------------------------------------------------
 !
-      end module m_ctl_data_4_view_transfer
+      end module t_ctl_data_4_view_transfer

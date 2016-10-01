@@ -15,7 +15,7 @@
 !
       use m_constants
       use m_error_IDs
-      use m_control_data_4_pvr
+      use t_control_data_4_pvr
       use calypso_mpi
 !
       use set_field_comp_for_viz
@@ -83,6 +83,11 @@
         file_param%iflag_monitoring = 1
       end if
 !
+      file_param%iflag_anaglyph = 0
+      if(yes_flag(pvr%anaglyph_ctl%charavalue)) then
+        file_param%iflag_anaglyph = 1
+      end if
+!
       call check_field_4_viz(num_nod_phys, phys_nod_name,               &
      &    ione, pvr%pvr_field_ctl, num_field, num_phys_viz)
       if(num_field .eq. 0) then
@@ -108,7 +113,6 @@
       use t_group_data
       use t_control_params_4_pvr
       use t_geometries_in_pvr_screen
-      use set_pvr_modelview_matrix
       use set_area_4_viz
       use set_color_4_pvr
       use set_rgba_4_each_pixel
@@ -136,6 +140,11 @@
       character(len = kchara) :: fldname_tmp(1)
       character(len = kchara) :: tmpchara
 !
+!
+      view_param%iflag_stereo_pvr = 0
+      if(yes_flag(pvr%streo_ctl%charavalue)) then
+        view_param%iflag_stereo_pvr = 1
+      end if
 !
       call set_components_4_viz                                         &
      &   (num_nod_phys, phys_nod_name, ione, pvr%pvr_field_ctl,         &
@@ -229,10 +238,6 @@
 !
 !    set colorbar setting
       call set_control_pvr_colorbar(pvr%colorbar, cbar_param)
-!
-!   set transfer matrix
-!
-      call s_set_pvr_modelview_matrix(pvr%mat, view_param)
 !
       end subroutine set_control_pvr
 !

@@ -72,7 +72,7 @@
 !
       use m_machine_parameter
       use m_read_control_elements
-      use m_ctl_data_4_view_transfer
+      use t_ctl_data_4_view_transfer
       use t_control_elements
       use t_read_control_arrays
       use t_control_data_pvr_sect
@@ -172,19 +172,10 @@
       type(pvr_colormap_ctl), intent(inout) :: color
 !
 !
-      if(color%step_opacity_ctl%num .gt. 0) then
-        call dealloc_control_array_r3(color%step_opacity_ctl)
-      end if
-      if(color%linear_opacity_ctl%num .gt. 0) then
-        call dealloc_control_array_r2(color%linear_opacity_ctl)
-      end if
-      if(color%light_position_ctl%num .gt. 0) then
-        call dealloc_control_array_r3(color%light_position_ctl)
-      end if
-!
-      if(color%colortbl_ctl%num .gt. 0) then
-        call dealloc_control_array_r2(color%colortbl_ctl)
-      end if
+      call dealloc_control_array_r3(color%step_opacity_ctl)
+      call dealloc_control_array_r2(color%linear_opacity_ctl)
+      call dealloc_control_array_r3(color%light_position_ctl)
+      call dealloc_control_array_r2(color%colortbl_ctl)
 !
       color%colortbl_ctl%num =       0
       color%colortbl_ctl%icou = 0
