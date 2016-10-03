@@ -23,6 +23,7 @@
       use m_precision
 !
       use t_mesh_data
+      use t_mesh_data_with_pointer
       use t_interpolate_table
       use t_interpolate_tbl_org
       use t_interpolate_tbl_dest

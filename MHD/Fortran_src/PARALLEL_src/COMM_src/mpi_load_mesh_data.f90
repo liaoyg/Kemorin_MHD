@@ -66,7 +66,8 @@
 !
 !
       call sel_mpi_read_mesh_geometry(mesh_IO_m)
-      call set_mesh_geometry_data(mesh_IO_m, mesh)
+      call set_mesh_geometry_data(mesh_IO_m,                            &
+     &    mesh%nod_comm, mesh%node, mesh%ele)
 !
       end subroutine mpi_input_mesh_geometry
 !

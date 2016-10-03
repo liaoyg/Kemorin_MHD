@@ -4,12 +4,9 @@
 !     Written by H. Matsui on Aug., 2006
 !
 !!      subroutine s_construct_interpolate_table                        &
-!!     &         (node, neib_nod, org_mesh, org_grp, itp_coef_dest,     &
-!!     &          ierr_missing)
+!!     &         (node, neib_nod, itp_coef_dest, ierr_missing)
 !!        type(node_data), intent(in) :: node
 !!        type(next_nod_id_4_nod), intent(in)  :: neib_nod
-!!        type(mesh_geometry), intent(inout) :: org_mesh
-!!        type(mesh_groups), intent(inout) ::   org_grp
 !!        type(interpolate_coefs_dest), intent(inout) :: itp_coef_dest
 !
       module construct_interpolate_table
@@ -26,8 +23,7 @@
 ! ----------------------------------------------------------------------
 !
       subroutine s_construct_interpolate_table                          &
-     &         (node, neib_nod, org_mesh, org_grp, itp_coef_dest,       &
-     &          ierr_missing)
+     &         (node, neib_nod, itp_coef_dest, ierr_missing)
 !
       use calypso_mpi
       use m_machine_parameter
@@ -49,9 +45,10 @@
       type(next_nod_id_4_nod), intent(in)  :: neib_nod
 !
       integer(kind = kint), intent(inout) :: ierr_missing
-      type(mesh_geometry), intent(inout) :: org_mesh
-      type(mesh_groups), intent(inout) ::   org_grp
       type(interpolate_coefs_dest), intent(inout) :: itp_coef_dest
+!
+      type(mesh_geometry_p) :: org_mesh
+      type(mesh_groups_p) ::   org_grp
 !
       integer(kind = kint) :: ierr_local
       integer(kind = kint) :: ilevel, jp
@@ -107,7 +104,9 @@
 !     &      14, my_rank_2nd)
 !
           call deallocate_work_4_interpolate
-          call unlink_2nd_geometry_4_table(org_mesh, org_grp)
+!
+          call deallocate_hex_2_tetra
+          call unlink_pointer_mesh(org_mesh, org_grp)
         end do
 !
         call check_missing_nodes(ierr_local, my_rank, node)

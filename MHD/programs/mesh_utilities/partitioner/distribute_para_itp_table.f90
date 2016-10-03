@@ -55,7 +55,7 @@
 !
 !
       call set_work_4_ditribute_itp(nprocs_org, nprocs_dest,            &
-     &          femmesh_org, femmesh_dest, single_tbl)
+     &    femmesh_org, femmesh_dest, single_tbl)
 !
       nprocs_table = max(nprocs_itp_org, nprocs_itp_dest)
       allocate( para_tbl(nprocs_table) )

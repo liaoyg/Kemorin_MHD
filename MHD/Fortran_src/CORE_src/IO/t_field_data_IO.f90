@@ -47,21 +47,21 @@
 !>        total number of component for IO (ntot_phys_data_IO)
         integer(kind = kint) :: ntot_comp_IO
 !>        number of component for each field (num_comp_IO)
-        integer(kind = kint), pointer :: num_comp_IO(:)
+        integer(kind = kint), allocatable :: num_comp_IO(:)
 !>        end address of component for each field (istack_phys_comp_IO)
-        integer(kind = kint), pointer :: istack_comp_IO(:)
+        integer(kind = kint), allocatable :: istack_comp_IO(:)
 !
 !>        field name (phys_data_name_IO)
-        character(len=kchara), pointer :: fld_name(:)
+        character(len=kchara), allocatable :: fld_name(:)
 !
 !>        number of data points (numgrid_phys_IO)
         integer(kind = kint) :: nnod_IO
 !
 !>        field data for IO  (d_IO(:,:))
-        real(kind = kreal), pointer :: d_IO(:,:)
+        real(kind = kreal), allocatable :: d_IO(:,:)
 !
 !>        end point for number of node for each subdomain
-        integer(kind = kint_gl), pointer :: istack_numnod_IO(:)
+        integer(kind = kint_gl), allocatable :: istack_numnod_IO(:)
       end type field_IO
 !
 !
@@ -70,7 +70,7 @@
 !>        Number of subdomains in each process
         integer(kind = kint) :: nloop_IO
 !>        Structure for field data IO
-        type(field_IO), pointer :: fld_IO(:)
+        type(field_IO), allocatable :: fld_IO(:)
       end type multi_field_IO
 !
 !

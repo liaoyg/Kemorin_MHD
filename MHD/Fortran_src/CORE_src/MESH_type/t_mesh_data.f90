@@ -7,9 +7,6 @@
 !
 !     Written by H. Matsui on Dec., 2008
 !
-!      subroutine link_mesh_data_type(org_mesh, new_mesh)
-!      subroutine link_groups_type(org_group, new_group)
-!
 !!      subroutine dealloc_mesh_infomations(nod_comm,                   &
 !!     &          node, ele, surf, edge, nod_grp, ele_grp, surf_grp,    &
 !!     &          tbls_ele_grp, tbls_sf_grp, surf_nod_grp)
@@ -17,10 +14,6 @@
 !!     &          nod_grp, ele_grp, surf_grp, nod_comm)
 !!      subroutine dealloc_mesh_infos(mesh, group)
 !!
-!!      subroutine dealloc_base_mesh_type_info(femmesh)
-!  !      type(mesh_data), intent(inout) :: femmesh
-!!
-!!      subroutine dealloc_mesh_data_type(femmesh)
 !!      subroutine dealloc_mesh_type(mesh)
 !!      subroutine dealloc_groups_data(group)
 !!
@@ -109,6 +102,7 @@
         type(edge_data) ::           edge
       end type element_geometry
 !
+!
       private :: dealloc_surf_mesh_type, dealloc_edge_mesh_type
 !
 !------------------------------------------------------------------
@@ -116,34 +110,6 @@
        contains
 !
 !------------------------------------------------------------------
-!
-      subroutine link_mesh_data_type(org_mesh, new_mesh)
-!
-      type(mesh_geometry), intent(in) :: org_mesh
-      type(mesh_geometry), intent(inout) :: new_mesh
-!
-!
-      call link_comm_tbl_types(org_mesh%nod_comm, new_mesh%nod_comm)
-      call link_new_nod_geometry_type(org_mesh%node, new_mesh%node)
-      call link_new_ele_connect_type(org_mesh%ele, new_mesh%ele)
-!
-      end subroutine link_mesh_data_type
-!
-!------------------------------------------------------------------
-!
-      subroutine link_groups_type(org_group, new_group)
-!
-      type(mesh_groups), intent(in) :: org_group
-      type(mesh_groups), intent(inout) :: new_group
-!
-      call link_group_type(org_group%nod_grp, new_group%nod_grp)
-      call link_group_type(org_group%ele_grp, new_group%ele_grp)
-      call link_surf_group_type(org_group%surf_grp, new_group%surf_grp)
-!
-      end subroutine link_groups_type
-!
-! ----------------------------------------------------------------------
-! ----------------------------------------------------------------------
 !
       subroutine dealloc_mesh_infomations(mesh, group, ele_mesh)
 !
@@ -225,29 +191,10 @@
 ! ----------------------------------------------------------------------
 !------------------------------------------------------------------
 !
-      subroutine dealloc_base_mesh_type_info(femmesh)
-!
-      type(mesh_data), intent(inout) :: femmesh
-!
-!
-      call deallocate_ele_geometry_type(femmesh%mesh%ele)
-      call deallocate_ele_param_smp_type(femmesh%mesh%ele)
-      call deallocate_node_param_smp_type(femmesh%mesh%node)
-!
-      call dealloc_mesh_data_type(femmesh)
-!
-      end subroutine dealloc_base_mesh_type_info
-!
-!------------------------------------------------------------------
-!
       subroutine dealloc_groups_data(group)
 !
       type(mesh_groups), intent(inout) :: group
 !
-!
-!      call deallocate_grp_type_smp(group%nod_grp)
-!      call deallocate_grp_type_smp(group%ele_grp)
-!      call deallocate_sf_grp_type_smp(group%surf_grp)
 !
       call deallocate_grp_type(group%nod_grp)
       call deallocate_grp_type(group%ele_grp)
@@ -257,18 +204,6 @@
 !
 !------------------------------------------------------------------
 !------------------------------------------------------------------
-!
-      subroutine dealloc_mesh_data_type(femmesh)
-!
-      type(mesh_data), intent(inout) :: femmesh
-!
-!
-      call dealloc_groups_data(femmesh%group)
-      call dealloc_mesh_type(femmesh%mesh)
-!
-      end subroutine dealloc_mesh_data_type
-!
-!   --------------------------------------------------------------------
 !
       subroutine dealloc_mesh_type(mesh)
 !

@@ -25,9 +25,6 @@
       type(mesh_data), save :: org_femmesh
       type(element_geometry), save :: org_ele_mesh
 !
-      type(mesh_geometry), save :: newmesh
-      type(mesh_groups), save ::   newgroup
-!
       type(next_nod_ele_table), save :: next_tbl_i
 !
       type(jacobians_3d), save :: jac_3d_l
@@ -51,7 +48,6 @@
       use input_control_gen_table
       use const_mesh_information
       use set_table_type_RHS_assemble
-      use set_serach_data_4_dest
       use set_2nd_geometry_4_table
       use const_jacobians_3d
       use mpi_load_mesh_data
@@ -129,7 +125,7 @@
       if (iflag_debug.eq.1) write(*,*) 's_construct_interpolate_table'
       call s_construct_interpolate_table                                &
      &   (org_femmesh%mesh%node, next_tbl_i%neib_nod,                   &
-     &    newmesh, newgroup, itp_n_coef, ierr_missing)
+     &    itp_n_coef, ierr_missing)
 !
 !   ordering destination table by domain
 !

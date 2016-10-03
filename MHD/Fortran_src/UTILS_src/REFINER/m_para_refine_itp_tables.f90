@@ -55,7 +55,7 @@
       subroutine alloc_para_course_mesh_type
 !
 !
-      allocate( course_mesh(nprocs_fine) )
+      allocate( course_mesh(nprocs_course) )
 !
       end subroutine alloc_para_course_mesh_type
 !

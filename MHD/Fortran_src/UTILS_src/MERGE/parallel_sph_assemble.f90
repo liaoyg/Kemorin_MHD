@@ -188,7 +188,7 @@
 !
       do jp = 2, np_sph_new
         if(mod(jp-1,nprocs) .ne. my_rank) cycle
-        call link_field_name_type(new_sph_phys(1), new_sph_phys(jp))
+        call copy_field_name_type(new_sph_phys(1), new_sph_phys(jp))
       end do
 !
       do jp = 1, np_sph_new

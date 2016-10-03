@@ -55,7 +55,7 @@
 !>  Data size for compressed data
         integer(kind = kint) :: len_gzipped
 !>  Data buffer for zlib IO
-        character(len = 1), pointer :: buffer(:)
+        character(len = 1), allocatable :: buffer(:)
       end type mul_zlib_buffers
 !
       type(mul_zlib_buffers), allocatable, save :: gz_bufs(:)
@@ -193,7 +193,7 @@
       integer(kind = kint), intent(in) :: ist_fld, ndir
 !
       integer(kind = kint), intent(in) :: nloop
-      type(field_IO), intent(in) :: fld_IO(nloop)
+      type(field_IO), intent(in), target :: fld_IO(nloop)
       type(mul_zlib_buffers), intent(inout) :: gz_bufs(nloop)
       integer(kind = MPI_OFFSET_KIND) :: ioffset
 !

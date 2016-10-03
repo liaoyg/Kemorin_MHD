@@ -39,8 +39,7 @@
 !
       integer(kind = kint), allocatable :: nnod_list_lc(:)
       integer(kind = kint), allocatable :: nnod_list(:)
-      integer(kind = kint_gl), allocatable, target                      &
-     &                        :: istsack_nnod_list(:)
+      integer(kind = kint_gl), allocatable :: istack_nnod_list(:)
 !
 !
       type(sph_radial_itp_data), save :: r_itp
@@ -70,6 +69,8 @@
 !
       call read_control_assemble_sph
       call set_control_4_newsph
+      if(np_sph_new .ne. nprocs) call calypso_mpi_abort                 &
+     &     (1, 'Set num. of processes for target num. of domains')
 !
       if(my_rank .eq. 0) write(*,*)                                     &
      &          'istep_start, istep_end, increment_step',               &
@@ -101,7 +102,7 @@
 !
       allocate(nnod_list_lc(np_sph_new))
       allocate(nnod_list(np_sph_new))
-      allocate(istsack_nnod_list(0:np_sph_new))
+      allocate(istack_nnod_list(0:np_sph_new))
       nnod_list_lc(1:np_sph_new) = 0
       nnod_list(1:np_sph_new) = 0
 !
@@ -114,13 +115,15 @@
       call MPI_allREDUCE(nnod_list_lc, nnod_list, np_sph_new,           &
      &    CALYPSO_INTEGER, MPI_SUM, CALYPSO_COMM, ierr_MPI)
 !
-      istsack_nnod_list(0) = 0
+      istack_nnod_list(0) = 0
       do jp = 1, np_sph_new
-        istsack_nnod_list(jp) = istsack_nnod_list(jp-1) + nnod_list(jp)
+        istack_nnod_list(jp) = istack_nnod_list(jp-1) + nnod_list(jp)
       end do
       do jloop = 1, nloop_new
-        new_fst_IO(jloop)%istack_numnod_IO => istsack_nnod_list
+        call alloc_merged_field_stack(np_sph_new, new_fst_IO(jloop))
+        new_fst_IO(jloop)%istack_numnod_IO = istack_nnod_list
       end do
+      deallocate(istack_nnod_list)
 !
 !     construct radial interpolation table
 !
@@ -137,19 +140,16 @@
      &      new_sph_mesh(1)%sph%sph_rj%radius_1d_rj_r, r_itp)
       end if
 !
-!      write(*,*) 'share_r_interpolation_tbl'
       call share_r_interpolation_tbl(np_sph_new, new_sph_mesh,          &
      &          r_itp, nlayer_ICB_org, nlayer_CMB_org,                  &
      &          nlayer_ICB_new, nlayer_CMB_new)
 !
 !      Construct field list from spectr file
 !
-!      write(*,*) 'load_field_name_assemble_sph'
       call load_field_name_assemble_sph(org_sph_fst_head,               &
      &      ifmt_org_sph_fst, istep_start, np_sph_org,                  &
      &      org_sph_phys(1), new_sph_phys(1))
 !
-!      write(*,*) 'share_spectr_field_names'
       call share_spectr_field_names(np_sph_org, np_sph_new,             &
      &    new_sph_mesh, org_sph_phys, new_sph_phys)
 !

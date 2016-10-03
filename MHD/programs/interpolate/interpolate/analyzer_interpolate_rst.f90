@@ -102,8 +102,8 @@
       call set_field_address_type(org_femmesh%mesh%node%numnod,         &
      &                            nod_fld_ITP, iphys_ITP)
 !
-      if (iflag_debug.eq.1) write(*,*) 'link_field_name_type'
-      call link_field_name_type(nod_fld_ITP, new_phys)
+      if (iflag_debug.eq.1) write(*,*) 'copy_field_name_type'
+      call copy_field_name_type(nod_fld_ITP, new_phys)
 !
       if (iflag_debug.eq.1) write(*,*) 'alloc_phys_data_type'
       call alloc_phys_data_type(new_femmesh%mesh%node%numnod, new_phys)
@@ -149,8 +149,8 @@
           time =       time_IO
           i_step_MHD = i_time_step_IO
 !
-          call nod_fields_send_recv(org_femmesh%mesh%node,              &
-     &        org_femmesh%mesh%nod_comm, nod_fld_ITP)
+          call nod_fields_send_recv                                     &
+     &       (org_femmesh%mesh%nod_comm, nod_fld_ITP)
         end if
 !
         call MPI_Bcast(time, ione, CALYPSO_REAL, izero,                 &

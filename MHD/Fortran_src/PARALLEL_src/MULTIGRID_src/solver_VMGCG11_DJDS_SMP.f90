@@ -199,82 +199,12 @@
       integer(kind=kint ), intent(inout) :: ITR, IER
 !
 !
-      integer(kind=kint ) :: N, NL, NU, NPL, NPU, NVECT
-      integer(kind=kint ) :: NEIBPETOT
-
-      integer(kind=kint), pointer :: NtoO(:)
-      integer(kind=kint), pointer :: OtoN_L(:), NtoO_U(:)
-      integer(kind=kint), pointer :: LtoU(:)
-      integer(kind=kint), pointer :: OtoN_U(:)
-      integer(kind=kint), pointer :: IVECT(:)
-      integer(kind=kint), pointer :: NLhyp(:), NUhyp(:)
-
-      integer(kind=kint), pointer :: INL(:)
-      integer(kind=kint), pointer :: INU(:)
-      integer(kind=kint), pointer :: IAL(:)
-      integer(kind=kint), pointer :: IAU(:)
-
-      integer(kind=kint), pointer :: STACKmc(:)
-      integer(kind=kint), pointer :: STACKmcG(:)
-
-      real(kind=kreal), pointer :: D(:)
-      real(kind=kreal), pointer :: AL(:)
-      real(kind=kreal), pointer :: AU(:)
-
-      real(kind=kreal), pointer :: ALU_L(:), ALU_U(:)
-
-      integer(kind=kint ), pointer :: NEIBPE(:)
-      integer(kind=kint ), pointer :: STACK_IMPORT(:)
-      integer(kind=kint ), pointer :: NOD_IMPORT(:)
-      integer(kind=kint ), pointer :: STACK_EXPORT(:)
-      integer(kind=kint ), pointer :: NOD_EXPORT(:) 
-!
-      integer(kind=kint ) :: npLX1, npUX1
       integer(kind=kint ) :: iter, MAXIT
 !
 !C +-------+
 !C | INIT. |
 !C +-------+
 !C===
-!
-!
-      NEIBPETOT =     MG_comm(0)%num_neib
-      NEIBPE =>       MG_comm(0)%id_neib
-      STACK_IMPORT => MG_comm(0)%istack_import
-      STACK_EXPORT => MG_comm(0)%istack_export
-      NOD_IMPORT =>   MG_comm(0)%item_import
-!
-      NPL =   djds_tbl(0)%itotal_l
-      NPU =   djds_tbl(0)%itotal_u
-      NVECT =  djds_tbl(0)%NHYP
-      NL =    djds_tbl(0)%NLmax
-      NU =    djds_tbl(0)%NUmax
-      npLX1 = djds_tbl(0)%npLX1
-      npUX1 = djds_tbl(0)%npUX1
-!
-      IVECT =>      djds_tbl(0)%IVECT
-      NtoO =>       djds_tbl(0)%NEWtoOLD
-      NtoO_U =>     djds_tbl(0)%NEWtoOLD_DJDS_U
-      OtoN_L =>     djds_tbl(0)%OLDtoNEW_DJDS_L
-      OtoN_U =>     djds_tbl(0)%OLDtoNEW_DJDS_U
-      LtoU =>       djds_tbl(0)%LtoU
-      INL =>        djds_tbl(0)%indexDJDS_L
-      INU =>        djds_tbl(0)%indexDJDS_U
-      IAL =>        djds_tbl(0)%itemDJDS_L
-      IAU =>        djds_tbl(0)%itemDJDS_U
-      NLhyp =>      djds_tbl(0)%NLmaxHYP
-      NUhyp =>      djds_tbl(0)%NUmaxHYP
-      STACKmcG =>   djds_tbl(0)%STACKmcG
-      STACKmc =>    djds_tbl(0)%STACKmc
-      NOD_EXPORT => djds_tbl(0)%NOD_EXPORT_NEW
-!
-      N = mat11(0)%internal_diag
-      D => mat11(0)%D
-      AL => mat11(0)%AL
-      AU => mat11(0)%AU
-      ALU_L =>     mat11(0)%ALUG_L
-      ALU_U =>     mat11(0)%ALUG_U
-!
 !
       MAXIT = ITR
       TOL  = EPS
@@ -290,8 +220,9 @@
 !C-- change B,X
 
       write(*,*) 'change_order_2_solve_bx1'
-       call change_order_2_solve_bx1(NP, PEsmpTOT, STACKmcG,            &
-     &           NtoO, B, X, W(1,iWK))
+       call change_order_2_solve_bx1                                    &
+     &    (NP, PEsmpTOT, djds_tbl(0)%STACKmcG, djds_tbl(0)%NEWtoOLD,    &
+     &     B, X, W(1,iWK))
 
       write(*,*) 'clear_vector_solve_11'
        call clear_vector_solve_11(NP, W(1,3) )
@@ -300,8 +231,9 @@
 !C-- INTERFACE data EXCHANGE
       START_TIME= MPI_WTIME()
       call SOLVER_SEND_RECV                                             &
-     &   ( NP, NEIBPETOT, NEIBPE, STACK_IMPORT, NOD_IMPORT,             &
-     &     STACK_EXPORT, NOD_EXPORT, X)
+     &   ( NP, MG_comm(0)%num_neib, MG_comm(0)%id_neib,                 &
+     &     MG_comm(0)%istack_import, MG_comm(0)%item_import,            &
+     &     MG_comm(0)%istack_export, djds_tbl(0)%NOD_EXPORT_NEW, X)
       END_TIME= MPI_WTIME()
       COMMtime = COMMtime + END_TIME - START_TIME
 
@@ -313,17 +245,25 @@
 !
       write(*,*) 'subtruct_matvec_11'
        call subtruct_matvec_11                                          &
-     &           (NP, NL, NU, NPL, NPU, npLX1, npUX1, NVECT,            &
-     &            PEsmpTOT, STACKmcG, STACKmc, NLhyp, NUhyp, OtoN_L,    &
-     &            OtoN_U, NtoO_U, LtoU, INL, INU, IAL, IAU, D, AL, AU,  &
-     &            W(1,R), B, X, W(1,iWK))
+     &    (NP, djds_tbl(0)%NLmax, djds_tbl(0)%NUmax,                    &
+     &     djds_tbl(0)%itotal_l, djds_tbl(0)%itotal_u,                  &
+     &     djds_tbl(0)%npLX1, djds_tbl(0)%npUX1, djds_tbl(0)%NHYP,      &
+     &     PEsmpTOT, djds_tbl(0)%STACKmcG, djds_tbl(0)%STACKmc,         &
+     &     djds_tbl(0)%NLmaxHYP, djds_tbl(0)%NUmaxHYP,                  &
+     &     djds_tbl(0)%OLDtoNEW_DJDS_L, djds_tbl(0)%OLDtoNEW_DJDS_U,    &
+     &     djds_tbl(0)%NEWtoOLD_DJDS_U, djds_tbl(0)%LtoU,               &
+     &     djds_tbl(0)%indexDJDS_L, djds_tbl(0)%indexDJDS_U,            &
+     &     djds_tbl(0)%itemDJDS_L, djds_tbl(0)%itemDJDS_U,              &
+     &     mat11(0)%aiccg(1), mat11(0)%aiccg(mat11%istart_l),           &
+     &     mat11(0)%aiccg(mat11%istart_u), W(1,R), B, X, W(1,iWK))
 !
 !C
 !C +---------------+
 !C | BNORM2 = B^2  |
 !C +---------------+
 !C===
-      call djds_local_norm_1(NP, PEsmpTOT, STACKmcG, B, BNRM20)
+      call djds_local_norm_1                                            &
+     &   (NP, PEsmpTOT, djds_tbl(0)%STACKmcG, B, BNRM20)
 !
       START_TIME= MPI_WTIME()
       call MPI_allREDUCE (BNRM20, BNRM2, 1, CALYPSO_REAL,               &
@@ -363,7 +303,7 @@
 !       do ist = 1, NP
 !         write(*,*)  ist, W(ist,R), W(ist,Z)
 !       end do
-      call djds_local_s_product_1(NP, PEsmpTOT, STACKmcG,               &
+      call djds_local_s_product_1(NP, PEsmpTOT, djds_tbl(0)%STACKmcG,   &
      &           W(1,R), W(1,Z), RHO0)
         write(*,*)  'RHO0', RHO0
 !
@@ -382,19 +322,20 @@
 !C +-----------------------------+
 !C===
         if ( ITER.eq.1 ) then
-          call copy_internal_vect_1_smp(NP, PEsmpTOT, STACKmcG,         &
-     &          W(1,P), W(1,Z) )
+          call copy_internal_vect_1_smp                                 &
+     &       (NP, PEsmpTOT, djds_tbl(0)%STACKmcG, W(1,P), W(1,Z) )
         else
-          call djds_z_plus_beta_p_11(NP, PEsmpTOT, STACKmcG,            &
-     &          W(1,P), W(1,Z), RHO, RHO1)
+          call djds_z_plus_beta_p_11(NP, PEsmpTOT,                      &
+     &        djds_tbl(0)%STACKmcG, W(1,P), W(1,Z), RHO, RHO1)
         endif
 !C===
 !C
 !C-- INTERFACE data EXCHANGE
       START_TIME= MPI_WTIME()
       call SOLVER_SEND_RECV                                             &
-     &   ( NP, NEIBPETOT, NEIBPE, STACK_IMPORT, NOD_IMPORT,             &
-     &     STACK_EXPORT, NOD_EXPORT, W(1,P))
+     &   (NP, MG_comm(0)%num_neib, MG_comm(0)%id_neib,                  &
+     &    MG_comm(0)%istack_import, MG_comm(0)%item_import,             &
+     &    MG_comm(0)%istack_export, djds_tbl(0)%NOD_EXPORT_NEW, W(1,P))
       END_TIME= MPI_WTIME()
       COMMtime = COMMtime + END_TIME - START_TIME
 !C
@@ -404,10 +345,17 @@
 !C===        
 !
       call cal_matvec_11                                                &
-     &           (NP, NL, NU, NPL, NPU, npLX1, npUX1, NVECT,            &
-     &            PEsmpTOT, STACKmcG, STACKmc, NLhyp, NUhyp, OtoN_L,    &
-     &            OtoN_U, NtoO_U, LtoU, INL, INU, IAL, IAU, D, AL, AU,  &
-     &            W(1,Q), W(1,P), W(1,iWK))
+     &   (NP, djds_tbl(0)%NLmax, djds_tbl(0)%NUmax,                     &
+     &    djds_tbl(0)%itotal_l, djds_tbl(0)%itotal_u,                   &
+     &    djds_tbl(0)%npLX1, djds_tbl(0)%npUX1, djds_tbl(0)%NHYP,       &
+     &    PEsmpTOT, djds_tbl(0)%STACKmcG, djds_tbl(0)%STACKmc,          &
+     &    djds_tbl(0)%NLmaxHYP, djds_tbl(0)%NUmaxHYP,                   &
+     &    djds_tbl(0)%OLDtoNEW_DJDS_L, djds_tbl(0)%OLDtoNEW_DJDS_U,     &
+     &    djds_tbl(0)%NEWtoOLD_DJDS_U, djds_tbl(0)%LtoU,                &
+     &    djds_tbl(0)%indexDJDS_L, djds_tbl(0)%indexDJDS_U,             &
+     &    djds_tbl(0)%itemDJDS_L, djds_tbl(0)%itemDJDS_U,               &
+     &    mat11(0)%aiccg(1), mat11(0)%aiccg(mat11%istart_l),            &
+     &    mat11(0)%aiccg(mat11%istart_u), W(1,Q), W(1,P), W(1,iWK))
 !
 !C===
 !C +---------------------+
@@ -415,8 +363,8 @@
 !C +---------------------+
 !C===
 !
-        call djds_local_s_product_1(NP, PEsmpTOT, STACKmcG,             &
-     &           W(1,P), W(1,Q), C10)
+        call djds_local_s_product_1(NP, PEsmpTOT,                       &
+     &      djds_tbl(0)%STACKmcG, W(1,P), W(1,Q), C10)
         write(*,*)  'RHO, C10', RHO, C10
 !
         START_TIME= MPI_WTIME()
@@ -438,8 +386,9 @@
 !C +----------------------+
 !C===
 !
-        call djds_x_and_residual_CG_11(NP, PEsmpTOT, STACKmcG,          &
-     &      DNRM20, X, W(1,R), W(1,P), W(1,Q), ALPHA)
+        call djds_x_and_residual_CG_11                                  &
+     &     (NP, PEsmpTOT, djds_tbl(0)%STACKmcG, DNRM20,                 &
+     &      X, W(1,R), W(1,P), W(1,Q), ALPHA)
 !       do ist = 1, NP
 !         write(*,*)  ist, X(ist), W(ist,R)
 !       end do
@@ -477,15 +426,17 @@
 !C-- INTERFACE data EXCHANGE
       START_TIME= MPI_WTIME()
       call SOLVER_SEND_RECV                                             &
-     &   ( NP, NEIBPETOT, NEIBPE, STACK_IMPORT, NOD_IMPORT,             &
-     &     STACK_EXPORT, NOD_EXPORT, X)
+     &   ( NP, MG_comm(0)%num_neib, MG_comm(0)%id_neib,                 &
+     &     MG_comm(0)%istack_import, MG_comm(0)%item_import,            &
+     &     MG_comm(0)%istack_export, djds_tbl(0)%NOD_EXPORT_NEW, X)
       END_TIME= MPI_WTIME()
       COMMtime = COMMtime + END_TIME - START_TIME
 
 !C
 !C== change B,X
 
-       call back_2_original_order_bx1(NP, NtoO, B, X, W(1,iWK))
+       call back_2_original_order_bx1(NP, djds_tbl(0)%NEWtoOLD,         &
+     &     B, X, W(1,iWK))
 
       IER = 0
       E1_TIME= MPI_WTIME()

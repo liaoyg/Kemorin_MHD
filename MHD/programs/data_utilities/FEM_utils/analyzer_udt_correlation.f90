@@ -17,6 +17,7 @@
 !
       use t_mesh_data
       use t_phys_data
+      use t_mesh_data_with_pointer
       use t_layering_ele_list
       use t_work_layer_correlate
       use m_FEM_utils
@@ -25,8 +26,10 @@
 !
       implicit none
 !
-      type(mesh_geometry), save :: mesh_ref
-      type(mesh_groups), save :: group_ref
+      type(mesh_data_p), save :: femmesh_p_FUT
+      type(element_geometry_p), save :: elemesh_FUT
+!
+      type(mesh_data_p), save :: femmesh_p_REF
       type(phys_data), save :: phys_ref
 !
       type(layering_tbl), save :: layer_tbl_corr
@@ -64,59 +67,65 @@
 !
 !     --------------------- 
 !
+      call init_mesh_group_type(femmesh_p_FUT%group)
+      call init_element_mesh_type(elemesh_FUT)
+!
       if (iflag_debug.eq.1) write(*,*) 's_input_control_corr_udt'
       call s_input_control_corr_udt(field_FUTIL, ucd_FUTIL)
       if (iflag_debug.eq.1) write(*,*) 'mpi_input_mesh'
-      call mpi_input_mesh(femmesh_FUTIL%mesh, femmesh_FUTIL%group,      &
-     &    elemesh_FUTIL%surf%nnod_4_surf,                               &
-     &    elemesh_FUTIL%edge%nnod_4_edge)
+      call mpi_input_mesh_p(femmesh_p_FUT,                              &
+     &    elemesh_FUT%surf%nnod_4_surf,                                 &
+     &    elemesh_FUT%edge%nnod_4_edge)
 !
 !     --------------------- 
 !
       if (iflag_debug.eq.1) write(*,*) 'const_layers_4_dynamic'
       call const_layers_4_dynamic                                       &
-     &   (femmesh_FUTIL%group%ele_grp, layer_tbl_corr)
+     &   (femmesh_p_FUT%group%ele_grp, layer_tbl_corr)
 !
 !     --------------------- 
 !
       if (iflag_debug.eq.1) write(*,*) 'allocate_vector_for_solver'
       call allocate_vector_for_solver                                   &
-     &   (isix, femmesh_FUTIL%mesh%node%numnod)
-      call init_send_recv(femmesh_FUTIL%mesh%nod_comm)
+     &   (isix, femmesh_p_FUT%mesh%node%numnod)
+      call init_send_recv(femmesh_p_FUT%mesh%nod_comm)
 !
       if (iflag_debug.eq.1) write(*,*) 'const_mesh_infos'
-      call const_mesh_infos(my_rank,                                    &
-     &   femmesh_FUTIL%mesh, femmesh_FUTIL%group, elemesh_FUTIL)
-      call const_element_comm_tbls(femmesh_FUTIL%mesh, elemesh_FUTIL)
+      call const_mesh_infos_p(my_rank, femmesh_p_FUT, elemesh_FUT)
+      call const_element_comm_tbls_p(femmesh_p_FUT, elemesh_FUT)
 !
 !     --------------------- 
 !
       if (iflag_debug.eq.1) write(*,*) 'set_field_address_type'
       call set_field_address_type                                       &
-     &   (femmesh_FUTIL%mesh%node%numnod, field_FUTIL, iphys_FUTIL)
+     &   (femmesh_p_FUT%mesh%node%numnod, field_FUTIL, iphys_FUTIL)
 !
 !     --------------------- 
 !
       call copy_num_processes_to_2nd
-      call link_mesh_data_type(femmesh_FUTIL%mesh, mesh_ref)
-      call link_new_overlaped_ele_type                                  &
-     &   (femmesh_FUTIL%mesh%ele, mesh_ref%ele)
+      femmesh_p_REF%mesh%nod_comm => femmesh_p_FUT%mesh%nod_comm
+      femmesh_p_REF%mesh%node =>     femmesh_p_FUT%mesh%node
+      femmesh_p_REF%mesh%ele =>      femmesh_p_FUT%mesh%ele
 !
-      call link_groups_type(femmesh_FUTIL%group, group_ref)
+      femmesh_p_REF%group%nod_grp =>  femmesh_p_FUT%group%nod_grp
+      femmesh_p_REF%group%ele_grp =>  femmesh_p_FUT%group%ele_grp
+      femmesh_p_REF%group%surf_grp => femmesh_p_FUT%group%surf_grp
 !
-      call link_field_name_type(field_FUTIL, phys_ref)
-      call alloc_phys_data_type(mesh_ref%node%numnod, phys_ref)
-      call allocate_vec_transfer(femmesh_FUTIL%mesh%node%numnod)
+      call copy_field_name_type(field_FUTIL, phys_ref)
+      call alloc_phys_data_type                                         &
+     &   (femmesh_p_REF%mesh%node%numnod, phys_ref)
+      call allocate_vec_transfer(femmesh_p_FUT%mesh%node%numnod)
 !
-      call allocate_2nd_iccg_matrix(isix, mesh_ref%node%numnod)
+      call allocate_2nd_iccg_matrix                                     &
+     &   (isix, femmesh_p_REF%mesh%node%numnod)
 !
 !     --------------------- 
 !
       if (iflag_debug.gt.0) write(*,*) 'const_jacobian_and_vol_layer'
-      call max_int_point_by_etype(femmesh_FUTIL%mesh%ele%nnod_4_ele)
-      call const_jacobian_and_vol_layer(femmesh_FUTIL%mesh%node,        &
-     &    femmesh_FUTIL%group%surf_grp, femmesh_FUTIL%group%infty_grp,  &
-     &    femmesh_FUTIL%mesh%ele, jac_FUTIL_l, jac_FUTIL_q,             &
+      call max_int_point_by_etype(femmesh_p_FUT%mesh%ele%nnod_4_ele)
+      call const_jacobian_and_vol_layer(femmesh_p_FUT%mesh%node,        &
+     &    femmesh_p_FUT%group%surf_grp, femmesh_p_FUT%group%infty_grp,  &
+     &    femmesh_p_FUT%mesh%ele, jac_FUTIL_l, jac_FUTIL_q,             &
      &     layer_tbl_corr)
 !
       end subroutine initialize_udt_correlate
@@ -134,7 +143,6 @@
       use ucd_IO_select
       use nod_phys_send_recv
 !
-      use fields_type_send_recv
       use correlation_all_layerd_data
 !
       integer(kind=kint) :: istep, istep_ucd
@@ -170,23 +178,22 @@
      &        udt_org_param%iflag_format, tgt_udt_file_head, phys_ref)
 !
           call nod_fields_send_recv                                     &
-     &       (femmesh_FUTIL%mesh%node, femmesh_FUTIL%mesh%nod_comm,     &
-     &        field_FUTIL)
-          call phys_type_send_recv_all(mesh_ref, phys_ref)
+     &       (femmesh_p_FUT%mesh%nod_comm, field_FUTIL)
+          call nod_fields_send_recv                                     &
+     &       (femmesh_p_REF%mesh%nod_comm, phys_ref)
 !
 !    output udt data
 !
           call coord_transfer_4_1st_field                               &
-     &       (femmesh_FUTIL%mesh%node, field_FUTIL)
-          call coord_transfer_4_2nd_field                               &
-     &       (femmesh_FUTIL%mesh%node, mesh_ref%node%numnod,            &
+     &       (femmesh_p_FUT%mesh%node, field_FUTIL)
+          call coord_transfer_4_2nd_field(femmesh_p_FUT%mesh%node,      &
      &        phys_ref)
 
 !
           if (iflag_debug .gt. 0) write(*,*)                            &
      &          's_correlation_all_layerd_data'
           call s_correlation_all_layerd_data                            &
-     &       (femmesh_FUTIL%mesh%node, femmesh_FUTIL%mesh%ele,          &
+     &       (femmesh_p_FUT%mesh%node, femmesh_p_FUT%mesh%ele,          &
      &        field_FUTIL, jac_FUTIL_l, jac_FUTIL_q,                    &
      &        layer_tbl_corr, phys_ref, wk_correlate)
 !
