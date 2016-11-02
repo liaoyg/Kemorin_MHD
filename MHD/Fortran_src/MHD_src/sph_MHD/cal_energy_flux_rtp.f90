@@ -13,7 +13,7 @@
 !!      subroutine s_cal_energy_flux_rtp                                &
 !!     &         (sph_rtp, f_trns, bs_trns, fs_trns, ncomp_rtp_2_rj,    &
 !!     &          ncomp_snap_rj_2_rtp, ncomp_snap_rtp_2_rj,             &
-!!     &          frm_rtp, fls_rtp, frs_rtp)
+!!     &          frc_rtp, fls_rtp, frs_rtp)
 !!        type(sph_rtp_grid), intent(in) :: sph_rtp
 !!        type(phys_address), intent(in) :: f_trns
 !!        type(phys_address), intent(in) :: bs_trns, fs_trns
@@ -59,15 +59,15 @@
 !
 !$omp parallel
       if( (f_trns%i_m_advect*iflag_t_evo_4_velo) .gt. 0) then
-        call cal_cross_prod_w_coef_smp(np_smp,                          &
-     &     sph_rtp%nnod_pole, sph_rtp%istack_npole_smp, coef_velo,      &
+        call cal_cross_prod_w_coef_smp                                  &
+     &     (sph_rtp%nnod_pole, coef_velo,                               &
      &      fls_pl(1,bs_trns%i_vort), fls_pl(1,bs_trns%i_velo),         &
      &      frm_pl(1,f_trns%i_m_advect) )
       end if
 !
       if( (f_trns%i_lorentz*iflag_4_lorentz) .gt. 0) then
-        call cal_cross_prod_w_coef_smp(np_smp,                          &
-     &     sph_rtp%nnod_pole, sph_rtp%istack_npole_smp, coef_lor,       &
+        call cal_cross_prod_w_coef_smp                                  &
+     &     (sph_rtp%nnod_pole, coef_lor,                                &
      &      fls_pl(1,bs_trns%i_current), fls_pl(1,bs_trns%i_magne),     &
      &      frm_pl(1,f_trns%i_lorentz) )
       end if
@@ -75,23 +75,23 @@
 !
 !
       if( (f_trns%i_vp_induct*iflag_t_evo_4_magne) .gt. 0) then
-        call cal_cross_prod_w_coef_smp(np_smp,                          &
-     &      sph_rtp%nnod_pole, sph_rtp%istack_npole_smp, coef_induct,   &
+        call cal_cross_prod_w_coef_smp                                  &
+     &     (sph_rtp%nnod_pole, coef_induct,                             &
      &      fls_pl(1,bs_trns%i_velo), fls_pl(1,bs_trns%i_magne),        &
      &      frm_pl(1,f_trns%i_vp_induct) )
       end if
 !
 !
       if( (f_trns%i_h_flux*iflag_t_evo_4_temp) .gt. 0) then
-        call cal_vec_scalar_prod_w_coef_smp(np_smp,                     &
-     &     sph_rtp%nnod_pole, sph_rtp%istack_npole_smp, coef_temp,      &
+        call cal_vec_scalar_prod_w_coef_smp                             &
+     &     (sph_rtp%nnod_pole, coef_temp,                               &
      &      fls_pl(1,bs_trns%i_velo), fls_pl(1,bs_trns%i_temp),         &
      &      frm_pl(1,f_trns%i_h_flux) )
       end if
 !
       if( (f_trns%i_c_flux*iflag_t_evo_4_composit) .gt. 0) then
-        call cal_vec_scalar_prod_w_coef_smp(np_smp,                     &
-     &     sph_rtp%nnod_pole, sph_rtp%istack_npole_smp, coef_light,     &
+        call cal_vec_scalar_prod_w_coef_smp                             &
+     &     (sph_rtp%nnod_pole, coef_light,                              &
      &      fls_pl(1,bs_trns%i_velo), fls_pl(1,bs_trns%i_light),        &
      &      frm_pl(1,f_trns%i_c_flux) )
       end if
@@ -110,7 +110,7 @@
       subroutine s_cal_energy_flux_rtp                                  &
      &         (sph_rtp, f_trns, bs_trns, fs_trns, ncomp_rtp_2_rj,      &
      &          ncomp_snap_rj_2_rtp, ncomp_snap_rtp_2_rj,               &
-     &          frm_rtp, fls_rtp, frs_rtp)
+     &          frc_rtp, fls_rtp, frs_rtp)
 !
       use t_spheric_rtp_data
       use t_phys_address
@@ -131,7 +131,7 @@
       integer(kind = kint), intent(in) :: ncomp_snap_rj_2_rtp
       integer(kind = kint), intent(in) :: ncomp_snap_rtp_2_rj
       real(kind = kreal), intent(in)                                    &
-     &           :: frm_rtp(sph_rtp%nnod_rtp,ncomp_rtp_2_rj)
+     &           :: frc_rtp(sph_rtp%nnod_rtp,ncomp_rtp_2_rj)
       real(kind = kreal), intent(in)                                    &
      &           :: fls_rtp(sph_rtp%nnod_rtp,ncomp_snap_rj_2_rtp)
       real(kind = kreal), intent(inout)                                 &
@@ -145,29 +145,28 @@
 !      end if
 !
       if(fs_trns%i_ujb .gt. 0) then
-        call cal_dot_prod_no_coef_smp(np_smp, sph_rtp%nnod_rtp,         &
-     &      sph_rtp%istack_inod_rtp_smp, frm_rtp(1,f_trns%i_lorentz),   &
-     &      fls_rtp(1,bs_trns%i_velo), frs_rtp(1,fs_trns%i_ujb) )
+        call cal_dot_prod_no_coef_smp(sph_rtp%nnod_rtp,                 &
+     &      frc_rtp(1,f_trns%i_lorentz), fls_rtp(1,bs_trns%i_velo),     &
+     &      frs_rtp(1,fs_trns%i_ujb) )
       end if
 !
       if(fs_trns%i_nega_ujb .gt. 0) then
-        call cal_dot_prod_w_coef_smp(np_smp, sph_rtp%nnod_rtp,          &
-     &      sph_rtp%istack_inod_rtp_smp, dminus,                        &
-     &      frm_rtp(1,f_trns%i_lorentz), fls_rtp(1,bs_trns%i_velo),     &
+        call cal_dot_prod_w_coef_smp(sph_rtp%nnod_rtp, dminus,          &
+     &      frc_rtp(1,f_trns%i_lorentz), fls_rtp(1,bs_trns%i_velo),     &
      &      frs_rtp(1,fs_trns%i_nega_ujb) )
       end if
 !
       if(fs_trns%i_me_gen .gt. 0) then
-        call cal_dot_prod_no_coef_smp(np_smp, sph_rtp%nnod_rtp,         &
-     &    sph_rtp%istack_inod_rtp_smp, fls_rtp(1,bs_trns%i_induction),  &
-     &    fls_rtp(1,bs_trns%i_magne), frs_rtp(1,fs_trns%i_me_gen))
+        call cal_dot_prod_no_coef_smp(sph_rtp%nnod_rtp,                 &
+     &      fls_rtp(1,bs_trns%i_induction), fls_rtp(1,bs_trns%i_magne), &
+     &      frs_rtp(1,fs_trns%i_me_gen))
       end if
 !
       if(fs_trns%i_electric .gt. 0) then
         call cal_electric_field_smp                                     &
      &     (np_smp, sph_rtp%nnod_rtp, sph_rtp%istack_inod_rtp_smp,      &
      &      coef_d_magne, fls_rtp(1,bs_trns%i_current),                 &
-     &      frm_rtp(1,f_trns%i_vp_induct),                              &
+     &      frc_rtp(1,f_trns%i_vp_induct),                              &
      &      frs_rtp(1,fs_trns%i_electric))
       end if
 !
@@ -175,7 +174,7 @@
         call cal_poynting_flux_smp                                      &
      &     (np_smp, sph_rtp%nnod_rtp, sph_rtp%istack_inod_rtp_smp,      &
      &      coef_d_magne, fls_rtp(1,bs_trns%i_current),                 &
-     &      frm_rtp(1,f_trns%i_vp_induct), fls_rtp(1,bs_trns%i_magne),  &
+     &      frc_rtp(1,f_trns%i_vp_induct), fls_rtp(1,bs_trns%i_magne),  &
      &      frs_rtp(1,fs_trns%i_poynting))
       end if
 !

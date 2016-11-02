@@ -17,7 +17,7 @@
 !!   wrapper subroutine for initierize FFT for ISPACK
 !! ------------------------------------------------------------------
 !!
-!!      subroutine fwd_MHD_FFT_sel_from_recv                            &
+!!      subroutine fwd_MHD_FFT_sel_to_send                              &
 !!     &         (sph_rtp, comm_rtp, ncomp_fwd, n_WS, frc_rtp, WS)
 !!        type(sph_rtp_grid), intent(in) :: sph_rtp
 !!        type(sph_comm_tbl), intent(in)  :: comm_rtp
@@ -79,7 +79,7 @@
 #ifdef FFTW3
       use m_sph_single_FFTW
       use m_sph_field_FFTW
-      use m_MHD_multi_FFTW
+      use m_sph_multi_FFTW
 #endif
 !
       implicit none
@@ -207,7 +207,7 @@
 ! ------------------------------------------------------------------
 ! ------------------------------------------------------------------
 !
-      subroutine fwd_MHD_FFT_sel_from_recv                              &
+      subroutine fwd_MHD_FFT_sel_to_send                                &
      &         (sph_rtp, comm_rtp, ncomp_fwd, n_WS, frc_rtp, WS)
 !
       use t_spheric_rtp_data
@@ -251,7 +251,7 @@
      &      comm_rtp%irev_sr, frc_rtp, WS(1))
       end if
 !
-      end subroutine fwd_MHD_FFT_sel_from_recv
+      end subroutine fwd_MHD_FFT_sel_to_send
 !
 ! ------------------------------------------------------------------
 !
