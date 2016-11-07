@@ -208,7 +208,7 @@
       use m_sph_spectr_data
       use m_sph_trans_arrays_MHD
       use output_viz_file_control
-      use lead_pole_data_4_sph_mhd
+      use lead_fields_4_sph_mhd
       use copy_snap_4_sph_trans
       use copy_MHD_4_sph_trans
       use sph_rtp_zonal_rms_data
@@ -222,15 +222,8 @@
 !*
 !*  -----------  data transfer to FEM array --------------
 !*
-      call copy_forces_to_snapshot_rtp                                  &
-     &   (sph1%sph_params%m_folding, sph1%sph_rtp, trns_WK1%trns_MHD,   &
-     &    mesh1%node, iphys, nod_fld1)
-      call copy_snap_vec_fld_from_trans                                 &
-     &   (sph1%sph_params%m_folding, sph1%sph_rtp, trns_WK1%trns_snap,  &
-     &    mesh1%node, iphys, nod_fld1)
-      call copy_snap_vec_fld_to_trans                                   &
-     &   (sph1%sph_params%m_folding, sph1%sph_rtp, trns_WK1%trns_snap,  &
-     &    mesh1%node, iphys, nod_fld1)
+      call copy_rtp_field_to_FEM                                         &
+     &   (sph1, trns_WK1, mesh1, iphys, nod_fld1)
 !
 ! ----  Take zonal mean
 !

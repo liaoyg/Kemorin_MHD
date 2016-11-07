@@ -9,6 +9,9 @@
 !!@verbatim
 !!      subroutine cal_momentum_eq_exp_sph                              &
 !!     &         (sph_rj, r_2nd, leg, ipol, itor, rj_fld)
+!!      subroutine cal_SGS_momentum_exp_sph                             &
+!!     &         (sph_rj, r_2nd, leg, ipol, itor, rj_fld)
+!!
 !!      subroutine cal_expricit_sph_adams(sph_rj, ipol, itor, rj_fld)
 !!      subroutine cal_expricit_sph_euler                               &
 !!     &         (i_step, sph_rj, ipol, itor, rj_fld)
@@ -69,6 +72,38 @@
      &   (sph_rj, r_2nd, leg%g_sph_rj, ipol, rj_fld)
 !
       end subroutine cal_momentum_eq_exp_sph
+!
+! ----------------------------------------------------------------------
+! ----------------------------------------------------------------------
+!
+      subroutine cal_SGS_momentum_exp_sph                               &
+     &         (sph_rj, r_2nd, leg, ipol, itor, rj_fld)
+!
+      use cal_explicit_terms
+      use calypso_mpi
+      use cal_sph_rotation_of_SGS
+!
+      type(sph_rj_grid), intent(in) ::  sph_rj
+      type(fdm_matrices), intent(in) :: r_2nd
+      type(legendre_4_sph_trans), intent(in) :: leg
+      type(phys_address), intent(in) :: ipol, itor
+      type(phys_data), intent(inout) :: rj_fld
+!
+!
+      if (iflag_debug .ge. iflag_routine_msg)                           &
+     &     write(*,*) 'SGS_rot_of_SGS_forces_sph_2'
+      call SGS_rot_of_SGS_forces_sph_2                                  &
+     &   (sph_rj, r_2nd, leg%g_sph_rj, ipol, itor, rj_fld)
+!
+      call cal_rot_of_SGS_induction_sph                                 &
+     &   (sph_rj, r_2nd, leg%g_sph_rj, ipol, rj_fld)
+!
+      if (iflag_debug .ge. iflag_routine_msg)                           &
+     &     write(*,*) 'cal_div_of_SGS_fluxes_sph'
+      call cal_div_of_SGS_fluxes_sph                                    &
+     &   (sph_rj, r_2nd, leg%g_sph_rj, ipol, rj_fld)
+!
+      end subroutine cal_SGS_momentum_exp_sph
 !
 ! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------

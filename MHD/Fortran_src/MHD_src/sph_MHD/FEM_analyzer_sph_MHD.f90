@@ -23,8 +23,8 @@
 !!      subroutine FEM_finalize
 !!
 !!      subroutine SPH_to_FEM_bridge_MHD                                &
-!!     &         (sph_params, sph_rtp, trns_WK, mesh, iphys, nod_fld)
-!!        type(sph_shell_parameters), intent(in) :: sph_params
+!!     &         (sph, trns_WK, mesh, iphys, nod_fld)
+!!        type(sph_grids), intent(in) :: sph
 !!        type(sph_rtp_grid), intent(in) :: sph_rtp
 !!        type(works_4_sph_trans_MHD), intent(in) :: trns_WK
 !!        type(mesh_geometry), intent(in) :: mesh
@@ -169,7 +169,7 @@
 !-----------------------------------------------------------------------
 !
       subroutine SPH_to_FEM_bridge_MHD                                  &
-     &         (sph_params, sph_rtp, trns_WK, mesh, iphys, nod_fld)
+     &         (sph, trns_WK, mesh, iphys, nod_fld)
 !
       use t_spheric_parameter
       use t_mesh_data
@@ -178,13 +178,9 @@
       use t_sph_trans_arrays_MHD
 !
       use output_viz_file_control
-      use lead_pole_data_4_sph_mhd
-      use copy_snap_4_sph_trans
-      use copy_MHD_4_sph_trans
-      use coordinate_convert_4_sph
+      use lead_fields_4_sph_mhd
 !
-      type(sph_shell_parameters), intent(in) :: sph_params
-      type(sph_rtp_grid), intent(in) :: sph_rtp
+      type(sph_grids), intent(in) :: sph
       type(works_4_sph_trans_MHD), intent(in) :: trns_WK
       type(mesh_geometry), intent(in) :: mesh
       type(phys_address), intent(in) :: iphys
@@ -199,18 +195,8 @@
 !*
 !*  -----------  data transfer to FEM array --------------
 !*
-      if (iflag_debug.gt.0) write(*,*) 'copy_forces_to_snapshot_rtp'
-      call copy_forces_to_snapshot_rtp                                  &
-     &   (sph_params%m_folding, sph_rtp, trns_WK%trns_MHD,              &
-     &    mesh%node, iphys, nod_fld)
-      if (iflag_debug.gt.0) write(*,*) 'copy_snap_vec_fld_from_trans'
-      call copy_snap_vec_fld_from_trans                                 &
-     &   (sph_params%m_folding, sph_rtp, trns_WK%trns_snap,             &
-     &    mesh%node, iphys, nod_fld)
-      if (iflag_debug.gt.0) write(*,*) 'copy_snap_vec_fld_to_trans'
-      call copy_snap_vec_fld_to_trans                                   &
-     &   (sph_params%m_folding, sph_rtp, trns_WK%trns_snap,             &
-     &    mesh%node, iphys, nod_fld)
+      if (iflag_debug.gt.0) write(*,*) 'copy_rtp_field_to_FEM'
+      call copy_rtp_field_to_FEM(sph, trns_WK, mesh, iphys, nod_fld)
 !
       end subroutine SPH_to_FEM_bridge_MHD
 !

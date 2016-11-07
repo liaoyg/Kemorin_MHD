@@ -251,6 +251,12 @@
      &    ipol, trns_MHD, MHD_mul_FFTW, rj_fld)
       call end_eleps_time(16)
 !
+      call start_eleps_time(17)
+      if (iflag_debug.ge.1) write(*,*) 'cal_momentum_eq_exp_sph'
+      call cal_momentum_eq_exp_sph                                      &
+     &   (sph%sph_rj, r_2nd, trans_p%leg, ipol, itor, rj_fld)
+      call end_eleps_time(17)
+!
 !   ----  Lead filtered forces for SGS terms
       if(iflag_SGS_model .gt. 0) then
         if (iflag_debug.ge.1) write(*,*) 'cal_filtered_sph_rj_forces'
@@ -280,13 +286,13 @@
         call sph_forward_trans_SGS_MHD(sph, comms_sph, trans_p,         &
      &      ipol, trns_SGS, SGS_mul_FFTW, rj_fld)
         call end_eleps_time(16)
-      end if
 !
-      call start_eleps_time(17)
-      if (iflag_debug.ge.1) write(*,*) 'cal_momentum_eq_exp_sph'
-      call cal_momentum_eq_exp_sph                                      &
-     &   (sph%sph_rj, r_2nd, trans_p%leg, ipol, itor, rj_fld)
-      call end_eleps_time(17)
+        call start_eleps_time(17)
+        if (iflag_debug.ge.1) write(*,*) 'cal_momentum_eq_exp_sph'
+        call cal_SGS_momentum_exp_sph                                   &
+     &     (sph%sph_rj, r_2nd, trans_p%leg, ipol, itor, rj_fld)
+        call end_eleps_time(17)
+      end if
 !
       end subroutine nonlinear_by_pseudo_sph
 !

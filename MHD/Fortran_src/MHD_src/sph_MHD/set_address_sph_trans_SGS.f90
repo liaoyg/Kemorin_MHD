@@ -115,54 +115,54 @@
 !
       nvector_rj_2_rtp = 0
 !
-!   dual filtered current density
+!   SGS inertia
       if(ipol%i_SGS_inertia .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_SGS_inertia = 3*nvector_rj_2_rtp - 2
       end if
-!   dual filtered current density
+!   SGS Lorenz force
       if(ipol%i_SGS_Lorentz .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_SGS_Lorentz = 3*nvector_rj_2_rtp - 2
       end if
-!   dual filtered current density
+!   SGS induction
       if(ipol%i_SGS_vp_induct .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_SGS_vp_induct = 3*nvector_rj_2_rtp - 2
       end if
-!   dual filtered current density
+!   SGS heat flux
       if(ipol%i_SGS_h_flux .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_SGS_h_flux = 3*nvector_rj_2_rtp - 2
       end if
-!   dual filtered current density
+!   SGS composition flux
       if(ipol%i_SGS_c_flux .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_SGS_c_flux = 3*nvector_rj_2_rtp - 2
       end if
 !
 !
-!   dual filtered current density
+!   filtered SGS inertia
       if(ipol%i_wide_SGS_inertia .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_wide_SGS_inertia = 3*nvector_rj_2_rtp - 2
       end if
-!   dual filtered current density
+!   filtered SGS Lorenz force
       if(ipol%i_wide_SGS_Lorentz .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_wide_SGS_Lorentz = 3*nvector_rj_2_rtp - 2
       end if
-!   dual filtered current density
+!   filtered SGS induction
       if(ipol%i_wide_SGS_vp_induct .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_wide_SGS_vp_induct = 3*nvector_rj_2_rtp - 2
       end if
-!   dual filtered current density
+!   filtered SGS heat flux
       if(ipol%i_wide_SGS_h_flux .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_wide_SGS_h_flux = 3*nvector_rj_2_rtp - 2
       end if
-!   dual filtered current density
+!   filtered SGS composition flux
       if(ipol%i_wide_SGS_c_flux .gt. izero) then
         nvector_rj_2_rtp = nvector_rj_2_rtp + 1
         b_trns%i_wide_SGS_c_flux = 3*nvector_rj_2_rtp - 2

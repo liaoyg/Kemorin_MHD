@@ -39,6 +39,10 @@
 !!        type(phys_address), intent(in) :: ipol
 !!        type(phys_address), intent(in) :: ft_trns
 !!        type(phys_data), intent(inout) :: rj_fld
+!!
+!!      subroutine copy_diff_SGS_spectr_to_send(nnod_pole, ncomp_send,  &
+!!     &          b_trns, sph_rj, comm_rj, ipol, rj_fld,                &
+!!     &          n_WS, WS, v_pl_local)
 !!@endverbatim
 !
       module copy_sph_MHD_4_send_recv
@@ -485,6 +489,57 @@
      &    comm_rj, n_WR, WR, rj_fld)
 !
       end  subroutine copy_tmp_scl_spec_from_trans
+!
+!-----------------------------------------------------------------------
+!-----------------------------------------------------------------------
+!
+      subroutine copy_diff_SGS_spectr_to_send(nnod_pole, ncomp_send,    &
+     &          b_trns, sph_rj, comm_rj, ipol, rj_fld,                  &
+     &          n_WS, WS, v_pl_local)
+!
+      type(sph_rj_grid), intent(in) ::  sph_rj
+      type(sph_comm_tbl), intent(in) :: comm_rj
+      type(phys_address), intent(in) :: ipol
+      type(phys_address), intent(in) :: b_trns
+      type(phys_data), intent(in) :: rj_fld
+      integer(kind = kint), intent(in) :: nnod_pole
+      integer(kind = kint), intent(in) :: ncomp_send, n_WS
+      real(kind = kreal), intent(inout) :: WS(n_WS)
+      real(kind = kreal), intent(inout)                                 &
+     &                :: v_pl_local(nnod_pole,ncomp_send)
+!
+!      Vectors
+      call sel_sph_rj_vector_to_send(ncomp_send,                        &
+     &    ipol%i_SGS_rot_inertia, b_trns%i_SGS_rot_inertia,             &
+     &    comm_rj, rj_fld, n_WS, WS)
+!
+      call sel_sph_rj_vector_to_send(ncomp_send,                        &
+     &    ipol%i_SGS_rot_Lorentz, b_trns%i_SGS_rot_Lorentz,             &
+     &    comm_rj, rj_fld, n_WS, WS)
+!
+      call sel_sph_rj_vector_to_send(ncomp_send,                        &
+     &    ipol%i_SGS_induction, b_trns%i_SGS_induction,                 &
+     &    comm_rj, rj_fld, n_WS, WS)
+!
+!      Scalar fields
+!
+      call sel_sph_rj_scalar_2_send_wpole(ncomp_send,                   &
+     &    ipol%i_SGS_div_inertia, b_trns%i_SGS_div_inertia, nnod_pole,  &
+     &    sph_rj, comm_rj, rj_fld, n_WS, WS, v_pl_local)
+!
+      call sel_sph_rj_scalar_2_send_wpole(ncomp_send,                   &
+     &    ipol%i_SGS_div_Lorentz, b_trns%i_SGS_div_Lorentz, nnod_pole,  &
+     &    sph_rj, comm_rj, rj_fld, n_WS, WS, v_pl_local)
+!
+      call sel_sph_rj_scalar_2_send_wpole(ncomp_send,                   &
+     &    ipol%i_SGS_div_h_flux, b_trns%i_SGS_div_h_flux, nnod_pole,    &
+     &    sph_rj, comm_rj, rj_fld, n_WS, WS, v_pl_local)
+!
+      call sel_sph_rj_scalar_2_send_wpole(ncomp_send,                   &
+     &    ipol%i_SGS_div_c_flux, b_trns%i_SGS_div_c_flux, nnod_pole,    &
+     &    sph_rj, comm_rj, rj_fld, n_WS, WS, v_pl_local)
+!
+      end subroutine copy_diff_SGS_spectr_to_send
 !
 !-----------------------------------------------------------------------
 !

@@ -19,6 +19,9 @@
 !!        type(address_4_sph_trans), intent(in) :: trns_tmp
 !!        type(phys_address), intent(in) :: ipol
 !!        type(phys_data), intent(inout) :: rj_fld
+!!
+!!      subroutine sph_back_trans_diff_SGS(sph, comms_sph, trans_p,     &
+!!     &          ipol, rj_fld, trns_SGS2)
 !!@endverbatim
 !!
       module sph_transforms_snapshot
@@ -82,7 +85,7 @@
       call copy_snap_spectr_to_send(sph%sph_rtp%nnod_pole,              &
      &    trns_snap%ncomp_rj_2_rtp, trns_snap%b_trns,                   &
      &    sph%sph_rj, comms_sph%comm_rj, ipol, rj_fld,                  &
-&    n_WS, WS, trns_snap%flc_pole)
+     &    n_WS, WS, trns_snap%flc_pole)
 !
       call sph_b_trans_w_poles                                          &
      &   (trns_snap%ncomp_rj_2_rtp, trns_snap%nvector_rj_2_rtp,         &
@@ -168,6 +171,49 @@
      &    comms_sph%comm_rj, ipol, n_WR, WR, rj_fld)
 !
       end subroutine sph_forward_trans_tmp_snap_MHD
+!
+!-----------------------------------------------------------------------
+!
+      subroutine sph_back_trans_diff_SGS(sph, comms_sph, trans_p,       &
+     &          ipol, rj_fld, trns_SGS2)
+!
+      use m_solver_SR
+      use sph_transforms
+      use copy_sph_MHD_4_send_recv
+      use spherical_SRs_N
+!
+      type(sph_grids), intent(in) :: sph
+      type(sph_comm_tables), intent(in) :: comms_sph
+      type(parameters_4_sph_trans), intent(in) :: trans_p
+      type(phys_address), intent(in) :: ipol
+      type(phys_data), intent(in) :: rj_fld
+!
+      type(address_4_sph_trans), intent(inout) :: trns_SGS2
+!
+      integer(kind = kint) :: nscalar_trans
+!
+!
+      if(trns_SGS2%ncomp_rj_2_rtp .le. 0) return
+!
+      nscalar_trans = trns_SGS2%nscalar_rj_2_rtp                        &
+     &               + 6*trns_SGS2%ntensor_rj_2_rtp
+      call check_calypso_sph_comm_buf_N(trns_SGS2%ncomp_rj_2_rtp,       &
+     &   comms_sph%comm_rj, comms_sph%comm_rlm)
+      call check_calypso_sph_comm_buf_N(trns_SGS2%ncomp_rj_2_rtp,       &
+     &   comms_sph%comm_rtm, comms_sph%comm_rtp)
+!
+      call copy_diff_SGS_spectr_to_send(sph%sph_rtp%nnod_pole,          &
+     &    trns_SGS2%ncomp_rj_2_rtp, trns_SGS2%b_trns,                   &
+     &    sph%sph_rj, comms_sph%comm_rj, ipol, rj_fld,                  &
+     &    n_WS, WS, trns_SGS2%flc_pole)
+!
+      call sph_b_trans_w_poles                                          &
+     &   (trns_SGS2%ncomp_rj_2_rtp, trns_SGS2%nvector_rj_2_rtp,         &
+     &    nscalar_trans, sph, comms_sph, trans_p,                       &
+     &    n_WS, n_WR, WS(1), WR(1),                                     &
+     &    trns_SGS2%fld_rtp, trns_SGS2%flc_pole, trns_SGS2%fld_pole)
+!
+      end subroutine sph_back_trans_diff_SGS
 !
 !-----------------------------------------------------------------------
 !

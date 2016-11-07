@@ -7,9 +7,9 @@
 !>@brief  Copy data from/to sphrical transform buffer for snapshots
 !!
 !!@verbatim
-!!      subroutine copy_snap_vec_fld_from_trans                         &
+!!      subroutine copy_snap_field_from_trans                           &
 !!     &         (m_folding, sph_rtp, trns_snap, node, iphys, nod_fld)
-!!      subroutine copy_snap_vec_fld_to_trans                           &
+!!      subroutine copy_snap_force_from_trans                           &
 !!     &         (m_folding, sph_rtp, trns_snap, node, iphys, nod_fld)
 !!        type(sph_rtp_grid), intent(in) :: sph_rtp
 !!        type(address_4_sph_trans), intent(in) :: trns_snap
@@ -37,7 +37,7 @@
 !
 !-----------------------------------------------------------------------
 !
-      subroutine copy_snap_vec_fld_from_trans                           &
+      subroutine copy_snap_field_from_trans                             &
      &         (m_folding, sph_rtp, trns_snap, node, iphys, nod_fld)
 !
       integer(kind = kint), intent(in) :: m_folding
@@ -143,12 +143,12 @@
      &   (trns_snap%b_trns%i_div_Coriolis, iphys%i_div_Coriolis,        &
      &    m_folding, sph_rtp, trns_snap, node, nod_fld)
 !
-      end subroutine copy_snap_vec_fld_from_trans
+      end subroutine copy_snap_field_from_trans
 !
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
 !
-      subroutine copy_snap_vec_fld_to_trans                             &
+      subroutine copy_snap_force_from_trans                             &
      &         (m_folding, sph_rtp, trns_snap, node, iphys, nod_fld)
 !
       integer(kind = kint), intent(in) :: m_folding
@@ -207,7 +207,7 @@
      &   (trns_snap%f_trns%i_comp_scale, iphys%i_comp_scale,            &
      &    m_folding, sph_rtp, trns_snap, node, nod_fld)
 !
-      end  subroutine copy_snap_vec_fld_to_trans
+      end  subroutine copy_snap_force_from_trans
 !
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------

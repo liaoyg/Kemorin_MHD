@@ -9,6 +9,8 @@
 !!@verbatim
 !!      subroutine s_lead_fields_4_sph_mhd                              &
 !!     &         (sph, comms_sph, r_2nd, trans_p, ipol, rj_fld, trns_WK)
+!!      subroutine copy_rtp_field_to_FEM                                &
+!!     &         (sph, trns_WK, mesh, iphys, nod_fld)
 !!        type(sph_grids), intent(in) :: sph
 !!        type(sph_comm_tables), intent(in) :: comms_sph
 !!        type(fdm_matrices), intent(in) :: r_2nd
@@ -54,6 +56,7 @@
       use output_viz_file_control
       use sph_transforms_4_MHD
       use sph_transforms_4_SGS
+      use sph_transforms_snapshot
       use copy_MHD_4_sph_trans
       use cal_energy_flux_rtp
       use swap_phi_4_sph_trans
@@ -115,6 +118,9 @@
         if (iflag_debug.eq.1) write(*,*) 'sph_pole_trans_SGS_MHD'
         call sph_pole_trans_SGS_MHD                                     &
      &     (sph, comms_sph, trans_p, ipol, rj_fld, trns_WK%trns_SGS)
+!
+        call sph_back_trans_diff_SGS(sph, comms_sph, trans_p,           &
+     &      ipol, rj_fld, trns_WK%trns_SGS2)
       end if
 !
       call gradients_of_vectors_sph(sph, comms_sph, r_2nd, trans_p,     &
@@ -124,6 +130,63 @@
 !
       end subroutine s_lead_fields_4_sph_mhd
 !
+! ----------------------------------------------------------------------
+!
+      subroutine copy_rtp_field_to_FEM                                  &
+     &         (sph, trns_WK, mesh, iphys, nod_fld)
+!
+      use t_spheric_parameter
+      use t_mesh_data
+      use t_phys_data
+      use t_phys_address
+      use t_sph_trans_arrays_MHD
+!
+      use m_control_parameter
+!
+      use copy_snap_4_sph_trans
+      use copy_MHD_4_sph_trans
+      use copy_SGS_4_sph_trans
+!
+      type(sph_grids), intent(in) :: sph
+      type(works_4_sph_trans_MHD), intent(in) :: trns_WK
+      type(mesh_geometry), intent(in) :: mesh
+      type(phys_address), intent(in) :: iphys
+!
+      type(phys_data), intent(inout) :: nod_fld
+!
+!*
+!*  -----------  data transfer to FEM array --------------
+!*
+      if (iflag_debug.gt.0) write(*,*) 'copy_forces_to_snapshot_rtp'
+      call copy_forces_to_snapshot_rtp                                  &
+     &   (sph%sph_params%m_folding, sph%sph_rtp, trns_WK%trns_MHD,      &
+     &    mesh%node, iphys, nod_fld)
+      if (iflag_debug.gt.0) write(*,*) 'copy_snap_field_from_trans'
+      call copy_snap_field_from_trans                                   &
+     &   (sph%sph_params%m_folding, sph%sph_rtp, trns_WK%trns_snap,     &
+     &    mesh%node, iphys, nod_fld)
+      if (iflag_debug.gt.0) write(*,*) 'copy_snap_force_from_trans'
+      call copy_snap_force_from_trans                                   &
+     &   (sph%sph_params%m_folding, sph%sph_rtp, trns_WK%trns_snap,     &
+     &    mesh%node, iphys, nod_fld)
+!
+      if(iflag_SGS_model .gt. 0) then
+        call copy_filtered_field_from_trans                             &
+     &     (sph%sph_params%m_folding, sph%sph_rtp, trns_WK%trns_MHD,    &
+     &      mesh%node, iphys, nod_fld)
+!!
+        call copy_SGS_force_from_trans                                  &
+     &     (sph%sph_params%m_folding, sph%sph_rtp, trns_WK%trns_SGS,    &
+     &      mesh%node, iphys, nod_fld)
+!!
+        call copy_SGS_diff_field_from_trans                             &
+     &     (sph%sph_params%m_folding, sph%sph_rtp, trns_WK%trns_SGS2,   &
+     &      mesh%node, iphys, nod_fld)
+      end if
+!
+      end subroutine copy_rtp_field_to_FEM
+!
+! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------
 !
       subroutine pressure_4_sph_mhd                                     &

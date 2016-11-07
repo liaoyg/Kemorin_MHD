@@ -64,9 +64,10 @@
 !
       use m_control_parameter
       use set_address_sph_trans_MHD
-      use set_address_sph_trans_SGS
       use set_address_sph_trans_snap
       use set_address_sph_trans_tmp
+      use set_address_sph_trans_SGS
+      use set_address_sph_trans_d_SGS
       use pole_sph_transform
       use MHD_FFT_selector
 !
@@ -95,22 +96,30 @@
      &                     'set_addresses_trans_sph_MHD'
       call set_addresses_trans_sph_MHD(ipol, trns_WK%trns_MHD,          &
      &    ncomp_max_trans, nvector_max_trans, nscalar_max_trans)
-      call set_addresses_trans_sph_SGS(ipol, trns_WK%trns_SGS,          &
-     &    ncomp_max_trans, nvector_max_trans, nscalar_max_trans)
-      call set_addresses_snapshot_trans(ipol, trns_WK%trns_snap,        &
+      call set_addresses_snapshot_trans(iphys, ipol, trns_WK%trns_snap, &
      &    ncomp_max_trans, nvector_max_trans, nscalar_max_trans)
       call set_addresses_temporal_trans(ipol, trns_WK%trns_tmp,         &
      &    ncomp_max_trans, nvector_max_trans, nscalar_max_trans)
 !
+      call set_addresses_trans_sph_SGS(ipol, trns_WK%trns_SGS,          &
+     &    ncomp_max_trans, nvector_max_trans, nscalar_max_trans)
+      call set_addresses_trans_sph_d_SGS                                &
+     &   (iphys, ipol, trns_WK%trns_SGS2,                               &
+     &    ncomp_max_trans, nvector_max_trans, nscalar_max_trans)
+!
+!
       if(iflag_debug .ge. iflag_routine_msg) then
         call check_address_trans_sph_MHD(ipol, idpdr, itor, iphys,      &
      &      trns_WK%trns_MHD, ncomp_max_trans)
-        call check_address_trans_sph_SGS(ipol, idpdr, itor, iphys,      &
-     &      trns_WK%trns_SGS)
         call check_address_trans_sph_snap(ipol, idpdr, itor, iphys,     &
      &      trns_WK%trns_snap)
         call check_address_trans_sph_tmp(ipol, idpdr, itor, iphys,      &
      &      trns_WK%trns_tmp)
+!
+        call check_address_trans_sph_SGS(ipol, idpdr, itor, iphys,      &
+     &      trns_WK%trns_SGS)
+        call check_address_trans_sph_d_SGS(ipol, idpdr, itor, iphys,    &
+     &      trns_WK%trns_SGS2)
       end if
 !
       call alloc_sph_trans_address(sph%sph_rtp, trns_WK)

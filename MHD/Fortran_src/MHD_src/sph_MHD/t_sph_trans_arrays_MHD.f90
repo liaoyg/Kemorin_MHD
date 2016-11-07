@@ -31,6 +31,9 @@
 !>        strucutre for spherical transform data addresses
         type(address_4_sph_trans) :: trns_SGS
 !>        strucutre for spherical transform data addresses
+        type(address_4_sph_trans) :: trns_SGS2
+!
+!>        strucutre for spherical transform data addresses
         type(address_4_sph_trans) :: trns_snap
 !>        strucutre for spherical transform data addresses
         type(address_4_sph_trans) :: trns_tmp
@@ -57,12 +60,14 @@
 !
       call alloc_nonlinear_data(sph_rtp%nnod_rtp, wk%trns_MHD)
       call alloc_nonlinear_data(sph_rtp%nnod_rtp, wk%trns_SGS)
+      call alloc_nonlinear_data(sph_rtp%nnod_rtp, wk%trns_SGS2)
       call alloc_nonlinear_data(sph_rtp%nnod_rtp, WK%trns_snap)
       call alloc_nonlinear_data(sph_rtp%nnod_rtp, wk%trns_tmp)
 !
 !
       call alloc_nonlinear_pole(sph_rtp%nnod_pole, WK%trns_MHD)
       call alloc_nonlinear_pole(sph_rtp%nnod_pole, WK%trns_SGS)
+      call alloc_nonlinear_pole(sph_rtp%nnod_pole, WK%trns_SGS2)
       call alloc_nonlinear_pole(sph_rtp%nnod_pole, WK%trns_snap)
 !
       end subroutine alloc_sph_trans_address
@@ -76,9 +81,12 @@
 !
       call dealloc_nonlinear_pole(WK%trns_snap)
       call dealloc_nonlinear_pole(WK%trns_SGS)
+      call dealloc_nonlinear_pole(WK%trns_SGS2)
 !
       call dealloc_nonlinear_data(WK%trns_tmp)
       call dealloc_nonlinear_data(WK%trns_snap)
+      call dealloc_nonlinear_data(WK%trns_SGS2)
+      call dealloc_nonlinear_data(WK%trns_SGS)
       call dealloc_nonlinear_data(WK%trns_MHD)
 !
       end subroutine dealloc_sph_trans_address
