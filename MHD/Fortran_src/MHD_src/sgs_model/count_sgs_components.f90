@@ -15,9 +15,9 @@
 !!        type(SGS_terms_address), intent(inout) :: icomp_diff
 !!        type(dynamic_model_data), intent(inout) :: wk_sgs
 !!        type(dynamic_model_data), intent(inout) :: wk_diff
-!!        type(MHD_coefficients_type), intent(inout) :: sgs_coefs
-!!        type(MHD_coefficients_type), intent(inout) :: sgs_coefs_nod
-!!        type(MHD_coefficients_type), intent(inout) :: diff_coefs
+!!        type(SGS_coefficients_type), intent(inout) :: sgs_coefs
+!!        type(SGS_coefficients_type), intent(inout) :: sgs_coefs_nod
+!!        type(SGS_coefficients_type), intent(inout) :: diff_coefs
 !
       module count_sgs_components
 !
@@ -43,6 +43,7 @@
       use t_layering_ele_list
       use t_ele_info_4_dynamic
       use t_material_property
+      use t_SGS_model_coefs
 !
       integer(kind = kint), intent(in) :: numnod, numele
       type(layering_tbl), intent(in) :: layer_tbl
@@ -51,9 +52,9 @@
       type(SGS_terms_address), intent(inout) :: ifld_diff, icomp_diff
 !
       type(dynamic_model_data), intent(inout) :: wk_sgs, wk_diff
-      type(MHD_coefficients_type), intent(inout) :: sgs_coefs
-      type(MHD_coefficients_type), intent(inout) :: sgs_coefs_nod
-      type(MHD_coefficients_type), intent(inout) :: diff_coefs
+      type(SGS_coefficients_type), intent(inout) :: sgs_coefs
+      type(SGS_coefficients_type), intent(inout) :: sgs_coefs_nod
+      type(SGS_coefficients_type), intent(inout) :: diff_coefs
 !
       integer(kind = kint) :: ntot_diff_comp
       integer(kind = kint) :: i, j, id, jd
@@ -182,16 +183,16 @@
       call alloc_sgs_coefs_layer(layer_tbl%e_grp%num_grp,               &
      &    diff_coefs%num_field, ntot_diff_comp, wk_diff)
 !
-      call alloc_MHD_num_coefs(sgs_coefs)
-      call alloc_MHD_coefs(numele, sgs_coefs)
+      call alloc_SGS_num_coefs(sgs_coefs)
+      call alloc_SGS_coefs(numele, sgs_coefs)
 !
-      call alloc_MHD_num_coefs(diff_coefs)
-      call alloc_MHD_coefs(numele, diff_coefs)
+      call alloc_SGS_num_coefs(diff_coefs)
+      call alloc_SGS_coefs(numele, diff_coefs)
 !
       if (iflag_dynamic_SGS .ne. id_SGS_DYNAMIC_OFF                     &
      &      .or. iflag_SGS_model.eq.id_SGS_similarity)  then
-        call copy_MHD_num_coefs(sgs_coefs, sgs_coefs_nod)
-        call alloc_MHD_coefs(numnod, sgs_coefs_nod)
+        call copy_SGS_num_coefs(sgs_coefs, sgs_coefs_nod)
+        call alloc_SGS_coefs(numnod, sgs_coefs_nod)
       end if
 !
        i = 1
@@ -503,6 +504,7 @@
 !
       use m_control_parameter
       use t_material_property
+      use t_SGS_model_coefs
 !
       type(SGS_terms_address), intent(inout) :: iphys_elediff
 !
