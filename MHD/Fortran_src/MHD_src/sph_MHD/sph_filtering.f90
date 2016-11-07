@@ -48,6 +48,28 @@
       type(sph_filters_type), intent(inout) :: sph_filters(3)
 !
 !
+      call init_filter_4_SPH_MHD(sph_params, sph_rj, sph_grps,          &
+     &    sph_filters)
+!
+!
+      
+!
+      end subroutine init_SGS_model_sph_mhd
+!
+! ----------------------------------------------------------------------
+!
+      subroutine init_filter_4_SPH_MHD(sph_params, sph_rj, sph_grps,    &
+     &          sph_filters)
+!
+      use calypso_mpi
+      use wider_radial_filter_data
+!
+      type(sph_shell_parameters), intent(in) :: sph_params
+      type(sph_rj_grid), intent(in) ::  sph_rj
+      type(sph_group_data), intent(in) :: sph_grps
+      type(sph_filters_type), intent(inout) :: sph_filters(3)
+!
+!
       call const_sph_radial_filter(sph_rj, sph_grps, sph_filters(1))
       call const_sph_radial_filter(sph_rj, sph_grps, sph_filters(2))
 !
@@ -72,7 +94,7 @@
       call const_sph_gaussian_filter(sph_params%l_truncation,           &
      &    sph_filters(3)%sph_moments, sph_filters(3)%sph_filter)
 !
-      end subroutine init_SGS_model_sph_mhd
+      end subroutine init_filter_4_SPH_MHD
 !
 ! ----------------------------------------------------------------------
 ! ----------------------------------------------------------------------

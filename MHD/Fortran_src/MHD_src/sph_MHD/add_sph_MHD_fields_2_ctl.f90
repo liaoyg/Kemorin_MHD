@@ -9,6 +9,7 @@
 !!@verbatim
 !!      subroutine add_field_name_4_sph_mhd
 !!      subroutine add_field_name_4_SGS
+!!      subroutine add_field_name_dynamic_SGS
 !!@endverbatim
 !
       module add_sph_MHD_fields_2_ctl
@@ -137,67 +138,93 @@
       if(iflag_SGS_heat .gt. id_SGS_none) then
         call add_phys_name_tmp(fhd_filter_v)
         call add_phys_name_tmp(fhd_filter_temp)
-        call add_phys_name_tmp(fhd_w_filter_velo)
-        call add_phys_name_tmp(fhd_w_filter_temp)
 !
         call add_phys_name_tmp(fhd_SGS_h_flux)
         call add_phys_name_tmp(fhd_div_SGS_h_flux)
-        call add_phys_name_tmp(fhd_wide_SGS_h_flux)
-!
-        call add_phys_name_tmp(fhd_Csim_SGS_h_flux)
       end if
 !
       if(iflag_SGS_comp_flux .gt. id_SGS_none) then
         call add_phys_name_tmp(fhd_filter_v)
         call add_phys_name_tmp(fhd_filter_comp)
-        call add_phys_name_tmp(fhd_w_filter_velo)
-        call add_phys_name_tmp(fhd_w_filter_comp)
 !
         call add_phys_name_tmp(fhd_SGS_c_flux)
         call add_phys_name_tmp(fhd_div_SGS_c_flux)
-        call add_phys_name_tmp(fhd_wide_SGS_c_flux)
-!
-        call add_phys_name_tmp(fhd_Csim_SGS_c_flux)
       end if
 !
       if(iflag_SGS_inertia .gt. id_SGS_none) then
         call add_phys_name_tmp(fhd_filter_v)
         call add_phys_name_tmp(fhd_filter_w)
-        call add_phys_name_tmp(fhd_w_filter_velo)
-        call add_phys_name_tmp(fhd_w_filter_vort)
 !
         call add_phys_name_tmp(fhd_SGS_inertia)
         call add_phys_name_tmp(fhd_SGS_rot_inertia)
         call add_phys_name_tmp(fhd_SGS_div_inertia)
-        call add_phys_name_tmp(fhd_wide_SGS_inertia)
-!
-        call add_phys_name_tmp(fhd_Csim_SGS_m_flux)
       end if
 !
       if(iflag_SGS_lorentz .gt. id_SGS_none) then
         call add_phys_name_tmp(fhd_filter_b)
         call add_phys_name_tmp(fhd_filter_j)
-        call add_phys_name_tmp(fhd_w_filter_magne)
-        call add_phys_name_tmp(fhd_w_filter_current)
 !
         call add_phys_name_tmp(fhd_SGS_Lorentz)
         call add_phys_name_tmp(fhd_SGS_rot_Lorentz)
         call add_phys_name_tmp(fhd_SGS_div_Lorentz)
-        call add_phys_name_tmp(fhd_wide_SGS_Lorentz)
-!
-        call add_phys_name_tmp(fhd_Csim_SGS_Lorentz)
       end if
 !
       if(iflag_SGS_induction .gt. id_SGS_none) then
-        call add_phys_name_tmp(fhd_filter_v)
-        call add_phys_name_tmp(fhd_filter_b)
         call add_phys_name_tmp(fhd_w_filter_velo)
         call add_phys_name_tmp(fhd_w_filter_magne)
 !
         call add_phys_name_tmp(fhd_SGS_vp_induct)
         call add_phys_name_tmp(fhd_SGS_induction)
-        call add_phys_name_tmp(fhd_wide_SGS_vp_induct)
+      end if
 !
+      end subroutine add_field_name_4_SGS
+!
+! -----------------------------------------------------------------------
+!
+      subroutine add_field_name_dynamic_SGS
+!
+      use add_nodal_fields_ctl
+!
+!
+      if(iflag_dynamic_SGS .ea. id_SGS_DYNAMIC_OFF) return
+!
+      if(iflag_SGS_heat .gt. id_SGS_none) then
+        call add_phys_name_tmp(fhd_w_filter_velo)
+        call add_phys_name_tmp(fhd_w_filter_temp)
+!
+        call add_phys_name_tmp(fhd_wide_SGS_h_flux)
+        call add_phys_name_tmp(fhd_Csim_SGS_h_flux)
+      end if
+!
+      if(iflag_SGS_comp_flux .gt. id_SGS_none) then
+        call add_phys_name_tmp(fhd_w_filter_velo)
+        call add_phys_name_tmp(fhd_w_filter_comp)
+!
+        call add_phys_name_tmp(fhd_wide_SGS_c_flux)
+        call add_phys_name_tmp(fhd_Csim_SGS_c_flux)
+      end if
+!
+      if(iflag_SGS_inertia .gt. id_SGS_none) then
+        call add_phys_name_tmp(fhd_w_filter_velo)
+        call add_phys_name_tmp(fhd_w_filter_vort)
+!
+        call add_phys_name_tmp(fhd_wide_SGS_inertia)
+        call add_phys_name_tmp(fhd_Csim_SGS_m_flux)
+      end if
+!
+      if(iflag_SGS_lorentz .gt. id_SGS_none) then
+        call add_phys_name_tmp(fhd_w_filter_magne)
+        call add_phys_name_tmp(fhd_w_filter_current)
+!
+        call add_phys_name_tmp(fhd_wide_SGS_Lorentz)
+        call add_phys_name_tmp(fhd_Csim_SGS_Lorentz)
+      end if
+!
+      if(iflag_SGS_induction .gt. id_SGS_none) then
+        call add_phys_name_tmp(fhd_w_filter_velo)
+        call add_phys_name_tmp(fhd_w_filter_magne)
+!
+        call add_phys_name_tmp(fhd_wide_SGS_vp_induct)
         call add_phys_name_tmp(fhd_Csim_SGS_induction)
       end if
 !
@@ -206,7 +233,6 @@
         call add_phys_name_tmp(fhd_filter_temp)
 !
         call add_phys_name_tmp(fhd_SGS_buoyancy)
-!
         call add_phys_name_tmp(fhd_Csim_SGS_buoyancy)
       end if
 !
@@ -215,11 +241,10 @@
         call add_phys_name_tmp(fhd_filter_temp)
 !
         call add_phys_name_tmp(fhd_SGS_comp_buo)
-!
         call add_phys_name_tmp(fhd_Csim_SGS_comp_buo)
       end if
 !
-      end subroutine add_field_name_4_SGS
+      end subroutine add_field_name_dynamic_SGS
 !
 ! -----------------------------------------------------------------------
 !

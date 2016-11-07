@@ -76,8 +76,10 @@
         call add_field_name_4_mhd
         call add_field_name_4_sph_mhd
         call add_field_name_4_SGS
+        call add_field_name_dynamic_SGS
         if (iflag_debug.eq.1) write(*,*)                                &
      &    'field_ctl%num after modified ', field_ctl%num
+!
 !
 !    set nodal data
 !
