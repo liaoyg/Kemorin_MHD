@@ -186,7 +186,7 @@
       use add_nodal_fields_ctl
 !
 !
-      if(iflag_dynamic_SGS .ea. id_SGS_DYNAMIC_OFF) return
+      if(iflag_dynamic_SGS .eq. id_SGS_DYNAMIC_OFF) return
 !
       if(iflag_SGS_heat .gt. id_SGS_none) then
         call add_phys_name_tmp(fhd_w_filter_velo)

@@ -8,6 +8,8 @@
 !!     &          ifld_sgs, icomp_sgs, ifld_diff, icomp_diff,           &
 !!     &         wk_sgs, wk_diff, sgs_coefs, sgs_coefs_nod, diff_coefs)
 !!      subroutine set_SGS_ele_fld_addresses(iphys_elediff)
+!!      subroutine check_sgs_addresses                                  &
+!!     &         (ifld_sgs, icomp_sgs, wk_sgs, sgs_coefs)
 !!        type(layering_tbl), intent(in) :: layer_tbl
 !!        type(SGS_terms_address), intent(inout) :: ifld_sgs
 !!        type(SGS_terms_address), intent(inout) :: icomp_sgs
