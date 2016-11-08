@@ -45,6 +45,7 @@
 !
       use calypso_mpi
       use wider_radial_filter_data
+      use count_sgs_components
 !
       type(sph_grids), intent(in) ::  sph
       type(sph_group_data), intent(in) :: sph_grps

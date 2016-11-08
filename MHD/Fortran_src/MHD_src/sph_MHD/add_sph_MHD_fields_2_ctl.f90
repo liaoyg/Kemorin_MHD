@@ -170,8 +170,8 @@
       end if
 !
       if(iflag_SGS_induction .gt. id_SGS_none) then
-        call add_phys_name_tmp(fhd_w_filter_velo)
-        call add_phys_name_tmp(fhd_w_filter_magne)
+        call add_phys_name_tmp(fhd_filter_v)
+        call add_phys_name_tmp(fhd_filter_b)
 !
         call add_phys_name_tmp(fhd_SGS_vp_induct)
         call add_phys_name_tmp(fhd_SGS_induction)
