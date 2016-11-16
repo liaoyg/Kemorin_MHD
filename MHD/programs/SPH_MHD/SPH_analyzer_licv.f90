@@ -1,14 +1,16 @@
 !
 !     module SPH_analyzer_licv
 !
-!      subroutine SPH_initialize_linear_conv
-!      subroutine SPH_analyze_linear_conv(i_step, iflag_finish)
+!!      subroutine SPH_initialize_linear_conv(iphys)
+!!        type(phys_address), intent(in) :: iphys
+!!      subroutine SPH_analyze_linear_conv(i_step, iflag_finish)
 !
 !      Written by H. Matsui
 !
       module SPH_analyzer_licv
 !
       use m_precision
+      use t_phys_address
 !
       implicit none
 !
@@ -18,7 +20,7 @@
 !
 ! ----------------------------------------------------------------------
 !
-      subroutine SPH_initialize_linear_conv
+      subroutine SPH_initialize_linear_conv(iphys)
 !
       use calypso_mpi
       use m_constants
@@ -42,7 +44,7 @@
       use set_bc_sph_mhd
       use adjust_reference_fields
       use material_property
-      use sph_transforms_4_MHD
+      use init_sphrical_transform_MHD
       use init_radial_infos_sph_mhd
       use const_radial_mat_4_sph
       use sph_mhd_rms_IO
@@ -50,6 +52,8 @@
       use cal_nonlinear
 !
       use m_work_time
+!
+      type(phys_address), intent(in) :: iphys
 !
 !   Allocate spectr field data
 !
@@ -69,7 +73,7 @@
 !  -------------------------------
 !
       if (iflag_debug.gt.0) write(*,*) 'init_sph_transform_MHD'
-      call init_sph_transform_MHD(ipol, idpdr, itor,                    &
+      call init_sph_transform_MHD(ipol, idpdr, itor, iphys,             &
      &    sph1, comms_sph1, omega_sph1, trans_p1, trns_WK1, rj_fld1)
 !
 ! ---------------------------------

@@ -14,7 +14,8 @@
 !!       Initialzation and evolution loop to pick up data on circle
 !!
 !!@verbatim
-!!      subroutine SPH_init_sph_pick_circle
+!!      subroutine SPH_init_sph_pick_circle(iphys)
+!!        type(phys_address), intent(in) :: iphys
 !!      subroutine SPH_analyze_pick_circle(i_step)
 !!      subroutine SPH_finalize_pick_circle
 !!@endverbatim
@@ -22,6 +23,7 @@
       module SPH_analyzer_sph_pick_circ
 !
       use m_precision
+      use t_phys_address
 !
       implicit none
 !
@@ -31,7 +33,7 @@
 !
 ! ----------------------------------------------------------------------
 !
-      subroutine SPH_init_sph_pick_circle
+      subroutine SPH_init_sph_pick_circle(iphys)
 !
       use m_constants
       use m_array_for_send_recv
@@ -63,8 +65,12 @@
       use cal_rms_fields_by_sph
       use r_interpolate_sph_data
       use sph_mhd_rst_IO_control
+      use init_sphrical_transform_MHD
       use sph_MHD_circle_transform
       use nod_phys_send_recv
+      use sph_filtering
+!
+      type(phys_address), intent(in) :: iphys
 !
 !
 !   Allocate spectr field data
@@ -91,10 +97,18 @@
 !  -------------------------------
 !
       if (iflag_debug.gt.0) write(*,*) 'init_sph_transform_MHD'
-      call init_sph_transform_MHD(ipol, idpdr, itor,                    &
+      call init_sph_transform_MHD(ipol, idpdr, itor, iphys,             &
      &    sph1, comms_sph1, omega_sph1, trans_p1, trns_WK1, rj_fld1)
 !
 ! ---------------------------------
+!
+      if(iflag_SGS_model .gt. 0) then
+      if(iflag_debug.gt.0) write(*,*)' init_SGS_model_sph_mhd'
+        call init_SGS_model_sph_mhd                                     &
+     &     (sph1, sph_grps1, trns_WK1%dynamic_SPH)
+      end if
+!
+!  -------------------------------
 !
       if (iflag_debug.eq.1) write(*,*) 'const_radial_mat_sph_snap'
       call const_radial_mat_sph_snap(sph1%sph_rj, r_2nd, trans_p1%leg)
@@ -151,7 +165,7 @@
 !*
       call start_eleps_time(8)
       call nonlinear(sph1, comms_sph1, omega_sph1, r_2nd, trans_p1,     &
-     &    ref_temp1%t_rj, ipol, itor, trns_WK1%trns_MHD, rj_fld1)
+     &    ref_temp1%t_rj, ipol, itor, trns_WK1, rj_fld1)
       call end_eleps_time(8)
 !
 !* ----  Update fields after time evolution ------------------------=

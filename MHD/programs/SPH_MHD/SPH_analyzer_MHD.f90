@@ -1,14 +1,21 @@
+!>@file   SPH_analyzer_MHD
+!!@brief  module SPH_analyzer_MHD
+!!
+!!@author H. Matsui
+!!@date    programmed by H.Matsui in Oct., 2009
 !
-!     module SPH_analyzer_MHD
-!
-!      subroutine SPH_initialize_MHD
-!      subroutine SPH_analyze_MHD(i_step, iflag_finish)
-!
-!      Written by H. Matsui
+!>@brief Evolution loop for spherical MHD
+!!
+!!@verbatim
+!!      subroutine SPH_initialize_MHD(iphys)
+!!        type(phys_address), intent(in) :: iphys
+!!      subroutine SPH_analyze_MHD(i_step, iflag_finish)
+!!@endverbatim
 !
       module SPH_analyzer_MHD
 !
       use m_precision
+      use t_phys_address
 !
       implicit none
 !
@@ -18,7 +25,7 @@
 !
 ! ----------------------------------------------------------------------
 !
-      subroutine SPH_initialize_MHD
+      subroutine SPH_initialize_MHD(iphys)
 !
       use m_constants
       use calypso_mpi
@@ -40,14 +47,17 @@
       use set_bc_sph_mhd
       use adjust_reference_fields
       use material_property
-      use sph_transforms_4_MHD
+      use init_sphrical_transform_MHD
       use init_radial_infos_sph_mhd
       use const_radial_mat_4_sph
       use sph_mhd_rms_IO
       use cal_sol_sph_MHD_crank
       use cal_nonlinear
+      use sph_filtering
 !
       use m_work_time
+!
+      type(phys_address), intent(in) :: iphys
 !
 !   Allocate spectr field data
 !
@@ -63,7 +73,7 @@
 ! ---------------------------------
 !
       if (iflag_debug.gt.0) write(*,*) 'init_sph_transform_MHD'
-      call init_sph_transform_MHD(ipol, idpdr, itor,                    &
+      call init_sph_transform_MHD(ipol, idpdr, itor, iphys,             &
      &    sph1, comms_sph1, omega_sph1, trans_p1, trns_WK1, rj_fld1)
 !
 !  -------------------------------
@@ -76,6 +86,14 @@
       if(iflag_debug.gt.0) write(*,*)' sync_temp_by_per_temp_sph'
       call sync_temp_by_per_temp_sph                                    &
      &   (ref_temp1%t_rj, sph1%sph_rj, ipol, idpdr, rj_fld1)
+!
+!  -------------------------------
+!
+      if(iflag_SGS_model .gt. 0) then
+        if(iflag_debug.gt.0) write(*,*)' init_SGS_model_sph_mhd'
+        call init_SGS_model_sph_mhd                                     &
+     &     (sph1, sph_grps1, trns_WK1%dynamic_SPH)
+      end if
 !
 !  -------------------------------
 !
@@ -92,7 +110,7 @@
 !*
       if(iflag_debug .gt. 0) write(*,*) 'first nonlinear'
       call nonlinear(sph1, comms_sph1, omega_sph1, r_2nd, trans_p1,     &
-     &    ref_temp1%t_rj, ipol, itor, trns_WK1%trns_MHD, rj_fld1)
+     &    ref_temp1%t_rj, ipol, itor, trns_WK1, rj_fld1)
 !
 !* -----  Open Volume integration data files -----------------
 !*
@@ -126,6 +144,7 @@
       use sph_mhd_rms_IO
 !
       integer(kind = kint), intent(in) :: i_step
+!
       integer(kind = kint), intent(inout) :: iflag_finish
 !
       real(kind = kreal) :: total_max
@@ -156,7 +175,7 @@
 !*
       call start_eleps_time(8)
       call nonlinear(sph1, comms_sph1, omega_sph1, r_2nd, trans_p1,     &
-     &    ref_temp1%t_rj, ipol, itor, trns_WK1%trns_MHD, rj_fld1)
+     &    ref_temp1%t_rj, ipol, itor, trns_WK1, rj_fld1)
       call end_eleps_time(8)
       call end_eleps_time(5)
 !

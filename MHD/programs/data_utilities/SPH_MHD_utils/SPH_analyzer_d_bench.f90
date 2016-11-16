@@ -9,7 +9,8 @@
 !!        Initialzation and evolution loop for dynamo benchmark check
 !!
 !!@verbatim
-!!      subroutine SPH_init_sph_dbench
+!!      subroutine SPH_init_sph_dbench(iphys)
+!!        type(phys_address), intent(in) :: iphys
 !!      subroutine SPH_analyze_dbench(i_step)
 !!      subroutine SPH_finalize_dbench
 !!@endverbatim
@@ -17,6 +18,7 @@
       module SPH_analyzer_d_bench
 !
       use m_precision
+      use t_phys_address
 !
       implicit none
 !
@@ -26,7 +28,7 @@
 !
 ! ----------------------------------------------------------------------
 !
-      subroutine SPH_init_sph_dbench
+      subroutine SPH_init_sph_dbench(iphys)
 !
       use m_constants
       use m_array_for_send_recv
@@ -51,13 +53,15 @@
       use set_bc_sph_mhd
       use adjust_reference_fields
       use material_property
-      use sph_transforms_4_MHD
+      use init_sphrical_transform_MHD
       use init_radial_infos_sph_mhd
       use const_radial_mat_4_sph
       use cal_rms_fields_by_sph
       use r_interpolate_sph_data
       use sph_mhd_rst_IO_control
       use m_field_at_mid_equator
+!
+      type(phys_address), intent(in) :: iphys
 !
 !
 !   Allocate spectr field data
@@ -81,7 +85,7 @@
 !  -------------------------------
 !
       if (iflag_debug.gt.0) write(*,*) 'init_sph_transform_MHD'
-      call init_sph_transform_MHD(ipol, idpdr, itor,                    &
+      call init_sph_transform_MHD(ipol, idpdr, itor, iphys,             &
      &    sph1, comms_sph1, omega_sph1, trans_p1, trns_WK1, rj_fld1)
 !
 ! ---------------------------------
@@ -116,7 +120,7 @@
       use m_sph_trans_arrays_MHD
       use m_rms_4_sph_spectr
 !
-      use cal_nonlinear
+!      use cal_nonlinear
       use cal_sol_sph_MHD_crank
       use adjust_reference_fields
       use lead_fields_4_sph_mhd
@@ -140,10 +144,10 @@
 !
 !*  ----------------lead nonlinear term ... ----------
 !*
-      call start_eleps_time(8)
-      call nonlinear(sph1, comms_sph1, omega_sph1, r_2nd, trans_p1,     &
-     &    ref_temp1%t_rj, ipol, itor, trns_WK1%trns_MHD, rj_fld1)
-      call end_eleps_time(8)
+!      call start_eleps_time(8)
+!      call nonlinear(sph1, comms_sph1, omega_sph1, r_2nd, trans_p1,    &
+!     &    ref_temp1%t_rj, ipol, itor, trns_WK1, rj_fld1)
+!      call end_eleps_time(8)
 !
 !* ----  Update fields after time evolution ------------------------=
 !*

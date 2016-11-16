@@ -16,15 +16,17 @@
 !!        type(phys_address), intent(inout) :: iphys
 !!        type(phys_data), intent(inout) :: nod_fld
 !!        type(maximum_informations), intent(inout) :: range
-!!      subroutine FEM_analyze_sph_MHD(i_step                           &
+!!      subroutine FEM_analyze_sph_MHD(i_step, mesh, nod_fld,           &
 !!     &          istep_psf, istep_iso, istep_pvr, istep_fline, visval)
+!!        type(mesh_geometry), intent(in) :: mesh
+!!        type(phys_data), intent(inout) :: nod_fld
 !!      subroutine FEM_finalize
 !!
 !!      subroutine SPH_to_FEM_bridge_MHD                                &
-!!     &         (sph_params, sph_rtp, trns_WK, mesh, iphys, nod_fld)
+!!     &         (sph_params, sph_rtp, WK, mesh, iphys, nod_fld)
 !!        type(sph_shell_parameters), intent(in) :: sph_params
 !!        type(sph_rtp_grid), intent(in) :: sph_rtp
-!!        type(works_4_sph_trans_MHD), intent(in) :: trns_WK
+!!        type(works_4_sph_trans_MHD), intent(in) :: WK
 !!        type(mesh_geometry), intent(in) :: mesh
 !!        type(phys_address), intent(in) :: iphys
 !!        type(phys_data), intent(inout) :: nod_fld
@@ -123,13 +125,16 @@
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
 !
-      subroutine FEM_analyze_sph_MHD(i_step,                            &
+      subroutine FEM_analyze_sph_MHD(i_step, mesh, nod_fld,             &
      &          istep_psf, istep_iso, istep_pvr, istep_fline, visval)
 !
       use set_exit_flag_4_visualizer
+      use nod_phys_send_recv
       use output_viz_file_control
 !
       integer (kind =kint), intent(in) :: i_step
+      type(mesh_geometry), intent(in) :: mesh
+      type(phys_data), intent(inout) :: nod_fld
 !
       integer (kind =kint), intent(inout) :: visval
       integer(kind = kint), intent(inout) :: istep_psf, istep_iso
@@ -141,16 +146,22 @@
       visval = 1
       call set_lead_physical_values_flag(iflag)
 !
-      if(iflag .eq. 0) then
+      if(iflag .ne. 0) return
+!
 !*  ----------   Count steps for visualization
 !*
-        call set_flag_to_visualization(i_step,                          &
-     &        istep_psf, istep_iso, istep_pvr, istep_fline, visval)
+      call set_flag_to_visualization(i_step,                            &
+     &   istep_psf, istep_iso, istep_pvr, istep_fline, visval)
 !*
+!
+!*  ----------- Data communication  --------------
+!
+      if (iflag_debug.gt.0) write(*,*) 'phys_send_recv_all'
+      call nod_fields_send_recv(mesh%nod_comm, nod_fld)
+!
 !*  -----------  Output volume data --------------
 !*
-        call s_output_ucd_file_control
-      end if
+      call s_output_ucd_file_control
 !
       end subroutine FEM_analyze_sph_MHD
 !
@@ -158,24 +169,24 @@
 !-----------------------------------------------------------------------
 !
       subroutine SPH_to_FEM_bridge_MHD                                  &
-     &         (sph_params, sph_rtp, trns_WK, mesh, iphys, nod_fld)
+     &         (sph_params, sph_rtp, WK, mesh, iphys, nod_fld)
 !
       use t_spheric_parameter
       use t_mesh_data
       use t_phys_data
       use t_phys_address
       use t_sph_trans_arrays_MHD
+      use m_control_parameter
 !
       use output_viz_file_control
-      use lead_pole_data_4_sph_mhd
-      use nod_phys_send_recv
       use copy_snap_4_sph_trans
       use copy_MHD_4_sph_trans
       use coordinate_convert_4_sph
+      use copy_SGS_4_sph_trans
 !
       type(sph_shell_parameters), intent(in) :: sph_params
       type(sph_rtp_grid), intent(in) :: sph_rtp
-      type(works_4_sph_trans_MHD), intent(in) :: trns_WK
+      type(works_4_sph_trans_MHD), intent(in) :: WK
       type(mesh_geometry), intent(in) :: mesh
       type(phys_address), intent(in) :: iphys
 !
@@ -190,30 +201,49 @@
 !*  -----------  data transfer to FEM array --------------
 !*
       if (iflag_debug.gt.0) write(*,*) 'copy_forces_to_snapshot_rtp'
-      call copy_forces_to_snapshot_rtp(sph_params%m_folding, sph_rtp,   &
-     &    trns_WK%trns_MHD%f_trns, trns_WK%trns_MHD%ncomp_rtp_2_rj,     &
-     &    mesh%node, iphys, trns_WK%trns_MHD%frc_rtp, nod_fld)
+      call copy_forces_to_snapshot_rtp                                  &
+     &   (sph_params%m_folding, sph_rtp, WK%trns_MHD,                   &
+     &    mesh%node, iphys, nod_fld)
+!
       if (iflag_debug.gt.0) write(*,*) 'copy_snap_vec_fld_from_trans'
       call copy_snap_vec_fld_from_trans                                 &
-     &   (sph_params%m_folding, sph_rtp, trns_WK%trns_snap,             &
+     &   (sph_params%m_folding, sph_rtp, WK%trns_snap,                  &
      &    mesh%node, iphys, nod_fld)
-      if (iflag_debug.gt.0) write(*,*) 'copy_snap_vec_fld_to_trans'
-      call copy_snap_vec_fld_to_trans                                   &
-     &   (sph_params%m_folding, sph_rtp, trns_WK%trns_snap,             &
-     &    mesh%node, iphys, nod_fld)
-!
-      if (iflag_debug.gt.0) write(*,*) 'overwrite_nodal_sph_2_xyz'
-      call overwrite_nodal_sph_2_xyz(mesh%node, nod_fld)
-!
-!*  ----------- transform field at pole and center --------------
-!*
-      if (iflag_debug.gt.0) write(*,*) 'lead_pole_fields_4_sph_mhd'
-      call lead_pole_fields_4_sph_mhd                                   &
-     &   (sph_params, sph_rtp, trns_WK%trns_snap, trns_WK%fls_pl,       &
+      if (iflag_debug.gt.0) write(*,*) 'copy_snap_vec_force_from_trans'
+      call copy_snap_vec_force_from_trans                               &
+     &   (sph_params%m_folding, sph_rtp, WK%trns_snap,                  &
      &    mesh%node, iphys, nod_fld)
 !
-      if (iflag_debug.gt.0) write(*,*) 'phys_send_recv_all'
-      call nod_fields_send_recv(mesh%nod_comm, nod_fld)
+      if(iflag_SGS_model .eq. 0) return
+!
+      if (iflag_debug.gt.0) write(*,*) 'copy_filtered_field_from_trans'
+      call copy_filtered_field_from_trans                               &
+     &   (sph_params%m_folding, sph_rtp, WK%trns_MHD,                   &
+     &    mesh%node, iphys, nod_fld)
+      if (iflag_debug.gt.0) write(*,*) 'copy_wide_SGS_field_from_trans'
+      call copy_wide_SGS_field_from_trans                               &
+     &   (sph_params%m_folding, sph_rtp, WK%trns_SGS,                   &
+     &    mesh%node, iphys, nod_fld)
+      if (iflag_debug.gt.0) write(*,*) 'copy_SGS_force_from_trans'
+      call copy_SGS_force_from_trans                                    &
+     &   (sph_params%m_folding, sph_rtp, WK%trns_SGS,                   &
+     &    mesh%node, iphys, nod_fld)
+      call copy_SGS_diff_field_from_trans                               &
+     &   (sph_params%m_folding, sph_rtp, WK%trns_snap,                  &
+     &    mesh%node, iphys, nod_fld)
+!
+!
+!!!!!   These routines are for debugging. Be careful!
+!
+!  Check nonlinear terms by filtered field as SGS term list
+!      call copy_filtered_forces_to_snap                                &
+!     &   (sph_params%m_folding, sph_rtp, WK%trns_MHD,                  &
+!     &    mesh%node, iphys, nod_fld)
+!
+!  Check filtered nonlinear terms by using SGS term list
+!      call copy_SGS_field_from_trans                                   &
+!     &   (sph_params%m_folding, sph_rtp, WK%trns_SGS,                  &
+!     &    mesh%node, iphys, nod_fld)
 !
       end subroutine SPH_to_FEM_bridge_MHD
 !

@@ -3,7 +3,8 @@
 !
 !        programmed by H.Matsui on March. 2006
 !
-!      subroutine read_sgs_ctl
+!!      subroutine read_sgs_ctl
+!!      subroutine deallocate_sph_filter_ctl
 !!
 !!!!!!!!!  SGS Model !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!     SGS_model_ctl: gradient.........nonlinear gradient model
@@ -62,13 +63,27 @@
 !!      clipping_limit_ctl      0.2
 !!      direction_marging_ctl   lsq
 !!
+!!      array sph_filter_ctl    2
+!!        begin sph_filter_ctl
+!!          number_of_moments   5
+!!          radial_filter_width     1.0
+!!          sphere_filter_width     1.0
+!!        end   sph_filter_ctl
+!!        begin sph_filter_ctl
+!!          number_of_moments   7
+!!          radial_filter_width     2.0
+!!          sphere_filter_width     2.0
+!!        end   sph_filter_ctl
+!!      end array sph_filter_ctl
+!!
+!!
 !!      SGS_hf_factor_ctl        0.5
 !!
 !!      begin filter_files_def
 !!        filter_elength_header   'filter_elen'
 !!        filter_file_header      'filter_node'
 !!        model_coef_ini_header    'model_coefs_ini'
-!!!        wider_filter_header     'filter/filter_coef_2'
+!!        wider_filter_header     'filter/filter_coef_2'
 !!      end  filter_files_def
 !!
 !!      min_step_dynamic_ctl      1
@@ -164,41 +179,55 @@
       use m_machine_parameter
       use m_read_control_elements
       use skip_comment_f
+      use t_control_elements
       use t_read_control_arrays
 !
       implicit  none
 !
 !
-      character (len=kchara) :: SGS_model_name_ctl
-      character (len=kchara) :: SGS_filter_name_ctl
-      character (len=kchara) :: DIFF_model_coef_ctl
-      character (len=kchara) :: SGS_negative_clip_ctl
-      character (len=kchara) :: SGS_marging_ctl
-      character (len=kchara) :: SGS_perturbation_ctl
+      type(read_character_item) :: SGS_model_name_ctl
+      type(read_character_item) :: SGS_filter_name_ctl
+      type(read_character_item) :: DIFF_model_coef_ctl
+      type(read_character_item) :: SGS_negative_clip_ctl
+      type(read_character_item) :: SGS_marging_ctl
+      type(read_character_item) :: SGS_perturbation_ctl
 !
-      character (len=kchara) :: SGS_model_coef_type_ctl
+      type(read_character_item) :: SGS_model_coef_type_ctl
 !
-      character (len=kchara) :: heat_flux_csim_type_ctl
-      character (len=kchara) :: mom_flux_csim_type_ctl
-      character (len=kchara) :: maxwell_csim_type_ctl
-      character (len=kchara) :: uxb_csim_type_ctl
+      type(read_character_item) :: heat_flux_csim_type_ctl
+      type(read_character_item) :: mom_flux_csim_type_ctl
+      type(read_character_item) :: maxwell_csim_type_ctl
+      type(read_character_item) :: uxb_csim_type_ctl
 !
-      character (len=kchara) :: SGS_model_coef_coord_ctl
+      type(read_character_item) :: SGS_model_coef_coord_ctl
 ! 
-      integer (kind=kint) :: min_step_dynamic_ctl = 1
-      integer (kind=kint) :: max_step_dynamic_ctl = 50
-      real (kind = kreal) :: delta_to_shrink_dynamic_ctl
-      real (kind = kreal) :: delta_to_extend_dynamic_ctl
+      type(read_integer_item) :: min_step_dynamic_ctl
+      type(read_integer_item) :: max_step_dynamic_ctl
+      type(read_real_item) :: delta_to_shrink_dynamic_ctl
+      type(read_real_item) :: delta_to_extend_dynamic_ctl
 !
-      real (kind = kreal) :: clipping_limit_ctl
+      type(read_real_item) :: clipping_limit_ctl
 !
-      real(kind = kreal) :: SGS_hf_factor_ctl
-      real(kind = kreal) :: SGS_mf_factor_ctl
-      real(kind = kreal) :: SGS_mxwl_factor_ctl
-      real(kind = kreal) :: SGS_uxb_factor_ctl
+      type(read_real_item) :: SGS_hf_factor_ctl
+      type(read_real_item) :: SGS_mf_factor_ctl
+      type(read_real_item) :: SGS_mxwl_factor_ctl
+      type(read_real_item) :: SGS_uxb_factor_ctl
 !
-      integer (kind=kint)   :: num_SGS_bc_neighbour_ctl
-! 
+!>        Structure for spherical shell filter
+      type sph_filter_ctl_type
+!>        Structure for number of moments of filter
+        type(read_integer_item) :: maximum_moments_ctl
+!>        Structure for radial filter width
+        type(read_integer_item) :: sphere_filter_width_ctl
+!>        Structure for horizontal filter width
+        type(read_real_item) :: radial_filter_width_ctl
+      end type sph_filter_ctl_type
+!
+!
+      integer(kind = kint) :: num_sph_filter_ctl
+      type(sph_filter_ctl_type), allocatable, save :: sph_filter_ctl(:)
+!
+!
 !>      Structure for field list of SGS terms
 !!@n      SGS_terms_ctl%c_tbl: name of SGS terms
       type(ctl_array_chara), save :: SGS_terms_ctl
@@ -214,9 +243,9 @@
 !!@n      fluid_filter_grp_ctl%c_tbl: element group name
       type(ctl_array_chara), save :: fluid_filter_grp_ctl
 !
-      character (len=kchara)   :: momentum_filter_ctl
-      character (len=kchara)   :: heat_filter_ctl
-      character (len=kchara)   :: induction_filter_ctl
+      type(read_character_item) :: momentum_filter_ctl
+      type(read_character_item) :: heat_filter_ctl
+      type(read_character_item) :: induction_filter_ctl
 !
 !    label for entry of group
 !
@@ -233,10 +262,15 @@
      &             :: hd_SGS_clips =   'negative_clip_ctl'
       character(len=kchara), parameter                                  &
      &             :: hd_SGS_clip_limit = 'clipping_limit_ctl'
-      integer (kind=kint) :: i_SGS_model =            0
-      integer (kind=kint) :: i_SGS_filter =           0
       integer (kind=kint) :: i_SGS_clips =            0
       integer (kind=kint) :: i_SGS_clip_limit =       0
+!
+      character(len=kchara), parameter                                  &
+     &             :: hd_max_mom = 'number_of_moments'
+      character(len=kchara), parameter                                  &
+     &             :: hd_radial_filter_w = 'radial_filter_width'
+      character(len=kchara), parameter                                  &
+     &             :: hd_sphere_filter_w = 'sphere_filter_width'
 !
       character(len=kchara), parameter                                  &
      &             :: hd_SGS_hf_factor = 'SGS_hf_factor_ctl'
@@ -246,10 +280,6 @@
      &             :: hd_SGS_mxwl_factor = 'SGS_mxwl_factor_ctl'
       character(len=kchara), parameter                                  &
      &             :: hd_SGS_uxb_factor =  'SGS_uxb_factor_ctl'
-      integer (kind=kint) :: i_SGS_hf_factor =        0
-      integer (kind=kint) :: i_SGS_mf_factor =        0
-      integer (kind=kint) :: i_SGS_mxwl_factor =      0
-      integer (kind=kint) :: i_SGS_uxb_factor =       0
 !
 !
       character(len=kchara), parameter                                  &
@@ -285,23 +315,11 @@
       character(len=kchara), parameter :: hd_commutation_fld            &
      &                        = 'commutation_ctl'
 !
-      integer (kind=kint) :: i_SGS_marging =          0
-      integer (kind=kint) :: i_DIFF_coefs =           0
-      integer (kind=kint) :: i_3d_filtering =         0
-      integer (kind=kint) :: i_min_step_dynamic =     0
-      integer (kind=kint) :: i_max_step_dynamic =     0
-      integer (kind=kint) :: i_delta_shrink_dynamic = 0
-      integer (kind=kint) :: i_delta_extend_dynamic = 0
-      integer (kind=kint) :: i_SGS_perturbation_ctl = 0
-      integer (kind=kint) :: i_model_coef_type_ctl =  0
-      integer (kind=kint) :: i_model_coef_coord_ctl = 0
-!
-      integer (kind=kint) :: i_hf_csim_type_ctl =   0
-      integer (kind=kint) :: i_mf_csim_type_ctl =   0
-      integer (kind=kint) :: i_mxwl_csim_type_ctl = 0
-      integer (kind=kint) :: i_uxb_csim_type_ctl =  0
+      integer (kind=kint) :: i_3d_filtering =   0
+      integer (kind=kint) :: i_sph_filter_ctl = 0
 !
       character(len=kchara) :: hd_SGS_terms =  'SGS_terms_ctl'
+      character(len=kchara) :: hd_sph_filter =  'sph_filter_ctl'
 !
 !    5th level for 3d filtering
 !
@@ -316,19 +334,17 @@
      &                        =  'heat_filter_ctl'
       character(len=kchara) :: hd_induction_filter_ctl                  &
      &                        =  'induction_filter_ctl'
-      integer (kind=kint) :: i_momentum_filter_ctl =  0
-      integer (kind=kint) :: i_heat_filter_ctl =      0
-      integer (kind=kint) :: i_induction_filter_ctl = 0
 !
       private :: hd_sgs_ctl, i_sgs_ctl
       private :: hd_SGS_filter, hd_SGS_model
       private :: hd_SGS_clips, hd_SGS_clip_limit
       private :: hd_SGS_mf_factor, hd_SGS_mxwl_factor
       private :: hd_SGS_uxb_factor, hd_SGS_hf_factor
+      private :: hd_radial_filter_w, hd_sphere_filter_w, hd_max_mom
       private :: hd_SGS_marging, hd_DIFF_coefs, hd_3d_filtering
       private :: hd_min_step_dynamic, hd_max_step_dynamic
       private :: hd_delta_shrink_dynamic, hd_delta_extend_dynamic
-      private :: hd_SGS_terms, hd_SGS_perturbation_ctl
+      private :: hd_SGS_terms, hd_SGS_perturbation_ctl, hd_sph_filter
       private :: hd_model_coef_type_ctl, hd_model_coef_coord_ctl
       private :: hd_whole_filter_grp, hd_fluid_filter_grp
       private :: hd_momentum_filter_ctl, hd_heat_filter_ctl
@@ -336,11 +352,28 @@
       private :: hd_hf_csim_type_ctl, hd_mf_csim_type_ctl
       private :: hd_mxwl_csim_type_ctl, hd_uxb_csim_type_ctl
 !
-      private :: read_3d_filtering_ctl
+      private :: read_3d_filtering_ctl, read_control_4_SGS_filters
+      private :: allocate_sph_filter_ctl, read_control_4_SGS_filter
 !
 !   --------------------------------------------------------------------
 !
       contains
+!
+!   --------------------------------------------------------------------
+!
+      subroutine allocate_sph_filter_ctl
+!
+      allocate(sph_filter_ctl(num_sph_filter_ctl))
+!
+      end subroutine allocate_sph_filter_ctl
+!
+!   --------------------------------------------------------------------
+!
+      subroutine deallocate_sph_filter_ctl
+!
+      deallocate(sph_filter_ctl)
+!
+      end subroutine deallocate_sph_filter_ctl
 !
 !   --------------------------------------------------------------------
 !
@@ -364,60 +397,54 @@
         call read_ele_layers_grp_ctl
 !
 !
+        call find_control_array_flag(hd_sph_filter, num_sph_filter_ctl)
+        if(num_sph_filter_ctl .gt. 0) call read_control_4_SGS_filters
+!
         call read_control_array_c1(hd_SGS_terms, SGS_terms_ctl)
         call read_control_array_c1                                      &
      &     (hd_commutation_fld, commutate_fld_ctl)
 !
 !
-        call read_character_ctl_item(hd_SGS_model,                      &
-     &        i_SGS_model, SGS_model_name_ctl)
-        call read_character_ctl_item(hd_SGS_filter,                     &
-     &        i_SGS_filter, SGS_filter_name_ctl)
-        call read_character_ctl_item(hd_DIFF_coefs,                     &
-     &        i_DIFF_coefs, DIFF_model_coef_ctl)
+        call read_chara_ctl_type(hd_SGS_model, SGS_model_name_ctl)
+        call read_chara_ctl_type(hd_SGS_filter, SGS_filter_name_ctl)
+        call read_chara_ctl_type(hd_DIFF_coefs, DIFF_model_coef_ctl)
 !
-        call read_character_ctl_item(hd_SGS_clips,                      &
-     &        i_SGS_clips, SGS_negative_clip_ctl)
-        call read_character_ctl_item(hd_SGS_marging,                    &
-     &        i_SGS_marging, SGS_marging_ctl)
-        call read_character_ctl_item(hd_SGS_perturbation_ctl,           &
-     &        i_SGS_perturbation_ctl, SGS_perturbation_ctl)
-        call read_character_ctl_item(hd_model_coef_type_ctl,            &
-     &        i_model_coef_type_ctl, SGS_model_coef_type_ctl)
-        call read_character_ctl_item(hd_hf_csim_type_ctl,               &
-     &        i_hf_csim_type_ctl, heat_flux_csim_type_ctl)
-        call read_character_ctl_item(hd_mf_csim_type_ctl,               &
-     &        i_mf_csim_type_ctl, mom_flux_csim_type_ctl)
-        call read_character_ctl_item(hd_mxwl_csim_type_ctl,             &
-     &        i_mxwl_csim_type_ctl, maxwell_csim_type_ctl)
-        call read_character_ctl_item(hd_uxb_csim_type_ctl,              &
-     &        i_uxb_csim_type_ctl, uxb_csim_type_ctl)
-        call read_character_ctl_item(hd_model_coef_coord_ctl,           &
-     &        i_model_coef_coord_ctl, SGS_model_coef_coord_ctl)
+        call read_chara_ctl_type(hd_SGS_clips, SGS_negative_clip_ctl)
+        call read_chara_ctl_type(hd_SGS_marging, SGS_marging_ctl)
+        call read_chara_ctl_type(hd_SGS_perturbation_ctl,               &
+     &      SGS_perturbation_ctl)
+        call read_chara_ctl_type(hd_model_coef_type_ctl,                &
+     &      SGS_model_coef_type_ctl)
+!
+        call read_chara_ctl_type(hd_hf_csim_type_ctl,                   &
+     &      heat_flux_csim_type_ctl)
+        call read_chara_ctl_type(hd_mf_csim_type_ctl,                   &
+     &      mom_flux_csim_type_ctl)
+        call read_chara_ctl_type(hd_mxwl_csim_type_ctl,                 &
+     &      maxwell_csim_type_ctl)
+        call read_chara_ctl_type(hd_uxb_csim_type_ctl,                  &
+     &      uxb_csim_type_ctl)
+        call read_chara_ctl_type(hd_model_coef_coord_ctl,               &
+     &      SGS_model_coef_coord_ctl)
 !
 !
-        call read_real_ctl_item(hd_delta_shrink_dynamic,                &
-     &        i_delta_shrink_dynamic, delta_to_shrink_dynamic_ctl)
-        call read_real_ctl_item(hd_SGS_clip_limit,                      &
-     &        i_SGS_clip_limit, clipping_limit_ctl)
+        call read_real_ctl_type(hd_delta_shrink_dynamic,                &
+     &      delta_to_shrink_dynamic_ctl)
+        call read_real_ctl_type(hd_SGS_clip_limit, clipping_limit_ctl)
 !
-        call read_real_ctl_item(hd_SGS_hf_factor,                       &
-     &        i_SGS_hf_factor, SGS_hf_factor_ctl)
-        call read_real_ctl_item(hd_SGS_mf_factor,                       &
-     &        i_SGS_mf_factor, SGS_mf_factor_ctl)
-        call read_real_ctl_item(hd_SGS_mxwl_factor,                     &
-     &        i_SGS_mxwl_factor, SGS_mxwl_factor_ctl)
-        call read_real_ctl_item(hd_SGS_uxb_factor,                      &
-     &        i_SGS_uxb_factor, SGS_uxb_factor_ctl)
+        call read_real_ctl_type(hd_SGS_hf_factor, SGS_hf_factor_ctl)
+        call read_real_ctl_type(hd_SGS_mf_factor, SGS_mf_factor_ctl)
+        call read_real_ctl_type(hd_SGS_mxwl_factor,                     &
+     &      SGS_mxwl_factor_ctl)
+        call read_real_ctl_type(hd_SGS_uxb_factor, SGS_uxb_factor_ctl)
 !
-        call read_real_ctl_item(hd_delta_extend_dynamic,                &
-     &        i_delta_extend_dynamic, delta_to_extend_dynamic_ctl)
+        call read_real_ctl_type(hd_delta_extend_dynamic,                &
+     &      delta_to_extend_dynamic_ctl)
 !
-!
-        call read_integer_ctl_item(hd_min_step_dynamic,                 &
-     &        i_min_step_dynamic, min_step_dynamic_ctl)
-        call read_integer_ctl_item(hd_max_step_dynamic,                 &
-     &        i_max_step_dynamic, max_step_dynamic_ctl)
+        call read_integer_ctl_type(hd_min_step_dynamic,                 &
+     &      min_step_dynamic_ctl)
+        call read_integer_ctl_type(hd_max_step_dynamic,                 &
+     &      max_step_dynamic_ctl)
       end do
 !
       end subroutine read_sgs_ctl
@@ -442,15 +469,68 @@
         call read_control_array_c1                                      &
      &     (hd_fluid_filter_grp, fluid_filter_grp_ctl)
 !
-        call read_character_ctl_item(hd_momentum_filter_ctl,            &
-     &        i_momentum_filter_ctl, momentum_filter_ctl)
-        call read_character_ctl_item(hd_heat_filter_ctl,                &
-     &        i_heat_filter_ctl, heat_filter_ctl)
-        call read_character_ctl_item(hd_induction_filter_ctl,           &
-     &        i_induction_filter_ctl, induction_filter_ctl)
+        call read_chara_ctl_type(hd_momentum_filter_ctl,                &
+     &      momentum_filter_ctl)
+        call read_chara_ctl_type(hd_heat_filter_ctl, heat_filter_ctl)
+        call read_chara_ctl_type(hd_induction_filter_ctl,               &
+     &      induction_filter_ctl)
       end do
 !
       end subroutine read_3d_filtering_ctl
+!
+!   --------------------------------------------------------------------
+!
+      subroutine read_control_4_SGS_filters
+!
+      use m_read_control_elements
+      use skip_comment_f
+!
+!
+      if (i_sph_filter_ctl .gt. 0) return
+!
+      call allocate_sph_filter_ctl
+      do
+        call load_ctl_label_and_line
+!
+        call find_control_end_array_flag(hd_sph_filter,                 &
+     &      num_sph_filter_ctl, i_sph_filter_ctl)
+        if(i_sph_filter_ctl .ge. num_sph_filter_ctl) exit
+!
+        if(right_begin_flag(hd_sph_filter) .gt. 0) then
+          i_sph_filter_ctl = i_sph_filter_ctl + 1
+          call read_control_4_SGS_filter                                &
+     &       (sph_filter_ctl(i_sph_filter_ctl))
+        end if
+      end do
+!
+      end subroutine read_control_4_SGS_filters
+!
+!   --------------------------------------------------------------------
+!
+      subroutine read_control_4_SGS_filter(sphf_ctl)
+!
+      type(sph_filter_ctl_type), intent(inout) :: sphf_ctl
+!
+      integer(kind = kint) :: iflag
+!
+!
+      iflag = 0
+      do
+        call load_ctl_label_and_line
+!
+        call find_control_end_flag(hd_sph_filter, iflag)
+        if(iflag .gt. 0) exit
+!
+        call read_integer_ctl_type(hd_max_mom,                          &
+     &      sphf_ctl%maximum_moments_ctl)
+!
+        call read_real_ctl_type(hd_radial_filter_w,                     &
+     &      sphf_ctl%radial_filter_width_ctl)
+        call read_integer_ctl_type(hd_sphere_filter_w,                  &
+     &      sphf_ctl%sphere_filter_width_ctl)
+      end do
+!
+      end subroutine read_control_4_SGS_filter
 !
 !   --------------------------------------------------------------------
 !

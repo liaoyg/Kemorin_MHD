@@ -20,27 +20,29 @@
 !
       use t_phys_address
       use t_addresses_sph_transform
+      use t_sph_multi_FFTW
+      use sph_filtering
 !
       implicit none
 !
-!>        strucutres for spherical transform dor MHD dynamo
+!>     strucutres for spherical transform for MHD dynamo
       type works_4_sph_trans_MHD
-!>        strucutre for spherical transform data addresses
+!>        strucutres for spherical transform for MHD
         type(address_4_sph_trans) :: trns_MHD
-!>      strucutre for spherical transform data addresses
+!>        strucutres for spherical transform for SGS model
+        type(address_4_sph_trans) :: trns_SGS
+!>        strucutres for spherical transform for dynamic SGS model
+        type(address_4_sph_trans) :: trns_Csim
+!>        strucutres for spherical transform for snapshot output
         type(address_4_sph_trans) :: trns_snap
-!>      strucutre for spherical transform data addresses
+!>        strucutres for spherical transform for intermediate snapshot
         type(address_4_sph_trans) :: trns_tmp
 !
-!>      field data to evaluate nonliear terms at pole
-        real(kind = kreal), allocatable :: fls_pl(:,:)
-!>        local field data to evaluate nonliear terms at pole
-        real(kind = kreal), allocatable :: flc_pl(:,:)
+        type(work_for_sgl_FFTW) :: MHD_mul_FFTW
+        type(work_for_sgl_FFTW) :: SGS_mul_FFTW
+        type(work_for_sgl_FFTW) :: Csim_mul_FFTW
 !
-!>        field data to evaluate nonliear terms at pole
-        real(kind = kreal), allocatable :: frs_pl(:,:)
-!>        field data to evaluate nonliear terms at pole
-        real(kind = kreal), allocatable :: frm_pl(:,:)
+        type(dynamic_SGS_data_4_sph) :: dynamic_SPH
       end type works_4_sph_trans_MHD
 !
 !-----------------------------------------------------------------------
@@ -56,26 +58,17 @@
       type(sph_rtp_grid), intent(in) :: sph_rtp
       type(works_4_sph_trans_MHD), intent(inout) :: WK
 !
-      integer(kind = kint) :: ncomp
-!
 !
       call alloc_nonlinear_data(sph_rtp%nnod_rtp, wk%trns_MHD)
+      call alloc_nonlinear_data(sph_rtp%nnod_rtp, wk%trns_SGS)
+      call alloc_nonlinear_data(sph_rtp%nnod_rtp, wk%trns_Csim)
       call alloc_nonlinear_data(sph_rtp%nnod_rtp, WK%trns_snap)
       call alloc_nonlinear_data(sph_rtp%nnod_rtp, wk%trns_tmp)
 !
 !
-      ncomp = WK%trns_snap%ncomp_rj_2_rtp
-      allocate(WK%fls_pl(sph_rtp%nnod_pole,ncomp))
-      allocate(WK%flc_pl(sph_rtp%nnod_pole,ncomp))
-      ncomp = WK%trns_snap%ncomp_rtp_2_rj
-      allocate(WK%frs_pl(sph_rtp%nnod_pole,ncomp))
-      ncomp = WK%trns_MHD%ncomp_rtp_2_rj
-      allocate(WK%frm_pl(sph_rtp%nnod_pole,ncomp))
-!
-      if(WK%trns_snap%ncomp_rj_2_rtp .gt. 0) WK%fls_pl = 0.0d0
-      if(WK%trns_snap%ncomp_rj_2_rtp .gt. 0) WK%flc_pl = 0.0d0
-      if(WK%trns_snap%ncomp_rtp_2_rj .gt. 0) WK%frs_pl = 0.0d0
-      if(WK%trns_MHD%ncomp_rtp_2_rj .gt. 0)  WK%frm_pl = 0.0d0
+      call alloc_nonlinear_pole(sph_rtp%nnod_pole, WK%trns_MHD)
+      call alloc_nonlinear_pole(sph_rtp%nnod_pole, WK%trns_SGS)
+      call alloc_nonlinear_pole(sph_rtp%nnod_pole, WK%trns_snap)
 !
       end subroutine alloc_sph_trans_address
 !
@@ -85,8 +78,10 @@
 !
       type(works_4_sph_trans_MHD), intent(inout) :: WK
 !
-      deallocate(WK%fls_pl, WK%flc_pl)
-      deallocate(WK%frs_pl, WK%frm_pl)
+!
+      call dealloc_nonlinear_pole(WK%trns_snap)
+      call dealloc_nonlinear_pole(WK%trns_Csim)
+      call dealloc_nonlinear_pole(WK%trns_SGS)
 !
       call dealloc_nonlinear_data(WK%trns_tmp)
       call dealloc_nonlinear_data(WK%trns_snap)

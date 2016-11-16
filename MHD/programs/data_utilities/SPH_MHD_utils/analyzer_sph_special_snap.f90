@@ -18,6 +18,7 @@
 !
       use m_machine_parameter
       use m_work_time
+      use t_sph_filtering_data
 !
       implicit none
 !
@@ -38,6 +39,7 @@
       use m_mesh_data
       use m_node_phys_data
 !
+      use analyzer_sph_snap
       use FEM_analyzer_sph_MHD
       use SPH_analyzer_snap
       use sections_for_1st
@@ -76,8 +78,8 @@
      &     write(*,*) 'SPH_to_FEM_bridge_special_snap'
         call SPH_to_FEM_bridge_special_snap
         if (iflag_debug.eq.1) write(*,*) 'FEM_analyze_sph_MHD'
-        call FEM_analyze_sph_MHD(i_step_MHD, istep_psf, istep_iso,      &
-     &      istep_pvr, istep_fline, visval)
+        call FEM_analyze_sph_MHD(i_step_MHD, mesh1, nod_fld1,           &
+     &      istep_psf, istep_iso, istep_pvr, istep_fline, visval)
 !
         call end_eleps_time(4)
 !
@@ -163,7 +165,7 @@
 !*
       call start_eleps_time(8)
       call nonlinear(sph1, comms_sph1, omega_sph1, r_2nd, trans_p1,     &
-     &    ref_temp1%t_rj, ipol, itor, trns_WK1%trns_MHD, rj_fld1)
+     &    ref_temp1%t_rj, ipol, itor, trns_WK1, rj_fld1)
       call end_eleps_time(8)
 !
 !* ----  Update fields after time evolution ------------------------=
@@ -205,8 +207,6 @@
       use m_sph_spectr_data
       use m_sph_trans_arrays_MHD
       use output_viz_file_control
-      use lead_pole_data_4_sph_mhd
-      use nod_phys_send_recv
       use copy_snap_4_sph_trans
       use copy_MHD_4_sph_trans
       use sph_rtp_zonal_rms_data
@@ -221,13 +221,12 @@
 !*  -----------  data transfer to FEM array --------------
 !*
       call copy_forces_to_snapshot_rtp                                  &
-     &   (sph1%sph_params%m_folding, sph1%sph_rtp,                      &
-     &    trns_WK1%trns_MHD%f_trns, trns_WK1%trns_MHD%ncomp_rtp_2_rj,   &
-     &    mesh1%node, iphys, trns_WK1%trns_MHD%frc_rtp, nod_fld1)
+     &   (sph1%sph_params%m_folding, sph1%sph_rtp, trns_WK1%trns_MHD,   &
+     &    mesh1%node, iphys, nod_fld1)
       call copy_snap_vec_fld_from_trans                                 &
      &   (sph1%sph_params%m_folding, sph1%sph_rtp, trns_WK1%trns_snap,  &
      &    mesh1%node, iphys, nod_fld1)
-      call copy_snap_vec_fld_to_trans                                   &
+      call copy_snap_vec_force_from_trans                               &
      &   (sph1%sph_params%m_folding, sph1%sph_rtp, trns_WK1%trns_snap,  &
      &    mesh1%node, iphys, nod_fld1)
 !
@@ -235,14 +234,6 @@
 !
       if (iflag_debug.eq.1) write(*,*) 'zonal_mean_all_rtp_field'
       call zonal_mean_all_rtp_field(sph1%sph_rtp, mesh1%node, nod_fld1)
-!
-!*  ----------- transform field at pole and center --------------
-!*
-      call lead_pole_fields_4_sph_mhd                                   &
-     &   (sph1%sph_params, sph1%sph_rtp, trns_WK1%trns_snap,            &
-     &    trns_WK1%fls_pl, mesh1%node, iphys, nod_fld1)
-!
-      call nod_fields_send_recv(mesh1%nod_comm, nod_fld1)
 !
       end subroutine SPH_to_FEM_bridge_special_snap
 !
@@ -310,6 +301,7 @@
 !
       use cal_zonal_mean_sph_spectr
       use sph_transforms_4_MHD
+      use sph_transforms_snapshot
 !
       type(sph_grids), intent(in) :: sph
       type(sph_comm_tables), intent(in) :: comms_sph
@@ -323,8 +315,8 @@
       call s_lead_fields_4_sph_mhd                                      &
      &   (sph, comms_sph, r_2nd, trans_p1, ipol, rj_fld, trns_WK)
 !
-      call sph_back_trans_4_MHD(sph, comms_sph, omega_sph,              &
-     &    trans_p1, ipol, rj_fld, trns_WK%trns_MHD)
+      call sph_back_trans_4_MHD(sph, comms_sph, omega_sph, trans_p1,    &
+     &    ipol, rj_fld, trns_WK%trns_MHD, trns_WK%MHD_mul_FFTW)
 !
       call sph_forward_trans_snapshot_MHD                               &
      &   (sph, comms_sph, trans_p1, trns_WK%trns_snap, ipol, rj_fld)

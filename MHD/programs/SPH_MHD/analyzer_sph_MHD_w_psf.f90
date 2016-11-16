@@ -23,6 +23,7 @@
       use m_t_step_parameter
       use m_mesh_data
       use m_node_phys_data
+      use m_sph_trans_arrays_MHD
 !
       use FEM_analyzer_sph_MHD
       use SPH_analyzer_MHD
@@ -42,8 +43,8 @@
       use m_spheric_parameter
       use m_sph_spectr_data
       use m_mesh_data
-      use m_sph_spectr_data
       use m_node_phys_data
+      use m_sph_spectr_data
       use m_rms_4_sph_spectr
       use m_cal_max_indices
       use m_ctl_data_sph_MHD_psf
@@ -63,7 +64,7 @@
 !
       if (iflag_debug.eq.1) write(*,*) 'input_control_SPH_mesh'
       call input_control_SPH_mesh(sph1, comms_sph1, sph_grps1, rj_fld1, &
-     &    pwr1, mesh1, group1, ele_mesh1)
+     &    pwr1, trns_WK1%dynamic_SPH, mesh1, group1, ele_mesh1)
       call end_eleps_time(4)
 !
 !        Initialize FEM mesh data for field data IO
@@ -77,7 +78,7 @@
 !        Initialize spherical transform dynamo
 !
       if(iflag_debug .gt. 0) write(*,*) 'SPH_initialize_MHD'
-      call SPH_initialize_MHD
+      call SPH_initialize_MHD(iphys)
 !
 !        Initialize visualization
 !
@@ -95,7 +96,6 @@
       subroutine evolution_sph_mhd_w_psf
 !
       use m_spheric_parameter
-      use m_sph_trans_arrays_MHD
 !
       integer(kind = kint) :: visval, iflag_finish
       integer(kind = kint) :: istep_psf, istep_iso
@@ -132,8 +132,8 @@
      &     (sph1%sph_params, sph1%sph_rtp, trns_WK1,                    &
      &      mesh1, iphys, nod_fld1)
         if (iflag_debug.eq.1) write(*,*) 'FEM_analyze_sph_MHD'
-        call FEM_analyze_sph_MHD(i_step_MHD, istep_psf, istep_iso,      &
-     &      istep_pvr, istep_fline, visval)
+        call FEM_analyze_sph_MHD(i_step_MHD, mesh1, nod_fld1,           &
+     &      istep_psf, istep_iso, istep_pvr, istep_fline, visval)
 !
         call end_eleps_time(4)
 !

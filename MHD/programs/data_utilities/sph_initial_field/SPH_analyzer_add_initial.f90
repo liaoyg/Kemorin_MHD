@@ -65,7 +65,7 @@
 !
 !        Initialize spherical transform dynamo
 !
-      if(iflag_debug .gt. 0) write(*,*) 'SPH_initialize_MHD'
+      if(iflag_debug .gt. 0) write(*,*) 'SPH_add_initial_field'
       call SPH_add_initial_field
 !
       call end_eleps_time(2)

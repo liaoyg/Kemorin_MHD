@@ -8,13 +8,13 @@
 !!
 !!@verbatim
 !!      subroutine s_lead_fields_4_sph_mhd                              &
-!!     &         (sph, comms_sph, r_2nd, trans_p, ipol, rj_fld, trns_WK)
+!!     &         (sph, comms_sph, r_2nd, trans_p, ipol, rj_fld, WK)
 !!        type(sph_grids), intent(in) :: sph
 !!        type(sph_comm_tables), intent(in) :: comms_sph
 !!        type(fdm_matrices), intent(in) :: r_2nd
 !!        type(parameters_4_sph_trans), intent(in) :: trans_p
 !!        type(phys_address), intent(in) :: ipol
-!!        type(works_4_sph_trans_MHD), intent(inout) :: trns_WK
+!!        type(works_4_sph_trans_MHD), intent(inout) :: WK
 !!        type(phys_data), intent(inout) :: rj_fld
 !!@endverbatim
 !
@@ -33,6 +33,7 @@
       use t_sph_matrices
       use t_schmidt_poly_on_rtm
       use t_work_4_sph_trans
+      use sph_filtering
 !
       implicit none
 !
@@ -46,15 +47,18 @@
 ! ----------------------------------------------------------------------
 !
       subroutine s_lead_fields_4_sph_mhd                                &
-     &         (sph, comms_sph, r_2nd, trans_p, ipol, rj_fld, trns_WK)
+     &         (sph, comms_sph, r_2nd, trans_p, ipol, rj_fld, WK)
 !
       use m_control_parameter
       use m_t_step_parameter
       use m_radial_matrices_sph
       use output_viz_file_control
+      use sph_transforms_4_MHD
+      use sph_transforms_4_SGS
       use copy_MHD_4_sph_trans
       use cal_energy_flux_rtp
       use swap_phi_4_sph_trans
+      use dynamic_model_sph_MHD
 !
       type(sph_grids), intent(in) :: sph
       type(sph_comm_tables), intent(in) :: comms_sph
@@ -62,7 +66,7 @@
       type(parameters_4_sph_trans), intent(in) :: trans_p
       type(phys_address), intent(in) :: ipol
 !
-      type(works_4_sph_trans_MHD), intent(inout) :: trns_WK
+      type(works_4_sph_trans_MHD), intent(inout) :: WK
       type(phys_data), intent(inout) :: rj_fld
 !
       integer (kind =kint) :: iflag
@@ -79,28 +83,50 @@
 !
       if(iflag .gt. 0) return
 !
-      call swap_phi_from_trans(trns_WK%trns_MHD%ncomp_rj_2_rtp,         &
+      call swap_phi_from_trans(WK%trns_MHD%ncomp_rj_2_rtp,              &
      &    sph%sph_rtp%nnod_rtp, sph%sph_rtp%nidx_rtp,                   &
-     &    trns_WK%trns_MHD%fld_rtp)
-      call swap_phi_from_trans(trns_WK%trns_MHD%ncomp_rtp_2_rj,         &
+     &    WK%trns_MHD%fld_rtp)
+      call swap_phi_from_trans(WK%trns_MHD%ncomp_rtp_2_rj,              &
      &    sph%sph_rtp%nnod_rtp, sph%sph_rtp%nidx_rtp,                   &
-     &    trns_WK%trns_MHD%frc_rtp)
+     &    WK%trns_MHD%frc_rtp)
 !
       if    (sph%sph_params%iflag_shell_mode .eq. iflag_MESH_w_pole     &
      &  .or. sph%sph_params%iflag_shell_mode .eq. iflag_MESH_w_center)  &
-     & then
+     &      then
+        if (iflag_debug.eq.1) write(*,*) 'sph_pole_trans_4_MHD'
+        call sph_pole_trans_4_MHD                                       &
+     &     (sph, comms_sph, trans_p, ipol, rj_fld, WK%trns_MHD)
+!
+        if (iflag_debug.eq.1) write(*,*) 'cal_nonlinear_pole_MHD'
         call cal_nonlinear_pole_MHD(sph%sph_rtp,                        &
-     &      trns_WK%trns_MHD%f_trns, trns_WK%trns_snap%b_trns,          &
-     &      trns_WK%trns_snap%ncomp_rj_2_rtp,                           &
-     &      trns_WK%trns_MHD%ncomp_rtp_2_rj,                            &
-     &      trns_WK%fls_pl, trns_WK%frm_pl)
+     &      WK%trns_MHD%f_trns, WK%trns_MHD%b_trns,                     &
+     &      WK%trns_MHD%ncomp_rj_2_rtp, WK%trns_MHD%ncomp_rtp_2_rj,     &
+     &      WK%trns_MHD%fld_pole, WK%trns_MHD%frc_pole)
+      end if
+!
+      if(iflag_SGS_model .gt. 0) then
+        if (iflag_debug.eq.1) write(*,*) 'swap_phi_from_trans'
+        call swap_phi_from_trans(WK%trns_SGS%ncomp_rj_2_rtp,            &
+     &      sph%sph_rtp%nnod_rtp, sph%sph_rtp%nidx_rtp,                 &
+     &      WK%trns_SGS%fld_rtp)
+        call swap_phi_from_trans(WK%trns_SGS%ncomp_rtp_2_rj,            &
+     &      sph%sph_rtp%nnod_rtp, sph%sph_rtp%nidx_rtp,                 &
+     &      WK%trns_SGS%frc_rtp)
+!
+        if (iflag_debug.eq.1) write(*,*) 'sph_pole_trans_SGS_MHD'
+        call sph_pole_trans_SGS_MHD                                     &
+     &     (sph, comms_sph, trans_p, ipol, rj_fld, WK%trns_SGS)
+!
+        if (iflag_debug.eq.1) write(*,*) 'copy_model_coefs_4_sph_snap'
+        call copy_model_coefs_4_sph_snap(sph%sph_rtp,                   &
+     &      WK%dynamic_SPH%ifld_sgs, WK%dynamic_SPH%wk_sgs,             &
+     &      WK%trns_snap)
       end if
 !
       call gradients_of_vectors_sph(sph, comms_sph, r_2nd, trans_p,     &
-     &    ipol, trns_WK%trns_MHD, trns_WK%trns_tmp, rj_fld)
+     &    ipol, WK%trns_MHD, WK%trns_tmp, rj_fld)
       call enegy_fluxes_4_sph_mhd(sph, comms_sph, r_2nd, trans_p, ipol, &
-     &    trns_WK%trns_MHD, trns_WK%trns_snap, rj_fld,                  &
-     &    trns_WK%flc_pl, trns_WK%fls_pl)
+     &    WK%trns_MHD, WK%trns_SGS, WK%trns_snap, rj_fld)
 !
       end subroutine s_lead_fields_4_sph_mhd
 !
@@ -116,6 +142,7 @@
       use const_radial_forces_on_bc
       use cal_div_of_forces
       use const_sph_radial_grad
+      use cal_sph_rotation_of_SGS
 !
       type(sph_rj_grid), intent(in) ::  sph_rj
       type(fdm_matrices), intent(in) :: r_2nd
@@ -129,6 +156,12 @@
       if (iflag_debug.eq.1) write(*,*) 'cal_div_of_forces_sph_2'
       call cal_div_of_forces_sph_2                                      &
      &   (sph_rj, r_2nd, leg%g_sph_rj, ipol, rj_fld)
+!
+!   ----  Lead SGS terms
+      if(iflag_SGS_model .gt. 0) then
+        call cal_div_of_SGS_forces_sph_2                                &
+     &     (sph_rj, r_2nd, leg%g_sph_rj, ipol, rj_fld)
+      end if
 !
       call s_const_radial_forces_on_bc                                  &
      &   (sph_rj, leg%g_sph_rj, ipol, rj_fld)
@@ -151,11 +184,13 @@
 !
       subroutine enegy_fluxes_4_sph_mhd                                 &
      &          (sph, comms_sph, r_2nd, trans_p, ipol,                  &
-     &           trns_MHD, trns_snap, rj_fld, flc_pl, fls_pl)
+     &           trns_MHD, trns_SGS, trns_snap, rj_fld)
 !
-      use sph_transforms_4_MHD
+      use sph_transforms_snapshot
       use cal_energy_flux_rtp
       use cal_energy_flux_rj
+      use cal_SGS_terms_sph_MHD
+      use cal_SGS_buo_flux_sph_MHD
 !
       type(sph_grids), intent(in) :: sph
       type(sph_comm_tables), intent(in) :: comms_sph
@@ -164,12 +199,9 @@
       type(phys_address), intent(in) :: ipol
 !
       type(address_4_sph_trans), intent(in) :: trns_MHD
+      type(address_4_sph_trans), intent(in) :: trns_SGS
       type(address_4_sph_trans), intent(inout) :: trns_snap
       type(phys_data), intent(inout) :: rj_fld
-      real(kind = kreal), intent(inout)                                 &
-     &       :: flc_pl(sph%sph_rtp%nnod_pole,trns_snap%ncomp_rj_2_rtp)
-      real(kind = kreal), intent(inout)                                 &
-     &       :: fls_pl(sph%sph_rtp%nnod_pole,trns_snap%ncomp_rj_2_rtp)
 !
 !
 !      Evaluate fields for output in spectrum space
@@ -178,7 +210,7 @@
 !
       if (iflag_debug.eq.1) write(*,*) 'sph_back_trans_snapshot_MHD'
       call sph_back_trans_snapshot_MHD(sph, comms_sph, trans_p,         &
-     &    ipol, rj_fld, trns_snap, flc_pl, fls_pl)
+     &    ipol, rj_fld, trns_snap)
 !
 !      Evaluate fields for output in grid space
       if (iflag_debug.eq.1) write(*,*) 's_cal_energy_flux_rtp'
@@ -187,10 +219,22 @@
      &    trns_snap%ncomp_rj_2_rtp, trns_snap%ncomp_rtp_2_rj,           &
      &    trns_MHD%frc_rtp, trns_snap%fld_rtp, trns_snap%frc_rtp)
 !
+!      Work of SGS terms
+      if(iflag_SGS_model .gt. 0) then
+        if (iflag_debug.eq.1) write(*,*) 'SGS_fluxes_for_snapshot'
+        call SGS_fluxes_for_snapshot(sph%sph_rtp, trns_MHD%b_trns,      &
+     &    trns_SGS%f_trns, trns_snap%b_trns, trns_snap%f_trns,          &
+     &    trns_MHD%ncomp_rj_2_rtp, trns_SGS%ncomp_rtp_2_rj,             &
+     &    trns_snap%ncomp_rj_2_rtp, trns_snap%ncomp_rtp_2_rj,           &
+     &    trns_MHD%fld_rtp, trns_SGS%frc_rtp,                           &
+     &    trns_snap%fld_rtp, trns_snap%frc_rtp)
+      end if
+!
       if (iflag_debug.eq.1) write(*,*)                                  &
      &                          'sph_forward_trans_snapshot_MHD'
       call sph_forward_trans_snapshot_MHD                               &
      &   (sph, comms_sph, trans_p, trns_snap, ipol, rj_fld)
+      call calypso_mpi_barrier
 !
       end subroutine enegy_fluxes_4_sph_mhd
 !
@@ -199,7 +243,7 @@
       subroutine gradients_of_vectors_sph(sph, comms_sph, r_2nd,        &
      &          trans_p, ipol, trns_MHD, trns_tmp, rj_fld)
 !
-      use sph_transforms_4_MHD
+      use sph_transforms_snapshot
       use sph_poynting_flux_smp
 !
       type(sph_grids), intent(in) :: sph
