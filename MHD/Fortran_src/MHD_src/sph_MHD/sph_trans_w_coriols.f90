@@ -134,10 +134,12 @@
 !
 !
       START_SRtime= MPI_WTIME()
-      call start_eleps_time(18)
+      call start_eleps_time(18) 
+      write(*,*) 'start_eleps_time(18): ', my_rank, MPI_Wtime()
       if(iflag_debug .gt. 0) write(*,*) 'calypso_sph_comm_rj_2_rlm_N'
       call calypso_sph_comm_N                                           &
      &   (ncomp_trans, comms_sph%comm_rj, comms_sph%comm_rlm)
+      write(*,*) 'end_eleps_time(18): ', my_rank, MPI_Wtime()
       call end_eleps_time(18)
       SendRecvtime = MPI_WTIME() - START_SRtime + SendRecvtime
 !
@@ -163,10 +165,12 @@
 !
       START_SRtime= MPI_WTIME()
       call start_eleps_time(19)
+      write(*,*) 'start_eleps_time(19): ', my_rank, MPI_Wtime()
       if(iflag_debug .gt. 0) write(*,*)                                 &
      &      'calypso_sph_comm_rtm_2_rtp_N'
       call calypso_sph_comm_N                                           &
      &   (ncomp_trans, comms_sph%comm_rtm, comms_sph%comm_rtp)
+      write(*,*) 'end_eleps_time(19): ', my_rank, MPI_Wtime()
       call end_eleps_time(19)
       SendRecvtime = MPI_WTIME() - START_SRtime + SendRecvtime
 !
@@ -212,9 +216,11 @@
 !
       START_SRtime= MPI_WTIME()
       call start_eleps_time(20)
+      write(*,*) 'start_eleps_time(20): ', my_rank, MPI_Wtime()
       call calypso_sph_comm_N                                           &
      &   (ncomp_trans, comms_sph%comm_rtp, comms_sph%comm_rtm)
       call finish_send_recv_sph(comms_sph%comm_rtp)
+      write(*,*) 'end_eleps_time(20): ', my_rank, MPI_Wtime()
       call end_eleps_time(20)
       SendRecvtime = MPI_WTIME() - START_SRtime + SendRecvtime
 !
@@ -237,9 +243,11 @@
 !
       START_SRtime= MPI_WTIME()
       call start_eleps_time(21)
+      write(*,*) 'start_eleps_time(21): ', my_rank, MPI_Wtime()
       call calypso_sph_comm_N                                           &
      &   (ncomp_trans, comms_sph%comm_rlm, comms_sph%comm_rj)
       call finish_send_recv_sph(comms_sph%comm_rlm)
+      write(*,*) 'end_eleps_time(21): ', my_rank, MPI_Wtime()
       call end_eleps_time(21)
       SendRecvtime = MPI_WTIME() - START_SRtime + SendRecvtime
 !
