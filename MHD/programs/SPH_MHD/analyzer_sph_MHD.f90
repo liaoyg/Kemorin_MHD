@@ -82,17 +82,18 @@
       call FEM_initialize_w_viz                                         &
      &   (MHD_step1, mesh1, group1, ele_mesh1, iphys, nod_fld1,         &
      &    next_tbl_VIZ1, jacobians_VIZ1)
+      call calypso_MPI_barrier
 !
 !        Initialize spherical transform dynamo
 !
       if(iflag_debug .gt. 0) write(*,*) 'SPH_initialize_MHD'
       call SPH_initialize_MHD(iphys, MHD_step1)
+      call calypso_MPI_barrier
 !
 !        Initialize visualization
 !
       if(iflag_debug .gt. 0) write(*,*) 'init_visualize'
       call init_visualize(mesh1, group1, ele_mesh1, nod_fld1)
-!
       call calypso_MPI_barrier
 !
       call end_eleps_time(2)
@@ -131,6 +132,7 @@
         if (iflag_debug.eq.1) write(*,*) 'SPH_analyze_MHD'
         call SPH_analyze_MHD                                            &
      &     (MHD_step1%time_d%i_time_step, iflag_finish, MHD_step1)
+        call calypso_MPI_barrier
 !*
 !*  -----------  output field data --------------
 !*
@@ -142,11 +144,13 @@
           call SPH_to_FEM_bridge_MHD                                    &
      &       (sph1%sph_params, sph1%sph_rtp, trns_WK1,                  &
      &        mesh1, iphys, nod_fld1)
+          call calypso_MPI_barrier
         end if
 !
         if (iflag_debug.eq.1) write(*,*) 'FEM_analyze_sph_MHD'
         call FEM_analyze_sph_MHD                                        &
      &     (SGS_par1, mesh1, nod_fld1, MHD_step1, visval)
+        call calypso_MPI_barrier
 !
         call end_eleps_time(4)
 !
@@ -160,6 +164,7 @@
      &        next_tbl_VIZ1%neib_ele, jacobians_VIZ1)
           call end_eleps_time(12)
         end if
+        call calypso_MPI_barrier
 !
 !*  -----------  exit loop --------------
 !*
