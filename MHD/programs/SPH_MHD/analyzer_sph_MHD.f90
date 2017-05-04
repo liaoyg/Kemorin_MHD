@@ -83,7 +83,7 @@
      &   (MHD_step1, mesh1, group1, ele_mesh1, iphys, nod_fld1,         &
      &    next_tbl_VIZ1, jacobians_VIZ1)
       call calypso_MPI_barrier
-!
+! 
 !        Initialize spherical transform dynamo
 !
       if(iflag_debug .gt. 0) write(*,*) 'SPH_initialize_MHD'
