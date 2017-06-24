@@ -151,14 +151,14 @@
      &    e_comm%num_neib, e_comm%istack_export,                        &
      &    wk_comm%inod_export_e, wk_comm%inod_export_l,                 &
      &    wk_comm%xe_export, e_comm%item_export)
-!      call calypso_mpi_barrier
+      call calypso_mpi_barrier
 !
       call dealloc_element_rev_exports(wk_comm)
       call dealloc_element_rev_imports(wk_comm)
 !
-!      write(*,*) 'check_element_position', my_rank
+      if(iflag_debug.gt. 0) write(*,*) 'check_element_position', my_rank
       call check_element_position(txt, numele, x_ele, e_comm)
-!      call calypso_mpi_barrier
+      call calypso_mpi_barrier
 !
       end subroutine const_comm_table_by_connenct
 !
