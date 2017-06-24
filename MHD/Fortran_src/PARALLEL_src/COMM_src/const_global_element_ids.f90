@@ -136,7 +136,11 @@
       end do
 !$omp end parallel do
 !
+      call calypso_mpi_barrier
+      if(iflag_debug.gt. 0) write(*,*) 'SOLVER_SEND_RECV_3_type'
       call SOLVER_SEND_RECV_3_type(nele, e_comm, x_test(1))
+      if(iflag_debug.gt. 0) write(*,*) 'SOLVER_SEND_RECV_3_type end'
+      call calypso_mpi_barrier
 !
       do iele = 1, nele
         dx = x_test(3*iele-2) - x_ele(iele,1)
