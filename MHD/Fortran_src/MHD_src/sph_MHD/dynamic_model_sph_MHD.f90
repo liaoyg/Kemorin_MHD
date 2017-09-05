@@ -173,7 +173,7 @@
      &    irtp_sgs, numdir, sph_rtp%nnod_rtp, trns_SGS%ncomp_rtp_2_rj,  &
      &    trns_SGS%frc_rtp)
       end if
-!!$omp end parallel
+!$omp end parallel
 !
       end subroutine cal_dynamic_SGS_4_sph_MHD
 !
