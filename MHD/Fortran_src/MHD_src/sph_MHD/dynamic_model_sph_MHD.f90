@@ -162,17 +162,17 @@
      &      wk_sgs%comp_clip, wk_sgs%fld_coef)
       end if
 !
-!!$omp parallel
-!      if(iflag_FFT .eq. iflag_FFTW) then
-!        call product_model_coefs_pin                                    &
-!     &   (numdir, sph_rtp%nnod_rtp, nnod_med, sph_rtp%nidx_rtp(3),      &
-!     &    wk_sgs%fld_coef(1,ifld_sgs), trns_SGS%frc_rtp(1,irtp_sgs))
-!      else
-!        call product_model_coefs_pout(ifld_sgs, sph_rtp%nidx_rtp(3),    &
-!     &    nnod_med, wk_sgs%num_kinds, wk_sgs%fld_coef,                  &
-!     &    irtp_sgs, numdir, sph_rtp%nnod_rtp, trns_SGS%ncomp_rtp_2_rj,  &
-!     &    trns_SGS%frc_rtp)
-!      end if
+!$omp parallel
+      if(iflag_FFT .eq. iflag_FFTW) then
+        call product_model_coefs_pin                                    &
+     &   (numdir, sph_rtp%nnod_rtp, nnod_med, sph_rtp%nidx_rtp(3),      &
+     &    wk_sgs%fld_coef(1,ifld_sgs), trns_SGS%frc_rtp(1,irtp_sgs))
+      else
+        call product_model_coefs_pout(ifld_sgs, sph_rtp%nidx_rtp(3),    &
+     &    nnod_med, wk_sgs%num_kinds, wk_sgs%fld_coef,                  &
+     &    irtp_sgs, numdir, sph_rtp%nnod_rtp, trns_SGS%ncomp_rtp_2_rj,  &
+     &    trns_SGS%frc_rtp)
+      end if
 !!$omp end parallel
 !
       end subroutine cal_dynamic_SGS_4_sph_MHD
