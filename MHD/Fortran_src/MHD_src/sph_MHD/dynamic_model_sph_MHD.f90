@@ -148,18 +148,18 @@
       if(istep_dynamic .eq. 0) then
         if(iflag_debug .gt. 0)                                          &
            write(*,*) 'sel_int_zonal_for_model_coefs', istep_dynamic
-        call sel_int_zonal_for_model_coefs                              &
-     &   (numdir, sph_rtp%nnod_rtp, nnod_med, sph_rtp%nidx_rtp(3),      &
-     &    trns_SGS%frc_rtp(1,irtp_sgs), trns_SGS%fld_rtp(1,irtp_wide),  &
-     &    icomp_sgs, wk_sgs%ntot_comp,                                  &
-     &    wk_sgs%comp_coef, wk_sgs%comp_clip)
+!        call sel_int_zonal_for_model_coefs                              &
+!     &   (numdir, sph_rtp%nnod_rtp, nnod_med, sph_rtp%nidx_rtp(3),      &
+!     &    trns_SGS%frc_rtp(1,irtp_sgs), trns_SGS%fld_rtp(1,irtp_wide),  &
+!     &    icomp_sgs, wk_sgs%ntot_comp,                                  &
+!     &    wk_sgs%comp_coef, wk_sgs%comp_clip)
 !
-!        if(iflag_debug .gt. 0)                                          &
-!           write(*,*) 'sel_sph_model_coefs', stab_weight
-!        call sel_sph_model_coefs(numdir, nnod_med,                      &
-!     &      stab_weight, ifld_sgs, icomp_sgs,                           &
-!     &      wk_sgs%num_kinds, wk_sgs%ntot_comp, wk_sgs%comp_coef,       &
-!     &      wk_sgs%comp_clip, wk_sgs%fld_coef)
+        if(iflag_debug .gt. 0)                                          &
+           write(*,*) 'sel_sph_model_coefs', stab_weight
+        call sel_sph_model_coefs(numdir, nnod_med,                      &
+     &      stab_weight, ifld_sgs, icomp_sgs,                           &
+     &      wk_sgs%num_kinds, wk_sgs%ntot_comp, wk_sgs%comp_coef,       &
+     &      wk_sgs%comp_clip, wk_sgs%fld_coef)
       end if
 !
 !!$omp parallel
