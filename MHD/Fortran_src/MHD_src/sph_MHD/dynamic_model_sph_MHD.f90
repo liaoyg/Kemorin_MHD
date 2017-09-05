@@ -81,41 +81,41 @@
      &      wk_sgs, trns_SGS)
       end if
 !
-      if(ifld_sgs%i_lorentz .gt. 0) then
-        call cal_dynamic_SGS_4_sph_MHD                                  &
-     &     (sph_rtp, istep_dynamic, stab_weight, nnod_med,              &
-     &      n_vector, trns_SGS%f_trns%i_SGS_Lorentz,                    &
-     &      trns_SGS%b_trns%i_wide_SGS_Lorentz,                         &
-     &      ifld_sgs%i_lorentz, icomp_sgs%i_lorentz,                    &
-     &      wk_sgs, trns_SGS)
-      end if
+!      if(ifld_sgs%i_lorentz .gt. 0) then
+!        call cal_dynamic_SGS_4_sph_MHD                                  &
+!     &     (sph_rtp, istep_dynamic, stab_weight, nnod_med,              &
+!     &      n_vector, trns_SGS%f_trns%i_SGS_Lorentz,                    &
+!    &      trns_SGS%b_trns%i_wide_SGS_Lorentz,                         &
+!     &      ifld_sgs%i_lorentz, icomp_sgs%i_lorentz,                    &
+!     &      wk_sgs, trns_SGS)
+!      end if
 !
-      if(ifld_sgs%i_induction .gt. 0) then
-        call cal_dynamic_SGS_4_sph_MHD                                  &
-     &     (sph_rtp, istep_dynamic, stab_weight, nnod_med,              &
-     &      n_vector, trns_SGS%f_trns%i_SGS_vp_induct,                  &
-     &      trns_SGS%b_trns%i_wide_SGS_vp_induct,                       &
-     &      ifld_sgs%i_induction, icomp_sgs%i_induction,                &
-     &      wk_sgs, trns_SGS)
-      end if
+!      if(ifld_sgs%i_induction .gt. 0) then
+!        call cal_dynamic_SGS_4_sph_MHD                                  &
+!     &     (sph_rtp, istep_dynamic, stab_weight, nnod_med,              &
+!     &      n_vector, trns_SGS%f_trns%i_SGS_vp_induct,                  &
+!     &      trns_SGS%b_trns%i_wide_SGS_vp_induct,                       &
+!     &      ifld_sgs%i_induction, icomp_sgs%i_induction,                &
+!     &      wk_sgs, trns_SGS)
+!      end if
 !
-      if(ifld_sgs%i_heat_flux .gt. 0) then
-        call cal_dynamic_SGS_4_sph_MHD                                  &
-     &     (sph_rtp, istep_dynamic, stab_weight, nnod_med,              &
-     &      n_vector, trns_SGS%f_trns%i_SGS_h_flux,                     &
-     &      trns_SGS%b_trns%i_wide_SGS_h_flux,                          &
-     &      ifld_sgs%i_heat_flux, icomp_sgs%i_heat_flux,                &
-     &      wk_sgs, trns_SGS)
-      end if
+!      if(ifld_sgs%i_heat_flux .gt. 0) then
+!        call cal_dynamic_SGS_4_sph_MHD                                  &
+!     &     (sph_rtp, istep_dynamic, stab_weight, nnod_med,              &
+!     &      n_vector, trns_SGS%f_trns%i_SGS_h_flux,                     &
+!     &      trns_SGS%b_trns%i_wide_SGS_h_flux,                          &
+!     &      ifld_sgs%i_heat_flux, icomp_sgs%i_heat_flux,                &
+!     &      wk_sgs, trns_SGS)
+!      end if
 !
-      if(ifld_sgs%i_comp_flux .gt. 0) then
-        call cal_dynamic_SGS_4_sph_MHD                                  &
-     &     (sph_rtp, istep_dynamic, stab_weight, nnod_med,              &
-     &      n_vector, trns_SGS%f_trns%i_SGS_c_flux,                     &
-     &      trns_SGS%b_trns%i_wide_SGS_c_flux,                          &
-     &      ifld_sgs%i_comp_flux, icomp_sgs%i_comp_flux,                &
-     &      wk_sgs, trns_SGS)
-      end if
+!      if(ifld_sgs%i_comp_flux .gt. 0) then
+!        call cal_dynamic_SGS_4_sph_MHD                                  &
+!     &     (sph_rtp, istep_dynamic, stab_weight, nnod_med,              &
+!     &      n_vector, trns_SGS%f_trns%i_SGS_c_flux,                     &
+!     &      trns_SGS%b_trns%i_wide_SGS_c_flux,                          &
+!     &      ifld_sgs%i_comp_flux, icomp_sgs%i_comp_flux,                &
+!     &      wk_sgs, trns_SGS)
+!      end if
 !
       end subroutine const_model_coefs_4_sph
 !

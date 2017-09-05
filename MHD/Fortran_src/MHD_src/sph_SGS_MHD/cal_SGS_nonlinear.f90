@@ -354,12 +354,12 @@
      &      trns_MHD%ncomp_rj_2_rtp, trns_SGS%ncomp_rj_2_rtp,           &
      &      trns_MHD%fld_rtp, trns_SGS%fld_rtp)
 !
-!        if (iflag_debug.eq.1) write(*,*)                                &
-!     &                   'const_model_coefs_4_sph', istep_dynamic
-!        call const_model_coefs_4_sph                                    &
-!     &     (istep_dynamic, SGS_param%stab_weight, sph%sph_rtp,          &
-!     &      dynamic_SPH%ifld_sgs, dynamic_SPH%icomp_sgs,                &
-!     &      dynamic_SPH%wk_sgs, trns_SGS)
+        if (iflag_debug.eq.1) write(*,*)                                &
+     &                   'const_model_coefs_4_sph', istep_dynamic
+        call const_model_coefs_4_sph                                    &
+     &     (istep_dynamic, SGS_param%stab_weight, sph%sph_rtp,          &
+     &      dynamic_SPH%ifld_sgs, dynamic_SPH%icomp_sgs,                &
+     &      dynamic_SPH%wk_sgs, trns_SGS)
 !
 !        if(SGS_param%iflag_SGS_gravity .ne. id_SGS_none                 &
 !     &     .and. istep_dynamic .eq. 0) then
