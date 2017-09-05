@@ -154,12 +154,12 @@
      &    icomp_sgs, wk_sgs%ntot_comp,                                  &
      &    wk_sgs%comp_coef, wk_sgs%comp_clip)
 !
-        if(iflag_debug .gt. 0)                                          &
-           write(*,*) 'sel_sph_model_coefs', stab_weight
-        call sel_sph_model_coefs(numdir, nnod_med,                      &
-     &      stab_weight, ifld_sgs, icomp_sgs,                           &
-     &      wk_sgs%num_kinds, wk_sgs%ntot_comp, wk_sgs%comp_coef,       &
-     &      wk_sgs%comp_clip, wk_sgs%fld_coef)
+!        if(iflag_debug .gt. 0)                                          &
+!           write(*,*) 'sel_sph_model_coefs', stab_weight
+!        call sel_sph_model_coefs(numdir, nnod_med,                      &
+!     &      stab_weight, ifld_sgs, icomp_sgs,                           &
+!     &      wk_sgs%num_kinds, wk_sgs%ntot_comp, wk_sgs%comp_coef,       &
+!     &      wk_sgs%comp_clip, wk_sgs%fld_coef)
       end if
 !
 !!$omp parallel
