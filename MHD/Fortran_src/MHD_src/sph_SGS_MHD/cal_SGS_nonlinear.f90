@@ -344,15 +344,15 @@
      &                  istep_dynamic, i_step_sgs_coefs
       if(my_rank .eq. 0) write(*,*) 'SGS_param%stab_weight',            &
      &                  SGS_param%stab_weight
-!      if(SGS_param%iflag_dynamic .eq. id_SGS_DYNAMIC_ON) then
+      if(SGS_param%iflag_dynamic .eq. id_SGS_DYNAMIC_ON) then
 !
-!        if (iflag_debug.eq.1) write(*,*) 'wider_similarity_SGS_rtp'
-!        call wider_similarity_SGS_rtp(istep_dynamic, sph%sph_rtp,       &
-!     &      MHD_prop%fl_prop, MHD_prop%cd_prop,                         &
-!     &      MHD_prop%ht_prop, MHD_prop%cp_prop,                         &
-!     &      trns_MHD%b_trns, trns_SGS%b_trns,                           &
-!     &      trns_MHD%ncomp_rj_2_rtp, trns_SGS%ncomp_rj_2_rtp,           &
-!     &      trns_MHD%fld_rtp, trns_SGS%fld_rtp)
+        if (iflag_debug.eq.1) write(*,*) 'wider_similarity_SGS_rtp'
+        call wider_similarity_SGS_rtp(istep_dynamic, sph%sph_rtp,       &
+     &      MHD_prop%fl_prop, MHD_prop%cd_prop,                         &
+     &      MHD_prop%ht_prop, MHD_prop%cp_prop,                         &
+     &      trns_MHD%b_trns, trns_SGS%b_trns,                           &
+     &      trns_MHD%ncomp_rj_2_rtp, trns_SGS%ncomp_rj_2_rtp,           &
+     &      trns_MHD%fld_rtp, trns_SGS%fld_rtp)
 !
 !        if (iflag_debug.eq.1) write(*,*)                                &
 !     &                   'const_model_coefs_4_sph', istep_dynamic
@@ -372,7 +372,7 @@
 !          call copy_Csim_buo_4_sph_trans(sph%sph_rtp,                   &
 !     &        dynamic_SPH%ifld_sgs, dynamic_SPH%wk_sgs, trns_SGS)
 !        end if
-!      end if
+      end if
 !      call end_elapsed_time(15)
 !
 !      call start_elapsed_time(16)
