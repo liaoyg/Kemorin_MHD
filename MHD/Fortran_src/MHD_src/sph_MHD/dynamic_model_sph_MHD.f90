@@ -148,6 +148,10 @@
       if(istep_dynamic .eq. 0) then
         if(iflag_debug .gt. 0)                                          &
            write(*,*) 'sel_int_zonal_for_model_coefs', istep_dynamic
+        write(*,*) ' wk_sgs%comp_clip',                                 &
+     &           size(wk_sgs%comp_clip,1), size( wk_sgs%comp_clip,2)
+        write(*,*) ' wk_sgs%comp_coef',                                 &
+     &           size(wk_sgs%comp_coef,1), size( wk_sgs%comp_coef,2)
         call sel_int_zonal_for_model_coefs                              &
      &   (numdir, sph_rtp%nnod_rtp, nnod_med, sph_rtp%nidx_rtp(3),      &
      &    trns_SGS%frc_rtp(1,irtp_sgs), trns_SGS%fld_rtp(1,irtp_wide),  &
