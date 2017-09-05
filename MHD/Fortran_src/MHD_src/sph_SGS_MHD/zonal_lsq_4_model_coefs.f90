@@ -98,6 +98,8 @@
       integer(kind = kint) :: nd
 !
 !
+      write(*,*) 'iflag_FFT', iflag_FFT, iflag_FFTW
+      return
 !$omp parallel
       if(iflag_FFT .eq. iflag_FFTW) then
         do nd = 1, numdir
