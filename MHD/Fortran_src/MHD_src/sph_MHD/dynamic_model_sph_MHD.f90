@@ -148,7 +148,7 @@
       if(istep_dynamic .eq. 0) then
         if(iflag_debug .gt. 0)                                          &
            write(*,*) 'sel_int_zonal_for_model_coefs', istep_dynamic
-           write(*,*) my_rank, 'isgs', isgs, numdir, wk_sgs%ntot_comp
+           write(*,*) my_rank, 'icomp_sgs', icomp_sgs, numdir, wk_sgs%ntot_comp
         call sel_int_zonal_for_model_coefs                              &
      &   (numdir, sph_rtp%nnod_rtp, nnod_med, sph_rtp%nidx_rtp(3),      &
      &    trns_SGS%frc_rtp(1,irtp_sgs), trns_SGS%fld_rtp(1,irtp_wide),  &
