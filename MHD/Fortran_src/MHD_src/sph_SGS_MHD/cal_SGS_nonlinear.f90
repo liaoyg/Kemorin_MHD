@@ -344,69 +344,69 @@
      &                  istep_dynamic, i_step_sgs_coefs
       if(my_rank .eq. 0) write(*,*) 'SGS_param%stab_weight',            &
      &                  SGS_param%stab_weight
-      if(SGS_param%iflag_dynamic .eq. id_SGS_DYNAMIC_ON) then
+!      if(SGS_param%iflag_dynamic .eq. id_SGS_DYNAMIC_ON) then
 !
-        if (iflag_debug.eq.1) write(*,*) 'wider_similarity_SGS_rtp'
-        call wider_similarity_SGS_rtp(istep_dynamic, sph%sph_rtp,       &
-     &      MHD_prop%fl_prop, MHD_prop%cd_prop,                         &
-     &      MHD_prop%ht_prop, MHD_prop%cp_prop,                         &
-     &      trns_MHD%b_trns, trns_SGS%b_trns,                           &
-     &      trns_MHD%ncomp_rj_2_rtp, trns_SGS%ncomp_rj_2_rtp,           &
-     &      trns_MHD%fld_rtp, trns_SGS%fld_rtp)
+!        if (iflag_debug.eq.1) write(*,*) 'wider_similarity_SGS_rtp'
+!        call wider_similarity_SGS_rtp(istep_dynamic, sph%sph_rtp,       &
+!     &      MHD_prop%fl_prop, MHD_prop%cd_prop,                         &
+!     &      MHD_prop%ht_prop, MHD_prop%cp_prop,                         &
+!     &      trns_MHD%b_trns, trns_SGS%b_trns,                           &
+!     &      trns_MHD%ncomp_rj_2_rtp, trns_SGS%ncomp_rj_2_rtp,           &
+!     &      trns_MHD%fld_rtp, trns_SGS%fld_rtp)
 !
-        if (iflag_debug.eq.1) write(*,*)                                &
-     &                   'const_model_coefs_4_sph', istep_dynamic
-        call const_model_coefs_4_sph                                    &
-     &     (istep_dynamic, SGS_param%stab_weight, sph%sph_rtp,          &
-     &      dynamic_SPH%ifld_sgs, dynamic_SPH%icomp_sgs,                &
-     &      dynamic_SPH%wk_sgs, trns_SGS)
+!        if (iflag_debug.eq.1) write(*,*)                                &
+!     &                   'const_model_coefs_4_sph', istep_dynamic
+!        call const_model_coefs_4_sph                                    &
+!     &     (istep_dynamic, SGS_param%stab_weight, sph%sph_rtp,          &
+!     &      dynamic_SPH%ifld_sgs, dynamic_SPH%icomp_sgs,                &
+!     &      dynamic_SPH%wk_sgs, trns_SGS)
 !
-        if(SGS_param%iflag_SGS_gravity .ne. id_SGS_none                 &
-     &     .and. istep_dynamic .eq. 0) then
-          if(iflag_debug .gt. 0) write(*,*)                             &
-     &         'const_dynamic_SGS_4_buo_sph', iflag_debug
-          call const_dynamic_SGS_4_buo_sph                              &
-     &       (SGS_param%iflag_SGS_buo_usage, SGS_param%stab_weight,     &
-     &        sph%sph_rtp, MHD_prop%fl_prop,                            &
-     &        trns_MHD, trns_snap, trns_SGS, dynamic_SPH)
-          call copy_Csim_buo_4_sph_trans(sph%sph_rtp,                   &
-     &        dynamic_SPH%ifld_sgs, dynamic_SPH%wk_sgs, trns_SGS)
-        end if
-      end if
-      call end_elapsed_time(15)
+!        if(SGS_param%iflag_SGS_gravity .ne. id_SGS_none                 &
+!     &     .and. istep_dynamic .eq. 0) then
+!          if(iflag_debug .gt. 0) write(*,*)                             &
+!     &         'const_dynamic_SGS_4_buo_sph', iflag_debug
+!          call const_dynamic_SGS_4_buo_sph                              &
+!     &       (SGS_param%iflag_SGS_buo_usage, SGS_param%stab_weight,     &
+!     &        sph%sph_rtp, MHD_prop%fl_prop,                            &
+!     &        trns_MHD, trns_snap, trns_SGS, dynamic_SPH)
+!          call copy_Csim_buo_4_sph_trans(sph%sph_rtp,                   &
+!     &        dynamic_SPH%ifld_sgs, dynamic_SPH%wk_sgs, trns_SGS)
+!        end if
+!      end if
+!      call end_elapsed_time(15)
 !
-      call start_elapsed_time(16)
-      if (iflag_debug.eq.1) write(*,*) 'sph_forward_trans_SGS_MHD'
-      call sph_forward_trans_SGS_MHD(sph, comms_sph, trans_p,           &
-     &    ipol, trns_SGS, WK_sph, SGS_mul_FFTW, rj_fld)
-      call end_elapsed_time(16)
+!      call start_elapsed_time(16)
+!      if (iflag_debug.eq.1) write(*,*) 'sph_forward_trans_SGS_MHD'
+!      call sph_forward_trans_SGS_MHD(sph, comms_sph, trans_p,           &
+!     &    ipol, trns_SGS, WK_sph, SGS_mul_FFTW, rj_fld)
+!      call end_elapsed_time(16)
 !
-      call start_elapsed_time(17)
-      if(SGS_param%iflag_SGS_buo_usage .eq. id_use_sphere) then
-        if(istep_dynamic .eq. 0) then
-          if (iflag_debug.eq.1) write(*,*)                              &
-     &                      'sphere_averaged_SGS_buoyancy', iflag_debug
-          call sphere_averaged_SGS_buoyancy(sph%sph_rj, sph%sph_rtp,    &
-     &        ipol, rj_fld, dynamic_SPH%wk_sgs_buo)
-        end if
+!      call start_elapsed_time(17)
+!      if(SGS_param%iflag_SGS_buo_usage .eq. id_use_sphere) then
+!        if(istep_dynamic .eq. 0) then
+!          if (iflag_debug.eq.1) write(*,*)                              &
+!     &                      'sphere_averaged_SGS_buoyancy', iflag_debug
+!          call sphere_averaged_SGS_buoyancy(sph%sph_rj, sph%sph_rtp,    &
+!     &        ipol, rj_fld, dynamic_SPH%wk_sgs_buo)
+!        end if
 !
-            if(iflag_debug.eq.1) write(*,*)                             &
-     &                      'magnify_sph_ave_SGS_buoyancy'
-        call magnify_sph_ave_SGS_buoyancy(sph%sph_rj, sph%sph_rtp,      &
-     &      ipol, dynamic_SPH%wk_sgs_buo, rj_fld, trns_SGS)
-      else if(SGS_param%iflag_SGS_buo_usage .ne. id_use_zonal) then
-        if(istep_dynamic .eq. 0) then
-          if (iflag_debug.eq.1) write(*,*)                              &
-     &                    'volume_averaged_SGS_buoyancy', iflag_debug
-          call volume_averaged_SGS_buoyancy(sph%sph_params,             &
-     &        sph%sph_rj, ipol, rj_fld, dynamic_SPH%wk_sgs_buo)
-        end if
+!            if(iflag_debug.eq.1) write(*,*)                             &
+!     &                      'magnify_sph_ave_SGS_buoyancy'
+!        call magnify_sph_ave_SGS_buoyancy(sph%sph_rj, sph%sph_rtp,      &
+!     &      ipol, dynamic_SPH%wk_sgs_buo, rj_fld, trns_SGS)
+!      else if(SGS_param%iflag_SGS_buo_usage .ne. id_use_zonal) then
+!        if(istep_dynamic .eq. 0) then
+!          if (iflag_debug.eq.1) write(*,*)                              &
+!     &                    'volume_averaged_SGS_buoyancy', iflag_debug
+!          call volume_averaged_SGS_buoyancy(sph%sph_params,             &
+!     &        sph%sph_rj, ipol, rj_fld, dynamic_SPH%wk_sgs_buo)
+!        end if
 !
-          if(iflag_debug.eq.1) write(*,*)                               &
-     &                    'magnify_vol_ave_SGS_buoyancy'
-        call magnify_vol_ave_SGS_buoyancy(sph%sph_rtp, ipol,            &
-     &      dynamic_SPH%wk_sgs_buo, rj_fld, trns_SGS)
-      end if
+!          if(iflag_debug.eq.1) write(*,*)                               &
+!     &                    'magnify_vol_ave_SGS_buoyancy'
+!        call magnify_vol_ave_SGS_buoyancy(sph%sph_rtp, ipol,            &
+!     &      dynamic_SPH%wk_sgs_buo, rj_fld, trns_SGS)
+!      end if
 !
       if (iflag_debug.ge.1) write(*,*) 'rot_SGS_terms_exp_sph'
       call rot_SGS_terms_exp_sph(sph%sph_rj, r_2nd, sph_MHD_bc,         &
