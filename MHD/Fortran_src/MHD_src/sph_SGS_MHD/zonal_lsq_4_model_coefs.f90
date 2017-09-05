@@ -49,7 +49,6 @@
       real(kind = kreal), intent(inout) :: sgs_zt(nnod_med,ntot)
 !
 !
-      write(*,*) my_rank, 'isgs', isgs, numdir, ntot
       call sel_int_zonal_4_model_coefs                                  &
      &   (numdir, nnod_rtp, nnod_med, nphi, frc_simi, frc_wide,         &
      &    sgs_zl(1,isgs), sgs_zt(1,isgs))
@@ -99,7 +98,6 @@
       integer(kind = kint) :: nd
 !
 !
-      write(*,*) 'iflag_FFT', iflag_FFT, iflag_FFTW
 !$omp parallel
       if(iflag_FFT .eq. iflag_FFTW) then
         do nd = 1, numdir
