@@ -49,6 +49,8 @@
       real(kind = kreal), intent(inout) :: sgs_zt(nnod_med,ntot)
 !
 !
+      write(*,*) 'isgs', isgs, numdir
+      write(*,*) 'sgs_zl', size(sgs_zl,2), size(sgs_zt,2)
       call sel_int_zonal_4_model_coefs                                  &
      &   (numdir, nnod_rtp, nnod_med, nphi, frc_simi, frc_wide,         &
      &    sgs_zl(1,isgs), sgs_zt(1,isgs))
