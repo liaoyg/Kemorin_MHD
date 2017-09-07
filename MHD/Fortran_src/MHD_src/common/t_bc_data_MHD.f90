@@ -105,7 +105,7 @@
       if (cd_prop%iflag_Aevo_scheme .gt. id_no_evolution) then
         if (iflag_debug .eq.1) write(*,*) 'set boundary ID 4 vect_p'
         call set_bc_vect_p_id(IO_bc, mesh%node, mesh%ele,               &
-     &      group%nod_grp, magne_nod, nodal_bc%Bnod_bcs)
+     &      group%nod_grp, a_potential_nod, nodal_bc%Bnod_bcs)
       end if
 !
       end subroutine set_bc_id_data
