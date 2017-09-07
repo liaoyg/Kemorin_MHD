@@ -126,16 +126,19 @@
 !  ---------------------------------------------------------------------
 !  ---------------------------------------------------------------------
 !
-      subroutine count_num_bc_velo(nod_grp, velocity, sgs_velo,         &
+      subroutine count_num_bc_velo                                      &
+     &         (nod_grp, velo_nod, velocity, sgs_velo,                  &
      &          rotation, free_plane, free_sphere, no_radial_v)
 !
-      use m_bc_data_list
       use m_boundary_condition_IDs
+      use t_bc_data_list
       use t_group_data
       use t_nodal_bc_data
       use count_num_nodal_fields
 !
       type(group_data), intent(in) :: nod_grp
+      type(boundary_condition_list), intent(in) :: velo_nod
+!
       type(vect_fixed_nod_bc_type),     intent(inout) :: velocity
       type(vect_fixed_nod_bc_type),     intent(inout) :: sgs_velo
       type(scaler_rotaion_nod_bc_type), intent(inout) :: rotation
@@ -199,15 +202,17 @@
 !
 !  ---------------------------------------------------------------------
 !
-      subroutine count_num_bc_magp(nod_grp, magne_p, sgs_mag_p)
+      subroutine count_num_bc_magp                                      &
+     &         (nod_grp, e_potential_nod, magne_p, sgs_mag_p)
 !
-      use m_bc_data_list
       use m_boundary_condition_IDs
+      use t_bc_data_list
       use t_group_data
       use t_nodal_bc_data
       use count_num_nodal_fields
 !
       type(group_data), intent(in) :: nod_grp
+      type(boundary_condition_list), intent(in) :: e_potential_nod
       type(scaler_fixed_nod_bc_type), intent(inout) :: magne_p
       type(scaler_fixed_nod_bc_type), intent(inout) :: sgs_mag_p
 !
