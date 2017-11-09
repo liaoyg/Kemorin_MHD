@@ -32,10 +32,6 @@
       character(len = kchara), parameter                                &
      &           :: leg_orginal_loop = 'original_loop'
 !>      Character flag to perform Legendre transform 
-!@n     using blocked loop
-      character(len = kchara), parameter                                &
-     &           :: leg_blocked_loop = 'blocked_loop'
-!>      Character flag to perform Legendre transform 
 !!@n    using longer loop for original array order 
       character(len = kchara), parameter                                &
      &           :: leg_krloop_inner = 'inner_radial_loop'
@@ -154,8 +150,6 @@
         set_legendre_trans_mode_ctl = iflag_leg_sym_matmul
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_dgemm)) then
         set_legendre_trans_mode_ctl = iflag_leg_sym_dgemm
-      else if(cmp_no_case(tranx_loop_ctl, leg_blocked_loop)) then
-        set_legendre_trans_mode_ctl = iflag_leg_blocked
       else if(cmp_no_case(tranx_loop_ctl, leg_orginal_loop)) then
         set_legendre_trans_mode_ctl = iflag_leg_orginal_loop
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_matmul_big)) then
@@ -181,8 +175,6 @@
 !
       if     (id_legendre .eq. iflag_leg_orginal_loop) then
         write(tmpchara,'(a)') trim(leg_orginal_loop)
-      else if(id_legendre .eq. iflag_leg_blocked) then
-        write(tmpchara,'(a)') trim(leg_blocked_loop)
       else if(id_legendre .eq. iflag_leg_krloop_inner) then
         write(tmpchara,'(a)') trim(leg_krloop_inner)
       else if(id_legendre .eq. iflag_leg_krloop_outer) then

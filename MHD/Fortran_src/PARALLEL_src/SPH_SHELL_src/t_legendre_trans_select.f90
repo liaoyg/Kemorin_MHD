@@ -133,8 +133,7 @@
         call init_legendre_w_tsr_symmetry                               &
      &     (ntensor, sph_rtm, sph_rlm, leg, idx_trns,                   &
      &      WK_leg%WK_l_sml, WK_leg%WK_tl_sml)
-      else if(WK_leg%id_legendre .eq. iflag_leg_blocked                 &
-     &   .or. WK_leg%id_legendre .eq. iflag_leg_krloop_outer) then
+      else if(WK_leg%id_legendre .eq. iflag_leg_krloop_outer) then
         call alloc_leg_vec_blocked                                      &
      &     (ntensor, sph_rtm%nidx_rtm(2), idx_trns, WK_leg%WK_l_mtl)
       else if(WK_leg%id_legendre .eq. iflag_leg_test_loop) then
@@ -166,8 +165,7 @@
       else if(WK_leg%id_legendre .eq. iflag_leg_matmul                  &
      &   .or. WK_leg%id_legendre .eq. iflag_leg_dgemm) then
         call dealloc_leg_vec_matmul(WK_leg%WK_l_mtl)
-      else if(WK_leg%id_legendre .eq. iflag_leg_blocked                 &
-     &   .or. WK_leg%id_legendre .eq. iflag_leg_krloop_outer) then
+      else if(WK_leg%id_legendre .eq. iflag_leg_krloop_outer) then
         call dealloc_leg_vec_matmul(WK_leg%WK_l_mtl)
       else if(WK_leg%id_legendre .eq. iflag_leg_test_loop) then
         call dealloc_leg_vec_test(WK_leg%WK_l_tst)
@@ -235,10 +233,6 @@
         call leg_backward_trans_sym_dgemm(ncomp, nvector, nscalar,      &
      &      sph_rlm, sph_rtm, comm_rlm, comm_rtm, leg, idx_trns,        &
      &      n_WR, n_WS, WR, WS, WK_leg%WK_l_sml)
-      else if(WK_leg%id_legendre .eq. iflag_leg_blocked) then
-        call leg_backward_trans_blocked(ncomp, nvector, nscalar,        &
-     &      sph_rlm, sph_rtm, comm_rlm, comm_rtm, leg, idx_trns,        &
-     &      n_WR, n_WS, WR, WS, WK_leg%WK_l_mtl)
       else if(WK_leg%id_legendre .eq. iflag_leg_sym_matmul_big) then
         call leg_backward_trans_matmul_big(ncomp, nvector, nscalar,     &
      &      sph_rlm, sph_rtm, comm_rlm, comm_rtm, leg, idx_trns,        &
@@ -312,10 +306,6 @@
         call leg_forward_trans_sym_dgemm(ncomp, nvector, nscalar,       &
      &      sph_rtm, sph_rlm, comm_rtm, comm_rlm, leg, idx_trns,        &
      &      n_WR, n_WS, WR, WS, WK_leg%WK_l_sml)
-      else if(WK_leg%id_legendre .eq. iflag_leg_blocked) then
-        call leg_forwawd_trans_blocked(ncomp, nvector, nscalar,         &
-     &      sph_rtm, sph_rlm, comm_rtm, comm_rlm, leg, idx_trns,        &
-     &      n_WR, n_WS, WR, WS, WK_leg%WK_l_mtl)
       else if(WK_leg%id_legendre .eq. iflag_leg_sym_matmul_big) then
         call leg_forward_trans_matmul_big(ncomp, nvector, nscalar,      &
      &      sph_rtm, sph_rlm, comm_rtm, comm_rlm, leg, idx_trns,        &
