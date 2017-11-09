@@ -12,9 +12,6 @@
 !!     &          ntensor, nvector, nscalar, idx_trns, WK_l_mtl)
 !!      subroutine dealloc_leg_vec_matmul(WK_l_mtl)
 !!
-!!      subroutine alloc_leg_vec_blocked                                &
-!!     &         (ntensor, nth_rtm, idx_trns, WK_l_mtl)
-!!
 !!     field data for Legendre transform
 !!       original layout: vr_rtm(l_rtm,m_rtm,k_rtm,icomp)
 !!       size: vr_rtm(nth_rtm,nidx_rtm(1)*ncomp,nidx_rtm(3))
@@ -182,33 +179,6 @@
       call alloc_leg_tsr_matmul(WK_l_mtl)
 !
       end subroutine alloc_leg_trns_matmul
-!
-! -----------------------------------------------------------------------
-!
-      subroutine alloc_leg_vec_blocked                                  &
-     &         (ntensor, nth_rtm, idx_trns, WK_l_mtl)
-!
-      integer(kind = kint), intent(in) :: ntensor
-      integer(kind = kint), intent(in) :: nth_rtm
-      type(index_4_sph_trans), intent(in) :: idx_trns
-!
-      type(leg_trns_matmul_work), intent(inout) :: WK_l_mtl
-!
-!
-      WK_l_mtl%ntsr_jk = idx_trns%maxdegree_rlm
-      WK_l_mtl%nvec_jk = idx_trns%maxdegree_rlm
-      WK_l_mtl%nscl_jk = idx_trns%maxdegree_rlm
-      WK_l_mtl%ntsr_lk = nth_rtm
-      WK_l_mtl%nvec_lk = nth_rtm
-      WK_l_mtl%nscl_lk = nth_rtm
-!
-      call alloc_leg_vec_matmul(WK_l_mtl)
-      call alloc_leg_scl_matmul(WK_l_mtl)
-!
-      if(ntensor .le. 0) return
-      call alloc_leg_tsr_matmul(WK_l_mtl)
-!
-      end subroutine alloc_leg_vec_blocked
 !
 ! -----------------------------------------------------------------------
 !

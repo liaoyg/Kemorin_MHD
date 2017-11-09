@@ -32,14 +32,6 @@
       character(len = kchara), parameter                                &
      &           :: leg_orginal_loop = 'original_loop'
 !>      Character flag to perform Legendre transform 
-!!@n    using longer loop for original array order 
-      character(len = kchara), parameter                                &
-     &           :: leg_krloop_inner = 'inner_radial_loop'
-!>      Character flag to perform Legendre transform 
-!@n     with inneromst Legendre polynomial loop
-      character(len = kchara), parameter                                &
-     &           :: leg_krloop_outer = 'outer_radial_loop'
-!>      Character flag to perform Legendre transform 
 !@n     with symmetry
       character(len = kchara), parameter                                &
      &           :: leg_sym_org_loop =   'symmetric_original_loop'
@@ -82,15 +74,6 @@
 !>      integer flag to perform Legendre transform 
 !@n     using original array order
       integer(kind = kint), parameter :: iflag_leg_orginal_loop = 1
-!>      integer flag to perform Legendre transform 
-!@n     using blocked loop
-      integer(kind = kint), parameter :: iflag_leg_blocked =      2
-!>      integer flag to perform Legendre transform 
-!!@n    using longer loop for original array order 
-      integer(kind = kint), parameter :: iflag_leg_krloop_inner = 3
-!>      integer flag to perform Legendre transform 
-!@n     with inneromst Legendre polynomial loop
-      integer(kind = kint), parameter :: iflag_leg_krloop_outer = 4
 !>      integer flag to perform Legendre transform with symmetry
       integer(kind = kint), parameter :: iflag_leg_symmetry =     5
 !>      integer flag to perform Legendre transform 
@@ -134,10 +117,6 @@
 !
       if(     cmp_no_case(tranx_loop_ctl, leg_test_loop)) then
         set_legendre_trans_mode_ctl = iflag_leg_test_loop
-      else if(cmp_no_case(tranx_loop_ctl, leg_krloop_inner)) then
-        set_legendre_trans_mode_ctl = iflag_leg_krloop_inner
-      else if(cmp_no_case(tranx_loop_ctl, leg_krloop_outer)) then
-        set_legendre_trans_mode_ctl = iflag_leg_krloop_outer
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_org_loop)) then
         set_legendre_trans_mode_ctl = iflag_leg_symmetry
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_spin_loop)) then
@@ -175,10 +154,6 @@
 !
       if     (id_legendre .eq. iflag_leg_orginal_loop) then
         write(tmpchara,'(a)') trim(leg_orginal_loop)
-      else if(id_legendre .eq. iflag_leg_krloop_inner) then
-        write(tmpchara,'(a)') trim(leg_krloop_inner)
-      else if(id_legendre .eq. iflag_leg_krloop_outer) then
-        write(tmpchara,'(a)') trim(leg_krloop_outer)
       else if(id_legendre .eq. iflag_leg_symmetry) then
         write(tmpchara,'(a)') trim(leg_sym_org_loop)
        else if(id_legendre .eq. iflag_leg_sym_spin_loop) then
