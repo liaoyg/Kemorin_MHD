@@ -59,10 +59,6 @@
 !@n     with dgemm in BLAS
       character(len = kchara), parameter                                &
      &           :: leg_dgemm = 'BLAS'
-!>      Character flag to perform Legendre transform 
-!@n     with self matrix product
-      character(len = kchara), parameter                                &
-     &           :: leg_matprod = 'matproduct'
 !>      Chalacter flag to perform Legendre transform 
 !@n     with symmetry and mutmul function
       character(len = kchara), parameter                                &
@@ -71,10 +67,6 @@
 !@n     with symmetry and dgemm in BLAS
       character(len = kchara), parameter                                &
      &           :: leg_sym_dgemm =   'symmetric_BLAS'
-!>      Character flag to perform Legendre transform 
-!@n     with symmetry and  self matrix product
-      character(len = kchara), parameter                                &
-     &           :: leg_sym_matprod = 'symmetric_matproduct'
 !>      Chalacter flag to perform Legendre transform 
 !@n     with symmetry and mutmul function
       character(len = kchara), parameter                                &
@@ -83,10 +75,6 @@
 !@n     with symmetry and dgemm in BLAS
       character(len = kchara), parameter                                &
      &           :: leg_sym_dgemm_big =   'symmetric_BLAS_big'
-!>      Character flag to perform Legendre transform 
-!@n     with symmetry and  self matrix product
-      character(len = kchara), parameter                                &
-     &           :: leg_sym_matprod_big = 'symmetric_matproduct_big'
 !>      Character flag to perform Legendre transform 
 !@n     with testing loop
       character(len = kchara), parameter                                &
@@ -119,26 +107,17 @@
 !@n     with dgemm in BLAS
       integer(kind = kint), parameter :: iflag_leg_dgemm =         8
 !>      integer flag to perform Legendre transform 
-!@n     with self matrix product
-      integer(kind = kint), parameter :: iflag_leg_matprod =       9
-!>      integer flag to perform Legendre transform 
 !@n     with symmetry and mutmul function
       integer(kind = kint), parameter :: iflag_leg_sym_matmul =   10
 !>      integer flag to perform Legendre transform 
 !@n     with symmetry and dgemm in BLAS
       integer(kind = kint), parameter :: iflag_leg_sym_dgemm =    11
 !>      integer flag to perform Legendre transform 
-!@n     with symmetry and  self matrix product
-      integer(kind = kint), parameter :: iflag_leg_sym_matprod =  12
-!>      integer flag to perform Legendre transform 
 !@n     with symmetry and mutmul function
       integer(kind = kint), parameter :: iflag_leg_sym_matmul_big =  13
 !>      integer flag to perform Legendre transform 
 !@n     with symmetry and dgemm in BLAS
       integer(kind = kint), parameter :: iflag_leg_sym_dgemm_big =   14
-!>      integer flag to perform Legendre transform 
-!@n     with symmetry and  self matrix product
-      integer(kind = kint), parameter :: iflag_leg_sym_matprod_big = 15
 !>      integer flag to perform Legendre transform 
 !@n     with testing loop
       integer(kind = kint), parameter :: iflag_leg_test_loop =   99
@@ -171,14 +150,10 @@
         set_legendre_trans_mode_ctl = iflag_leg_matmul
       else if(cmp_no_case(tranx_loop_ctl, leg_dgemm)) then
         set_legendre_trans_mode_ctl = iflag_leg_dgemm
-      else if(cmp_no_case(tranx_loop_ctl, leg_matprod)) then
-        set_legendre_trans_mode_ctl = iflag_leg_matprod
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_matmul)) then
         set_legendre_trans_mode_ctl = iflag_leg_sym_matmul
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_dgemm)) then
         set_legendre_trans_mode_ctl = iflag_leg_sym_dgemm
-      else if(cmp_no_case(tranx_loop_ctl, leg_sym_matprod)) then
-        set_legendre_trans_mode_ctl = iflag_leg_sym_matprod
       else if(cmp_no_case(tranx_loop_ctl, leg_blocked_loop)) then
         set_legendre_trans_mode_ctl = iflag_leg_blocked
       else if(cmp_no_case(tranx_loop_ctl, leg_orginal_loop)) then
@@ -187,8 +162,6 @@
         set_legendre_trans_mode_ctl = iflag_leg_sym_matmul_big
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_dgemm_big)) then
         set_legendre_trans_mode_ctl = iflag_leg_sym_dgemm_big
-      else if(cmp_no_case(tranx_loop_ctl, leg_sym_matprod_big)) then
-        set_legendre_trans_mode_ctl = iflag_leg_sym_matprod_big
       else
         set_legendre_trans_mode_ctl = iflag_leg_orginal_loop
       end if
@@ -222,20 +195,14 @@
         write(tmpchara,'(a)') trim(leg_matmul)
       else if(id_legendre .eq. iflag_leg_dgemm) then
         write(tmpchara,'(a)') trim(leg_dgemm)
-      else if(id_legendre .eq. iflag_leg_matprod) then
-        write(tmpchara,'(a)') trim(leg_matprod)
       else if(id_legendre .eq. iflag_leg_sym_matmul) then
         write(tmpchara,'(a)') trim(leg_sym_matmul)
       else if(id_legendre .eq. iflag_leg_sym_dgemm) then
         write(tmpchara,'(a)') trim(leg_sym_dgemm)
-      else if(id_legendre .eq. iflag_leg_sym_matprod) then
-        write(tmpchara,'(a)') trim(leg_sym_matprod)
       else if(id_legendre .eq. iflag_leg_sym_matmul_big) then
         write(tmpchara,'(a)') trim(leg_sym_matmul_big)
       else if(id_legendre .eq. iflag_leg_sym_dgemm_big) then
         write(tmpchara,'(a)') trim(leg_sym_dgemm_big)
-      else if(id_legendre .eq. iflag_leg_sym_matprod_big) then
-        write(tmpchara,'(a)') trim(leg_sym_matprod_big)
       else if(id_legendre .eq. iflag_leg_test_loop) then
         write(tmpchara,'(a)') trim(leg_test_loop)
       end if
