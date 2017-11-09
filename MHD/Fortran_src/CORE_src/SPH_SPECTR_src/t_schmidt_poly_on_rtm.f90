@@ -43,6 +43,8 @@
 !
 !>      @f$ 1 / \sin \theta @f$  for Legendre transform
         real(kind = kreal), allocatable :: asin_t_rtm(:)
+!>      @f$ cos \theta @f$  for Legendre transform
+        real(kind = kreal), allocatable :: cos_t_rtm(:)
 !
 !>        @$f P_{l}{m} @$f at gouss points
         real(kind = kreal), allocatable :: P_rtm(:,:)
@@ -82,12 +84,14 @@
       allocate( Plm_WK%weight_rtm(nth_rtm) )
 !
       allocate( Plm_WK%asin_t_rtm(nth_rtm))
+      allocate( Plm_WK%cos_t_rtm(nth_rtm))
 !
       Plm_WK%g_point_rtm = 0.0d0
       Plm_WK%g_colat_rtm = 0.0d0
       Plm_WK%weight_rtm = 0.0d0
 !
       Plm_WK%asin_t_rtm =  0.0d0
+      Plm_WK%cos_t_rtm =   0.0d0
 !
       end subroutine alloc_gauss_colat_rtm
 !
@@ -162,10 +166,9 @@
 !
       type(legendre_4_sph_trans), intent(inout) :: Plm_WK
 !
-      deallocate(Plm_WK%g_point_rtm)
-      deallocate(Plm_WK%g_colat_rtm)
+      deallocate(Plm_WK%g_point_rtm, Plm_WK%g_colat_rtm)
       deallocate(Plm_WK%weight_rtm)
-      deallocate(Plm_WK%asin_t_rtm)
+      deallocate(Plm_WK%asin_t_rtm, Plm_WK%cos_t_rtm)
 !
       end subroutine dealloc_gauss_colat_rtm
 !

@@ -137,8 +137,7 @@
 !
       private :: const_symmetric_legendres
       private :: alloc_hemi_schmidt_rtm
-      private :: alloc_leg_vec_sym_matmul, dealloc_leg_vec_sym_matmul
-      private :: alloc_leg_scl_sym_matmul, dealloc_leg_scl_sym_matmul
+      private :: dealloc_leg_vec_sym_matmul, dealloc_leg_scl_sym_matmul
       private :: alloc_leg_vec_symmetry, alloc_leg_scl_symmetry
 !
 ! -----------------------------------------------------------------------
@@ -163,12 +162,17 @@
      &    sph_rtm%nidx_rtm(2), sph_rtm%nidx_rtm(3),                     &
      &    leg, idx_trns, WK_l_sml)
 !
-      call alloc_leg_vec_sym_matmul                                     &
-     &   (sph_rtm%nidx_rtm(2), sph_rtm%maxidx_rtm_smp(1),               &
-     &    nvector, idx_trns, WK_l_sml)
-      call alloc_leg_scl_sym_matmul                                     &
-     &   (sph_rtm%nidx_rtm(2), sph_rtm%maxidx_rtm_smp(1),               &
-     &    nscalar, idx_trns, WK_l_sml)
+      WK_l_sml%nvec_jk = ((idx_trns%maxdegree_rlm+1)/2)                 &
+     &                  * sph_rtm%maxidx_rtm_smp(1) * nvector
+      WK_l_sml%nscl_jk = ((idx_trns%maxdegree_rlm+1)/2)                 &
+     &                  * sph_rtm%maxidx_rtm_smp(1) * nscalar
+      WK_l_sml%nvec_lk = ((sph_rtm%nidx_rtm(2) + 1)/2)                  &
+     &                  * sph_rtm%maxidx_rtm_smp(1) * nvector
+      WK_l_sml%nscl_lk = ((sph_rtm%nidx_rtm(2) + 1)/2)                  &
+     &                  * sph_rtm%maxidx_rtm_smp(1) * nscalar
+!
+      call alloc_leg_vec_symmetry(WK_l_sml)
+      call alloc_leg_scl_symmetry(WK_l_sml)
 !
       end subroutine init_legendre_sym_matmul
 !
@@ -189,10 +193,13 @@
      &    sph_rtm%nidx_rtm(2), sph_rtm%nidx_rtm(3),                     &
      &    leg, idx_trns, WK_l_sml)
 !
-      call alloc_leg_vec_symmetry                                       &
-     &   (sph_rtm%nidx_rtm(2), idx_trns, WK_l_sml)
-      call alloc_leg_scl_symmetry                                       &
-     &   (sph_rtm%nidx_rtm(2), idx_trns, WK_l_sml)
+      WK_l_sml%nvec_jk = (idx_trns%maxdegree_rlm+1)/2
+      WK_l_sml%nscl_jk = (idx_trns%maxdegree_rlm+1)/2
+      WK_l_sml%nvec_lk = (sph_rtm%nidx_rtm(2) + 1)/2
+      WK_l_sml%nscl_lk = (sph_rtm%nidx_rtm(2) + 1)/2
+!
+      call alloc_leg_vec_symmetry(WK_l_sml)
+      call alloc_leg_scl_symmetry(WK_l_sml)
 !
       end subroutine init_legendre_symmetry
 !
@@ -275,71 +282,6 @@
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
 !
-      subroutine alloc_leg_vec_sym_matmul                               &
-     &         (nth_rtm, maxidx_rtm_r_smp, nvector, idx_trns, WK_l_sml)
-!
-      integer(kind = kint), intent(in) :: nth_rtm
-      integer(kind = kint), intent(in) :: maxidx_rtm_r_smp
-      integer(kind = kint), intent(in) :: nvector
-      type(index_4_sph_trans), intent(in) :: idx_trns
-!
-      type(leg_trns_sym_mul_work), intent(inout) :: WK_l_sml
-!
-!
-      WK_l_sml%nvec_jk = ((idx_trns%maxdegree_rlm+1)/2)                 &
-     &         * maxidx_rtm_r_smp * nvector
-      allocate(WK_l_sml%pol_e(WK_l_sml%nvec_jk,np_smp))
-      allocate(WK_l_sml%dpoldt_e(WK_l_sml%nvec_jk,np_smp))
-      allocate(WK_l_sml%dpoldp_e(WK_l_sml%nvec_jk,np_smp))
-      allocate(WK_l_sml%dtordt_e(WK_l_sml%nvec_jk,np_smp))
-      allocate(WK_l_sml%dtordp_e(WK_l_sml%nvec_jk,np_smp))
-      allocate(WK_l_sml%pol_o(WK_l_sml%nvec_jk,np_smp))
-      allocate(WK_l_sml%dpoldt_o(WK_l_sml%nvec_jk,np_smp))
-      allocate(WK_l_sml%dpoldp_o(WK_l_sml%nvec_jk,np_smp))
-      allocate(WK_l_sml%dtordt_o(WK_l_sml%nvec_jk,np_smp))
-      allocate(WK_l_sml%dtordp_o(WK_l_sml%nvec_jk,np_smp))
-!
-      WK_l_sml%nvec_lk = ((nth_rtm + 1)/2) * maxidx_rtm_r_smp * nvector
-      allocate(WK_l_sml%symp_r(WK_l_sml%nvec_lk,np_smp))
-      allocate(WK_l_sml%symp_t(WK_l_sml%nvec_lk,np_smp))
-      allocate(WK_l_sml%symp_p(WK_l_sml%nvec_lk,np_smp))
-      allocate(WK_l_sml%symn_t(WK_l_sml%nvec_lk,np_smp))
-      allocate(WK_l_sml%symn_p(WK_l_sml%nvec_lk,np_smp))
-!
-      allocate(WK_l_sml%asmp_r(WK_l_sml%nvec_lk,np_smp))
-      allocate(WK_l_sml%asmp_t(WK_l_sml%nvec_lk,np_smp))
-      allocate(WK_l_sml%asmp_p(WK_l_sml%nvec_lk,np_smp))
-      allocate(WK_l_sml%asmn_t(WK_l_sml%nvec_lk,np_smp))
-      allocate(WK_l_sml%asmn_p(WK_l_sml%nvec_lk,np_smp))
-!
-      end subroutine alloc_leg_vec_sym_matmul
-!
-! -----------------------------------------------------------------------
-!
-      subroutine alloc_leg_scl_sym_matmul                               &
-     &         (nth_rtm, maxidx_rtm_r_smp, nscalar, idx_trns, WK_l_sml)
-!
-      integer(kind = kint), intent(in) :: nth_rtm
-      integer(kind = kint), intent(in) :: maxidx_rtm_r_smp
-      integer(kind = kint), intent(in) :: nscalar
-      type(index_4_sph_trans), intent(in) :: idx_trns
-!
-      type(leg_trns_sym_mul_work), intent(inout) :: WK_l_sml
-!
-!
-      WK_l_sml%nscl_jk = ((idx_trns%maxdegree_rlm+1)/2)                 &
-     &                  * maxidx_rtm_r_smp * nscalar
-      allocate(WK_l_sml%scl_e(WK_l_sml%nscl_jk,np_smp))
-      allocate(WK_l_sml%scl_o(WK_l_sml%nscl_jk,np_smp))
-!
-      WK_l_sml%nscl_lk = ((nth_rtm + 1)/2) * maxidx_rtm_r_smp * nscalar
-      allocate(WK_l_sml%symp(WK_l_sml%nscl_lk,np_smp))
-      allocate(WK_l_sml%asmp(WK_l_sml%nscl_lk,np_smp))
-!
-      end subroutine alloc_leg_scl_sym_matmul
-!
-! -----------------------------------------------------------------------
-!
       subroutine dealloc_leg_vec_sym_matmul(WK_l_sml)
 !
       type(leg_trns_sym_mul_work), intent(inout) :: WK_l_sml
@@ -376,15 +318,11 @@
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
 !
-      subroutine alloc_leg_vec_symmetry(nth_rtm, idx_trns, WK_l_sml)
-!
-      integer(kind = kint), intent(in) :: nth_rtm
-      type(index_4_sph_trans), intent(in) :: idx_trns
+      subroutine alloc_leg_vec_symmetry(WK_l_sml)
 !
       type(leg_trns_sym_mul_work), intent(inout) :: WK_l_sml
 !
 !
-      WK_l_sml%nvec_jk = (idx_trns%maxdegree_rlm+1)/2
       allocate(WK_l_sml%pol_e(WK_l_sml%nvec_jk,np_smp))
       allocate(WK_l_sml%dpoldt_e(WK_l_sml%nvec_jk,np_smp))
       allocate(WK_l_sml%dpoldp_e(WK_l_sml%nvec_jk,np_smp))
@@ -396,7 +334,6 @@
       allocate(WK_l_sml%dtordt_o(WK_l_sml%nvec_jk,np_smp))
       allocate(WK_l_sml%dtordp_o(WK_l_sml%nvec_jk,np_smp))
 !
-      WK_l_sml%nvec_lk = (nth_rtm + 1)/2
       allocate(WK_l_sml%symp_r(WK_l_sml%nvec_lk,np_smp))
       allocate(WK_l_sml%symp_t(WK_l_sml%nvec_lk,np_smp))
       allocate(WK_l_sml%symp_p(WK_l_sml%nvec_lk,np_smp))
@@ -413,19 +350,14 @@
 !
 ! -----------------------------------------------------------------------
 !
-      subroutine alloc_leg_scl_symmetry(nth_rtm, idx_trns, WK_l_sml)
-!
-      integer(kind = kint), intent(in) :: nth_rtm
-      type(index_4_sph_trans), intent(in) :: idx_trns
+      subroutine alloc_leg_scl_symmetry(WK_l_sml)
 !
       type(leg_trns_sym_mul_work), intent(inout) :: WK_l_sml
 !
 !
-      WK_l_sml%nscl_jk = (idx_trns%maxdegree_rlm+1)/2
       allocate(WK_l_sml%scl_e(WK_l_sml%nscl_jk,np_smp))
       allocate(WK_l_sml%scl_o(WK_l_sml%nscl_jk,np_smp))
 !
-      WK_l_sml%nscl_lk = (nth_rtm + 1)/2
       allocate(WK_l_sml%symp(WK_l_sml%nscl_lk,np_smp))
       allocate(WK_l_sml%asmp(WK_l_sml%nscl_lk,np_smp))
 !

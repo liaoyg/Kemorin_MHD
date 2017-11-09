@@ -159,7 +159,7 @@
      &    leg%P_rtm, leg%dPdt_rtm, leg%P_jl, leg%dPdt_jl)
 !
       call set_sin_theta_rtm(sph_rtm%nidx_rtm(2), leg%g_colat_rtm,      &
-     &    leg%asin_t_rtm)
+     &    leg%asin_t_rtm, leg%cos_t_rtm)
 !
       call alloc_schmidt_p_rtm_pole(sph_rlm%nidx_rlm(2), leg)
       call set_lagender_pole_rlm(l_truncation, sph_rtm, sph_rlm,        &
