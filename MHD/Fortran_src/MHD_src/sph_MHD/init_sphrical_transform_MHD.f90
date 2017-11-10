@@ -50,7 +50,7 @@
 !
       integer(kind = kint), parameter :: num_test =  6
       integer(kind = kint), parameter :: list_test(num_test)            &
-     &        = (/iflag_leg_symmetry,                                   &
+     &        = (/iflag_leg_matmul,                                     &
      &            iflag_leg_symmetry,                                   &
      &            iflag_leg_sym_matmul,                                 &
      &            iflag_leg_sym_dgemm,                                  &
@@ -288,10 +288,6 @@
      &  write(*,'(a,1p2e16.6)') ' 7: elapsed by matmul: ',              &
      &            etime_max(iflag_leg_matmul),                          &
      &            etime_trans(iflag_leg_matmul)
-        if(etime_trans(iflag_leg_dgemm) .gt. zero)                      &
-     &  write(*,'(a,1p2e16.6)') ' 8: elapsed by BLAS: ',                &
-     &            etime_max(iflag_leg_dgemm),                           &
-     &            etime_trans(iflag_leg_dgemm)
         if(etime_trans(iflag_leg_sym_matmul) .gt. zero)                 &
      &  write(*,'(a,1p2e16.6)')                                         &
      &          '10: elapsed by matmul with symmetric: ',               &

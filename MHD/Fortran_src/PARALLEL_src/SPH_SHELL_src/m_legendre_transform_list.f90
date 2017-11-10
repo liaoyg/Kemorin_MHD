@@ -39,10 +39,6 @@
 !@n     with mutmul function
       character(len = kchara), parameter                                &
      &           :: leg_matmul = 'matmul'
-!>      Character flag to perform Legendre transform 
-!@n     with dgemm in BLAS
-      character(len = kchara), parameter                                &
-     &           :: leg_dgemm = 'BLAS'
 !>      Chalacter flag to perform Legendre transform 
 !@n     with symmetry and mutmul function
       character(len = kchara), parameter                                &
@@ -75,9 +71,6 @@
 !>      integer flag to perform Legendre transform 
 !@n     with mutmul function
       integer(kind = kint), parameter :: iflag_leg_matmul =        7
-!>      integer flag to perform Legendre transform 
-!@n     with dgemm in BLAS
-      integer(kind = kint), parameter :: iflag_leg_dgemm =         8
 !>      integer flag to perform Legendre transform 
 !@n     with symmetry and mutmul function
       integer(kind = kint), parameter :: iflag_leg_sym_matmul =   10
@@ -114,8 +107,6 @@
         set_legendre_trans_mode_ctl = iflag_leg_symmetry
       else if(cmp_no_case(tranx_loop_ctl, leg_matmul)) then
         set_legendre_trans_mode_ctl = iflag_leg_matmul
-      else if(cmp_no_case(tranx_loop_ctl, leg_dgemm)) then
-        set_legendre_trans_mode_ctl = iflag_leg_dgemm
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_matmul)) then
         set_legendre_trans_mode_ctl = iflag_leg_sym_matmul
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_dgemm)) then
@@ -149,8 +140,6 @@
         write(tmpchara,'(a)') trim(leg_sym_org_loop)
       else if(id_legendre .eq. iflag_leg_matmul) then
         write(tmpchara,'(a)') trim(leg_matmul)
-      else if(id_legendre .eq. iflag_leg_dgemm) then
-        write(tmpchara,'(a)') trim(leg_dgemm)
       else if(id_legendre .eq. iflag_leg_sym_matmul) then
         write(tmpchara,'(a)') trim(leg_sym_matmul)
       else if(id_legendre .eq. iflag_leg_sym_dgemm) then
