@@ -51,7 +51,7 @@
       integer(kind = kint), parameter :: num_test =  6
       integer(kind = kint), parameter :: list_test(num_test)            &
      &        = (/iflag_leg_symmetry,                                   &
-     &            iflag_leg_sym_spin_loop,                              &
+     &            iflag_leg_symmetry,                                   &
      &            iflag_leg_sym_matmul,                                 &
      &            iflag_leg_sym_dgemm,                                  &
      &            iflag_leg_sym_matmul_big,                             &
@@ -284,10 +284,6 @@
      &          ' 5: elapsed by original loop with symmetric: ',        &
      &            etime_max(iflag_leg_symmetry),                        &
      &            etime_trans(iflag_leg_symmetry)
-        if(etime_trans(iflag_leg_sym_spin_loop) .gt. zero)              &
-     &  write(*,'(a,1p2e16.6)') ' 6: elapsed by sym. outer radius: ',   &
-     &            etime_max(iflag_leg_sym_spin_loop),                   &
-     &            etime_trans(iflag_leg_sym_spin_loop)
         if(etime_trans(iflag_leg_matmul) .gt. zero)                     &
      &  write(*,'(a,1p2e16.6)') ' 7: elapsed by matmul: ',              &
      &            etime_max(iflag_leg_matmul),                          &

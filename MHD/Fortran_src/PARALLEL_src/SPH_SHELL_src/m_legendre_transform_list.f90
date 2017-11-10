@@ -24,7 +24,7 @@
 !
       implicit none
 !
-!>      Number of LEgendre transform types
+!>      Number of Legendre transform types
       integer(kind = kint), parameter :: ntype_Leg_trans_loop =   15
 !
 !>      Character flag to perform Legendre transform 
@@ -35,10 +35,6 @@
 !@n     with symmetry
       character(len = kchara), parameter                                &
      &           :: leg_sym_org_loop =   'symmetric_original_loop'
-!>      Character flag to perform Legendre transform 
-!@n     with inneromst Legendre polynomial loop
-      character(len = kchara), parameter                                &
-     &           :: leg_sym_spin_loop = 'symmetric_outer_radial_loop'
 !>      Character flag to perform Legendre transform 
 !@n     with mutmul function
       character(len = kchara), parameter                                &
@@ -76,9 +72,6 @@
       integer(kind = kint), parameter :: iflag_leg_orginal_loop = 1
 !>      integer flag to perform Legendre transform with symmetry
       integer(kind = kint), parameter :: iflag_leg_symmetry =     5
-!>      integer flag to perform Legendre transform 
-!@n     with symmetry and inneromst Legendre polynomial loop
-      integer(kind = kint), parameter :: iflag_leg_sym_spin_loop = 6
 !>      integer flag to perform Legendre transform 
 !@n     with mutmul function
       integer(kind = kint), parameter :: iflag_leg_matmul =        7
@@ -119,8 +112,6 @@
         set_legendre_trans_mode_ctl = iflag_leg_test_loop
       else if(cmp_no_case(tranx_loop_ctl, leg_sym_org_loop)) then
         set_legendre_trans_mode_ctl = iflag_leg_symmetry
-      else if(cmp_no_case(tranx_loop_ctl, leg_sym_spin_loop)) then
-        set_legendre_trans_mode_ctl = iflag_leg_sym_spin_loop
       else if(cmp_no_case(tranx_loop_ctl, leg_matmul)) then
         set_legendre_trans_mode_ctl = iflag_leg_matmul
       else if(cmp_no_case(tranx_loop_ctl, leg_dgemm)) then
@@ -156,8 +147,6 @@
         write(tmpchara,'(a)') trim(leg_orginal_loop)
       else if(id_legendre .eq. iflag_leg_symmetry) then
         write(tmpchara,'(a)') trim(leg_sym_org_loop)
-       else if(id_legendre .eq. iflag_leg_sym_spin_loop) then
-        write(tmpchara,'(a)') trim(leg_sym_spin_loop)
       else if(id_legendre .eq. iflag_leg_matmul) then
         write(tmpchara,'(a)') trim(leg_matmul)
       else if(id_legendre .eq. iflag_leg_dgemm) then

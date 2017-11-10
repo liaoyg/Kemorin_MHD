@@ -60,7 +60,6 @@
       use t_legendre_work_testlooop
 !
       use legendre_transform_org
-      use legendre_transform_spin
       use legendre_transform_testloop
       use legendre_transform_matmul
       use legendre_trans_sym_matmul
@@ -127,8 +126,7 @@
         call alloc_leg_trns_matmul                                      &
      &     (sph_rtm%nidx_rtm(2), sph_rtm%maxidx_rtm_smp(1),             &
      &      ntensor, nvector, nscalar, idx_trns, WK_leg%WK_l_mtl)
-      else if(WK_leg%id_legendre .eq. iflag_leg_symmetry                &
-     &   .or. WK_leg%id_legendre .eq. iflag_leg_sym_spin_loop) then
+      else if(WK_leg%id_legendre .eq. iflag_leg_symmetry) then
         call init_legendre_w_tsr_symmetry                               &
      &     (ntensor, sph_rtm, sph_rlm, leg, idx_trns,                   &
      &      WK_leg%WK_l_sml, WK_leg%WK_tl_sml)
@@ -151,8 +149,7 @@
 !
       if     (WK_leg%id_legendre .eq. iflag_leg_sym_matmul              &
      &   .or. WK_leg%id_legendre .eq. iflag_leg_sym_dgemm               &
-     &   .or. WK_leg%id_legendre .eq. iflag_leg_symmetry                &
-     &   .or. WK_leg%id_legendre .eq. iflag_leg_sym_spin_loop) then
+     &   .or. WK_leg%id_legendre .eq. iflag_leg_symmetry) then
         call finalize_leg_w_tsr_sym_matmul                              &
      &     (WK_leg%WK_l_sml, WK_leg%WK_tl_sml)
       else if(WK_leg%id_legendre .eq. iflag_leg_sym_matmul_big          &
@@ -197,10 +194,6 @@
      &      n_WR, n_WS, WR, WS, WK_leg%WK_l_tst)
       else if(WK_leg%id_legendre .eq. iflag_leg_symmetry) then
         call leg_backward_trans_sym_org(ncomp, nvector, nscalar,        &
-     &      sph_rlm, sph_rtm, comm_rlm, comm_rtm, leg, idx_trns,        &
-     &      n_WR, n_WS, WR, WS, WK_leg%WK_l_sml)
-      else if(WK_leg%id_legendre .eq. iflag_leg_sym_spin_loop) then
-        call leg_backward_trans_sym_spin(ncomp, nvector, nscalar,       &
      &      sph_rlm, sph_rtm, comm_rlm, comm_rtm, leg, idx_trns,        &
      &      n_WR, n_WS, WR, WS, WK_leg%WK_l_sml)
       else if(WK_leg%id_legendre .eq. iflag_leg_matmul) then
@@ -262,10 +255,6 @@
      &      n_WR, n_WS, WR, WS, WK_leg%WK_l_tst)
       else if(WK_leg%id_legendre .eq. iflag_leg_symmetry) then
         call leg_forward_trans_sym_org(ncomp, nvector, nscalar,         &
-     &      sph_rtm, sph_rlm, comm_rtm, comm_rlm, leg, idx_trns,        &
-     &      n_WR, n_WS, WR, WS, WK_leg%WK_l_sml)
-      else if(WK_leg%id_legendre .eq. iflag_leg_sym_spin_loop) then
-        call leg_forward_trans_sym_spin(ncomp, nvector, nscalar,        &
      &      sph_rtm, sph_rlm, comm_rtm, comm_rlm, leg, idx_trns,        &
      &      n_WR, n_WS, WR, WS, WK_leg%WK_l_sml)
       else if(WK_leg%id_legendre .eq. iflag_leg_matmul) then
