@@ -37,7 +37,7 @@
       subroutine init_visualize_surface(femmesh, ele_mesh, nod_fld)
 !
       use m_cross_section
-      use m_isosurface
+      use m_control_data_sections
 !
       type(mesh_data), intent(in) :: femmesh
       type(element_geometry), intent(in) :: ele_mesh
@@ -47,12 +47,14 @@
 !
       call start_elapsed_time(60)
       call SECTIONING_initialize                                        &
-     &   (femmesh%mesh, femmesh%group, ele_mesh, nod_fld)
+     &   (femmesh%mesh, femmesh%group, ele_mesh, nod_fld,               &
+     &    psf_ctls1, psf1)
       call end_elapsed_time(60)
 !
       call start_elapsed_time(61)
       call ISOSURF_initialize                                           &
-     &   (femmesh%mesh, femmesh%group, ele_mesh, nod_fld)
+     &   (femmesh%mesh, femmesh%group, ele_mesh, nod_fld,               &
+     &    iso_ctls1, iso1)
       call end_elapsed_time(61)
 !
       end subroutine init_visualize_surface
@@ -63,7 +65,6 @@
      &         (viz_step, time_d, femmesh, ele_mesh, nod_fld)
 !
       use m_cross_section
-      use m_isosurface
 !
       type(VIZ_step_params), intent(in) :: viz_step
       type(time_data), intent(in) :: time_d
@@ -74,12 +75,12 @@
 !
       call start_elapsed_time(65)
       call SECTIONING_visualize                                         &
-     &   (viz_step%PSF_t%istep_file, time_d, ele_mesh, nod_fld)
+     &   (viz_step%PSF_t%istep_file, time_d, ele_mesh, nod_fld, psf1)
       call end_elapsed_time(65)
 !
       call start_elapsed_time(66)
       call ISOSURF_visualize(viz_step%ISO_t%istep_file, time_d,         &
-     &    femmesh%mesh, ele_mesh, nod_fld)
+     &    femmesh%mesh, ele_mesh, nod_fld, iso1)
       call end_elapsed_time(66)
 !
       end subroutine visualize_surface
