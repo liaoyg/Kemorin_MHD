@@ -23,17 +23,23 @@
       use m_precision
 !
       use m_machine_parameter
-      use m_control_params_4_fline
       use m_geometry_constants
-      use m_global_fline
       use t_mesh_data
       use t_next_node_ele_4_node
       use t_phys_data
+      use t_control_params_4_fline
+      use t_source_of_filed_line
       use t_local_fline
+      use t_global_fieldline
 !
       implicit  none
 !
+      integer(kind = kint) :: num_fline
+      type(fieldline_paramters), save :: fline_prm1
+      type(fieldline_source), save :: fline_src1
+      type(fieldline_trace), save :: fline_tce1
       type(local_fieldline), save :: fline_lc1
+      type(global_fieldline_data), save :: fline_gl1
 !
 !  ---------------------------------------------------------------------
 !
@@ -45,7 +51,6 @@
 !
       use calypso_mpi
       use t_control_data_flines
-      use m_source_4_filed_line
       use set_fline_control
 !
       type(mesh_geometry), intent(in) :: mesh
@@ -59,14 +64,19 @@
 !
       if (iflag_debug.eq.1) write(*,*) 's_set_fline_control'
       call s_set_fline_control                                          &
-     &   (mesh%ele, group%ele_grp, group%surf_grp, nod_fld, fline_ctls)
+     &   (mesh%ele, group%ele_grp, group%surf_grp, nod_fld,             &
+     &    num_fline, fline_ctls, fline_prm1, fline_src1)
 !
       if (iflag_debug.eq.1) write(*,*) 'allocate_local_data_4_fline'
-      call allocate_local_data_4_fline(mesh%node%numnod)
-      call allocate_start_point_fline
+      call alloc_local_data_4_fline                                     &
+     &   (mesh%node%numnod, num_fline, fline_src1)
+      call alloc_start_point_fline                                      &
+     &   (fline_prm1%ntot_each_field_line, fline_src1)
       call allocate_num_gl_start_fline(nprocs)
+      call alloc_num_gl_start_fline(nprocs, num_fline,                  &
+     &    fline_prm1%ntot_each_field_line, fline_tce1)
       call alloc_local_fline(fline_lc1)
-      call allocate_global_fline_num
+      call alloc_global_fline_num(fline_gl1)
 !
       end subroutine FLINE_initialize
 !
@@ -93,25 +103,47 @@
       if (num_fline.le.0 .or. istep_fline .le. 0) return
 !
       if (iflag_debug.eq.1) write(*,*) 'set_local_field_4_fline'
-      call set_local_field_4_fline(mesh%node, nod_fld)
+      call set_local_field_4_fline                                      &
+     &   (num_fline, mesh%node, nod_fld, fline_prm1, fline_src1)
 !
       do i_fln = 1, num_fline
         if (iflag_debug.eq.1) write(*,*) 's_set_fields_for_fieldline'
         call s_set_fields_for_fieldline                                 &
-     &     (i_fln, mesh%node, mesh%ele, ele_mesh%surf, group%ele_grp)
+     &     (i_fln, mesh%node, mesh%ele, ele_mesh%surf, group%ele_grp,   &
+     &      fline_prm1, fline_src1, fline_tce1)
       end do
 !
       do i_fln = 1, num_fline
         if (iflag_debug.eq.1) write(*,*) 's_const_field_lines', i_fln
         call s_const_field_lines(i_fln, mesh%node, mesh%ele,            &
-     &      ele_mesh%surf, ele_4_nod, mesh%nod_comm, fline_lc1)
+     &      ele_mesh%surf, ele_4_nod, mesh%nod_comm,                    &
+     &      fline_prm1, fline_src1, fline_tce1, fline_lc1)
 !
         if (iflag_debug.eq.1) write(*,*) 's_collect_fline_data', i_fln
-       call s_collect_fline_data(istep_fline, i_fln, fline_lc1)
+       call s_collect_fline_data                                        &
+     &    (istep_fline, i_fln, fline_prm1, fline_lc1, fline_gl1)
       end do
 !
       end subroutine FLINE_visualize
 !
 !  ---------------------------------------------------------------------
 !
+      subroutine FLINE_finalize
+!
+!
+      call dealloc_control_params_fline(fline_prm1)
+      call dealloc_fline_starts_ctl(fline_prm1)
+      call dealloc_iflag_fline_used_ele(fline_prm1)
+!
+      call dealloc_local_data_4_fline(fline_src1)
+      call dealloc_local_start_grp_item(fline_src1)
+      call dealloc_start_point_fline(fline_src1)
+!
+      call dealloc_num_gl_start_fline(fline_tce1)
+      call dealloc_local_fline(fline_lc1)
+      call dealloc_global_fline_num(fline_gl1)
+!
+      end subroutine FLINE_finalize
+!
+!  ---------------------------------------------------------------------
       end module fieldline
