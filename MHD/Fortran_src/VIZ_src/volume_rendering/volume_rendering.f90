@@ -132,7 +132,7 @@
       call allocate_components_4_pvr(mesh%node, mesh%ele, group)
 !
       call read_set_pvr_controls(num_pvr, group, nod_fld,               &
-     &    cflag_update, pvr_param, pvr_data)
+     &    pvr_ctls1, cflag_update, pvr_param, pvr_data)
 !
 !
       call allocate_imark_4_surface(ele_mesh%surf%numsurf)
