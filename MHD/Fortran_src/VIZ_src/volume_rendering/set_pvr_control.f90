@@ -56,44 +56,73 @@
       type(PVR_control_params), intent(inout) :: pvr_param(num_pvr)
       type(PVR_image_generator), intent(inout) :: pvr_data(num_pvr)
 !
-      integer(kind = kint) :: i_pvr, i_psf
+      integer(kind = kint) :: i_pvr
 !
 !
       ctl_file_code = pvr_ctl_file_code
       if(iflag_debug .gt. 0) write(*,*) 's_set_pvr_control', num_pvr
       do i_pvr = 1, num_pvr
-        call read_control_pvr(i_pvr, pvr_ctls1%fname_pvr_ctl(i_pvr),    &
-     &      pvr_ctls1%pvr_ctl_struct(i_pvr))
-        call read_control_modelview                                     &
-     &     (i_pvr, pvr_ctls1%pvr_ctl_struct(i_pvr))
-        call read_control_colormap                                      &
-     &     (i_pvr, pvr_ctls1%pvr_ctl_struct(i_pvr))
-        do i_psf = 1, pvr_ctls1%pvr_ctl_struct(i_pvr)%num_pvr_sect_ctl
-          call read_control_pvr_section_def                             &
-     &       (pvr_ctls1%pvr_ctl_struct(i_pvr)%pvr_sect_ctl(i_psf))
-        end do
-!
-        call bcast_vr_psf_ctl(pvr_ctls1%pvr_ctl_struct(i_pvr))
-!
-        call set_each_pvr_control(group%ele_grp, group%surf_grp,        &
-     &      nod_fld%num_phys, nod_fld%phys_name,                        &
-     &      pvr_ctls1%pvr_ctl_struct(i_pvr), pvr_param(i_pvr)%file,     &
-     &      pvr_param(i_pvr)%field_def, pvr_data(i_pvr)%view,           &
-     &      pvr_param(i_pvr)%field, pvr_data(i_pvr)%screen,             &
-     &      pvr_data(i_pvr)%color, pvr_param(i_pvr)%colorbar)
-!
-        if(pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0         &
-     &     .and. i_pvr .eq. 1) then
-          cflag_update                                                  &
-     &         = pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%charavalue
-        end if
-!
-        call deallocate_cont_dat_pvr(pvr_ctls1%pvr_ctl_struct(i_pvr))
-        call calypso_mpi_barrier
+        call read_set_each_pvr_controls                                 &
+     &     (i_pvr, group, nod_fld, cflag_update,                        &
+     &      pvr_ctls1%fname_pvr_ctl(i_pvr),                             &
+     &      pvr_ctls1%pvr_ctl_struct(i_pvr),                            &
+     &      pvr_param(i_pvr), pvr_data(i_pvr))
       end do
 !      call dealloc_pvr_file_header_ctl(pvr_ctls)
 !
       end subroutine read_set_pvr_controls
+!
+!  ---------------------------------------------------------------------
+!
+      subroutine read_set_each_pvr_controls                             &
+     &         (i_pvr, group, nod_fld, fname_pvr_ctl, pvr_ctl_struct,   &
+     &          cflag_update, pvr_param, pvr_data)
+!
+      use t_mesh_data
+      use t_phys_data
+      use t_control_data_pvrs
+      use t_rendering_vr_image
+      use bcast_control_data_4_pvr
+!
+      type(mesh_groups), intent(in) :: group
+      type(phys_data), intent(in) :: nod_fld
+      integer(kind = kint), intent(in) :: i_pvr
+      character(len = kchara), intent(in)  :: fname_pvr_ctl
+!
+      character(len=kchara), intent(inout) :: cflag_update
+      type(pvr_ctl), intent(inout) :: pvr_ctl_struct
+      type(PVR_control_params), intent(inout) :: pvr_param
+      type(PVR_image_generator), intent(inout) :: pvr_data
+!
+      integer(kind = kint) :: i_psf
+!
+!
+      call read_control_pvr(i_pvr, fname_pvr_ctl, pvr_ctl_struct)
+      call read_control_modelview(i_pvr, pvr_ctl_struct)
+      call read_control_colormap(i_pvr, pvr_ctl_struct)
+      do i_psf = 1, pvr_ctl_struct%num_pvr_sect_ctl
+        call read_control_pvr_section_def                             &
+     &     (pvr_ctl_struct%pvr_sect_ctl(i_psf))
+      end do
+!
+      call bcast_vr_psf_ctl(pvr_ctl_struct)
+!
+      call set_each_pvr_control(group%ele_grp, group%surf_grp,          &
+     &    nod_fld%num_phys, nod_fld%phys_name, pvr_ctl_struct,          &
+     &    pvr_param%file, pvr_param%field_def, pvr_data%view,           &
+     &    pvr_param%field, pvr_data%screen, pvr_data%color,             &
+     &    pvr_param%colorbar)
+!
+      if(pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0           &
+     &     .and. i_pvr .eq. 1) then
+        cflag_update                                                    &
+     &         = pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%charavalue
+      end if
+!
+      call deallocate_cont_dat_pvr(pvr_ctl_struct)
+      call calypso_mpi_barrier
+!
+      end subroutine read_set_each_pvr_controls
 !
 !  ---------------------------------------------------------------------
 !
