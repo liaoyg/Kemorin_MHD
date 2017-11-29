@@ -72,7 +72,7 @@
 !  ---------------------------------------------------------------------
 !  ---------------------------------------------------------------------
 !
-      subroutine read_files_4_pvr_ctl0(pvr_ctls)
+      subroutine read_files_4_pvr_ctl(pvr_ctls)
 !
       use m_read_control_elements
       use skip_comment_f
@@ -103,11 +103,11 @@
         end if
       end do
 !
-      end subroutine read_files_4_pvr_ctl0
+      end subroutine read_files_4_pvr_ctl
 !
 !   --------------------------------------------------------------------
 !
-      subroutine bcast_files_4_pvr_ctl0(pvr_ctls)
+      subroutine bcast_files_4_pvr_ctl(pvr_ctls)
 !
       use calypso_mpi
       use bcast_control_data_4_pvr
@@ -126,7 +126,7 @@
      &   (pvr_ctls%fname_pvr_ctl, (kchara*pvr_ctls%num_pvr_ctl),        &
      &    CALYPSO_CHARACTER, izero, CALYPSO_COMM, ierr_MPI)
 !
-      end subroutine bcast_files_4_pvr_ctl0
+      end subroutine bcast_files_4_pvr_ctl
 !
 !   --------------------------------------------------------------------
 !

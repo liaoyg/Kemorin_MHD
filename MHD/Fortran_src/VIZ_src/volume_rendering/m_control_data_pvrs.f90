@@ -3,9 +3,6 @@
 !
 !      Written by H. Matsui on July, 2006
 !
-!      subroutine allocate_pvr_ctl_struct
-!      subroutine deallocate_pvr_file_header_ctl
-!
 !      subroutine read_viz_control_data
 !      subroutine bcast_viz_control_data
 !
@@ -58,32 +55,12 @@
       private :: hd_fline_ctl
 !
       private :: hd_viz_control, i_viz_control, hd_pvr_ctl, i_pvr_ctl
-      private :: allocate_pvr_ctl_struct
       private :: read_files_4_pvr_ctl, bcast_files_4_pvr_ctl
 !
 !   --------------------------------------------------------------------
 !
       contains
 !
-!  ---------------------------------------------------------------------
-!
-      subroutine allocate_pvr_ctl_struct
-!
-      allocate(pvr_ctls1%fname_pvr_ctl(pvr_ctls1%num_pvr_ctl))
-      allocate(pvr_ctls1%pvr_ctl_struct(pvr_ctls1%num_pvr_ctl))
-!
-      end subroutine allocate_pvr_ctl_struct
-!
-!  ---------------------------------------------------------------------
-!
-      subroutine deallocate_pvr_file_header_ctl
-!
-      deallocate(pvr_ctls1%pvr_ctl_struct)
-      deallocate(pvr_ctls1%fname_pvr_ctl)
-!
-      end subroutine deallocate_pvr_file_header_ctl
-!
-!  ---------------------------------------------------------------------
 !  ---------------------------------------------------------------------
 !
       subroutine read_viz_control_data
@@ -127,7 +104,9 @@
         end if
 !
         call find_control_array_flag(hd_pvr_ctl, pvr_ctls1%num_pvr_ctl)
-        if(pvr_ctls1%num_pvr_ctl .gt. 0) call read_files_4_pvr_ctl
+        if(pvr_ctls1%num_pvr_ctl .gt. 0) then
+          call read_files_4_pvr_ctl(pvr_ctls1)
+        end if
 !
         call find_control_array_flag                                    &
      &     (hd_fline_ctl, fline_ctls1%num_fline_ctl)
@@ -148,65 +127,10 @@
 !
       call bcast_files_4_psf_ctl(psf_ctls1)
       call bcast_files_4_iso_ctl(iso_ctls1)
-      call bcast_files_4_pvr_ctl
+      call bcast_files_4_pvr_ctl(pvr_ctls1)
       call bcast_files_4_fline_ctl(fline_ctls1)
 !
       end subroutine bcast_viz_control_data
-!
-!   --------------------------------------------------------------------
-!   --------------------------------------------------------------------
-!
-      subroutine read_files_4_pvr_ctl
-!
-      use m_read_control_elements
-      use skip_comment_f
-!
-!
-      if (i_pvr_ctl .gt. 0) return
-!
-      call allocate_pvr_ctl_struct
-      do
-        call load_ctl_label_and_line
-!
-        call find_control_end_array_flag(hd_pvr_ctl,                    &
-     &      pvr_ctls1%num_pvr_ctl, i_pvr_ctl)
-        if(i_pvr_ctl .ge. pvr_ctls1%num_pvr_ctl) exit
-!
-        if(right_file_flag(hd_pvr_ctl) .gt. 0) then
-          call read_file_names_from_ctl_line(pvr_ctls1%num_pvr_ctl,     &
-     &        i_pvr_ctl, pvr_ctls1%fname_pvr_ctl)
-        end if
-!
-        if(right_begin_flag(hd_pvr_ctl) .gt. 0) then
-          i_pvr_ctl = i_pvr_ctl + 1
-          pvr_ctls1%fname_pvr_ctl(i_pvr_ctl) = 'NO_FILE'
-          call read_vr_psf_ctl                                          &
-     &       (hd_pvr_ctl, pvr_ctls1%pvr_ctl_struct(i_pvr_ctl))
-        end if
-      end do
-!
-      end subroutine read_files_4_pvr_ctl
-!
-!   --------------------------------------------------------------------
-!
-      subroutine bcast_files_4_pvr_ctl
-!
-      use calypso_mpi
-      use bcast_control_data_4_pvr
-!
-!
-      call MPI_BCAST(pvr_ctls1%num_pvr_ctl,  ione,                      &
-     &               CALYPSO_INTEGER, izero, CALYPSO_COMM, ierr_MPI)
-      call calypso_mpi_barrier
-      if(pvr_ctls1%num_pvr_ctl .le. 0) return
-!
-      if(my_rank .gt. 0)  call allocate_pvr_ctl_struct
-!
-      call MPI_BCAST                                                    &
-     &   (pvr_ctls1%fname_pvr_ctl, (kchara*pvr_ctls1%num_pvr_ctl),      &
-     &    CALYPSO_CHARACTER, izero, CALYPSO_COMM, ierr_MPI)
-!
-      end subroutine bcast_files_4_pvr_ctl
 !
 !   --------------------------------------------------------------------
 !
