@@ -124,7 +124,7 @@
       integer(kind = kint) :: i_pvr, i_psf
 !
 !
-      num_pvr = num_pvr_ctl
+      num_pvr = pvr_ctls1%num_pvr_ctl
       if (num_pvr .le. 0) return
 !
       if(iflag_debug .gt. 0) write(*,*) 'allocate_components_4_pvr',    &

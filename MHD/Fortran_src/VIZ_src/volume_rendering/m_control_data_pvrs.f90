@@ -28,7 +28,6 @@
 !
 !
       type(volume_rendering_controls), save :: pvr_ctls1
-      integer(kind = kint) :: num_pvr_ctl = 0
 !
 !     label for entry
 !
@@ -70,8 +69,8 @@
 !
       subroutine allocate_pvr_ctl_struct
 !
-      allocate(pvr_ctls1%fname_pvr_ctl(num_pvr_ctl))
-      allocate(pvr_ctls1%pvr_ctl_struct(num_pvr_ctl))
+      allocate(pvr_ctls1%fname_pvr_ctl(pvr_ctls1%num_pvr_ctl))
+      allocate(pvr_ctls1%pvr_ctl_struct(pvr_ctls1%num_pvr_ctl))
 !
       end subroutine allocate_pvr_ctl_struct
 !
@@ -127,8 +126,8 @@
           call read_files_4_iso_ctl(iso_ctls1)
         end if
 !
-        call find_control_array_flag(hd_pvr_ctl, num_pvr_ctl)
-        if(num_pvr_ctl .gt. 0) call read_files_4_pvr_ctl
+        call find_control_array_flag(hd_pvr_ctl, pvr_ctls1%num_pvr_ctl)
+        if(pvr_ctls1%num_pvr_ctl .gt. 0) call read_files_4_pvr_ctl
 !
         call find_control_array_flag                                    &
      &     (hd_fline_ctl, fline_ctls1%num_fline_ctl)
@@ -170,11 +169,11 @@
         call load_ctl_label_and_line
 !
         call find_control_end_array_flag(hd_pvr_ctl,                    &
-     &      num_pvr_ctl, i_pvr_ctl)
-        if(i_pvr_ctl .ge. num_pvr_ctl) exit
+     &      pvr_ctls1%num_pvr_ctl, i_pvr_ctl)
+        if(i_pvr_ctl .ge. pvr_ctls1%num_pvr_ctl) exit
 !
         if(right_file_flag(hd_pvr_ctl) .gt. 0) then
-          call read_file_names_from_ctl_line(num_pvr_ctl,               &
+          call read_file_names_from_ctl_line(pvr_ctls1%num_pvr_ctl,     &
      &        i_pvr_ctl, pvr_ctls1%fname_pvr_ctl)
         end if
 !
@@ -196,15 +195,16 @@
       use bcast_control_data_4_pvr
 !
 !
-      call MPI_BCAST(num_pvr_ctl,  ione,                                &
+      call MPI_BCAST(pvr_ctls1%num_pvr_ctl,  ione,                      &
      &               CALYPSO_INTEGER, izero, CALYPSO_COMM, ierr_MPI)
       call calypso_mpi_barrier
-      if(num_pvr_ctl .le. 0) return
+      if(pvr_ctls1%num_pvr_ctl .le. 0) return
 !
       if(my_rank .gt. 0)  call allocate_pvr_ctl_struct
 !
-      call MPI_BCAST(pvr_ctls1%fname_pvr_ctl, (kchara*num_pvr_ctl),     &
-     &               CALYPSO_CHARACTER, izero, CALYPSO_COMM, ierr_MPI)
+      call MPI_BCAST                                                    &
+     &   (pvr_ctls1%fname_pvr_ctl, (kchara*pvr_ctls1%num_pvr_ctl),      &
+     &    CALYPSO_CHARACTER, izero, CALYPSO_COMM, ierr_MPI)
 !
       end subroutine bcast_files_4_pvr_ctl
 !
