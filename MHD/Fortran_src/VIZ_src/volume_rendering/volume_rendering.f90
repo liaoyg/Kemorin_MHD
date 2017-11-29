@@ -82,7 +82,7 @@
 !
 !
       call calypso_mpi_barrier
-      call read_control_pvr_update(ione)
+      call read_control_pvr_update(fname_pvr_ctl(1), pvr_ctl_struct(1))
 !
       if(my_rank .eq. izero) then
         check_PVR_update = IFLAG_THROUGH

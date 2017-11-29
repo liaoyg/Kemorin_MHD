@@ -15,7 +15,6 @@
       use m_precision
       use calypso_mpi
 !
-      use m_control_data_pvrs
       use t_control_data_4_pvr
 !
       implicit none
@@ -42,6 +41,7 @@
       subroutine read_set_pvr_controls(num_pvr, group, nod_fld,         &
      &          cflag_update, pvr_param, pvr_data)
 !
+      use m_control_data_pvrs
       use t_mesh_data
       use t_phys_data
       use t_control_data_pvrs
@@ -62,9 +62,12 @@
       ctl_file_code = pvr_ctl_file_code
       if(iflag_debug .gt. 0) write(*,*) 's_set_pvr_control', num_pvr
       do i_pvr = 1, num_pvr
-        call read_control_pvr(i_pvr)
-        call read_control_modelview(i_pvr)
-        call read_control_colormap(i_pvr)
+        call read_control_pvr(i_pvr, fname_pvr_ctl(i_pvr),              &
+     &      pvr_ctl_struct(i_pvr))
+        call read_control_modelview                                     &
+     &     (i_pvr, pvr_ctl_struct(i_pvr))
+        call read_control_colormap                                      &
+     &     (i_pvr, pvr_ctl_struct(i_pvr))
         do i_psf = 1, pvr_ctl_struct(i_pvr)%num_pvr_sect_ctl
           call read_control_pvr_section_def                             &
      &       (pvr_ctl_struct(i_pvr)%pvr_sect_ctl(i_psf))
@@ -168,23 +171,24 @@
 !  ---------------------------------------------------------------------
 !   --------------------------------------------------------------------
 !
-      subroutine read_control_pvr(i_pvr)
+      subroutine read_control_pvr                                       &
+     &         (i_pvr, fname_pvr_ctl, pvr_ctl_struct)
 !
       use calypso_mpi
       use bcast_control_data_4_pvr
 !
       integer(kind = kint), intent(in) :: i_pvr
+      character(len = kchara), intent(in)  :: fname_pvr_ctl
+      type(pvr_ctl), intent(inout) :: pvr_ctl_struct
 !
-      if(fname_pvr_ctl(i_pvr) .eq. 'NO_FILE') return
+      if(fname_pvr_ctl .eq. 'NO_FILE') return
 !
       if(my_rank .eq. 0) then
-         write(*,*) 'PVR control:', i_pvr,':  ',                        &
-     &                      trim( fname_pvr_ctl(i_pvr) )
+         write(*,*) 'PVR control:', i_pvr,':  ', trim(fname_pvr_ctl)
 !
-        open(pvr_ctl_file_code, file=fname_pvr_ctl(i_pvr),              &
-     &       status='old')
+        open(pvr_ctl_file_code, file=fname_pvr_ctl, status='old')
         call load_ctl_label_and_line
-        call read_vr_psf_ctl(hd_pvr_ctl, pvr_ctl_struct(i_pvr))
+        call read_vr_psf_ctl(hd_pvr_ctl, pvr_ctl_struct)
         close(pvr_ctl_file_code)
       end if
 !
@@ -192,57 +196,59 @@
 !
 !  ---------------------------------------------------------------------
 !
-      subroutine read_control_pvr_update(i_pvr)
+      subroutine read_control_pvr_update                                &
+     &         (fname_pvr_ctl, pvr_ctl_struct)
 !
       use calypso_mpi
       use bcast_control_data_4_pvr
 !
-      integer(kind = kint), intent(in) :: i_pvr
+      character(len = kchara), intent(in)  :: fname_pvr_ctl
+      type(pvr_ctl), intent(inout) :: pvr_ctl_struct
 !
 !
-      if(fname_pvr_ctl(i_pvr) .eq. 'NO_FILE') return
+      if(fname_pvr_ctl .eq. 'NO_FILE') return
       if(my_rank .eq. 0) then
-        open(pvr_ctl_file_code, file=fname_pvr_ctl(i_pvr),              &
-     &       status='old')
+        open(pvr_ctl_file_code, file=fname_pvr_ctl, status='old')
 !
         call load_ctl_label_and_line
-        call read_pvr_update_flag(hd_pvr_ctl, pvr_ctl_struct(i_pvr))
+        call read_pvr_update_flag(hd_pvr_ctl, pvr_ctl_struct)
         close(pvr_ctl_file_code)
       end if
 !
-      call bcast_pvr_update_flag(pvr_ctl_struct(i_pvr))
+      call bcast_pvr_update_flag(pvr_ctl_struct)
 !
       end subroutine read_control_pvr_update
 !
 !  ---------------------------------------------------------------------
 !
-      subroutine read_control_modelview(i_pvr)
+      subroutine read_control_modelview(i_pvr, pvr_ctl_struct)
 !
       use calypso_mpi
       use m_error_IDs
       use t_ctl_data_4_view_transfer
 !
       integer(kind = kint), intent(in) :: i_pvr
+      type(pvr_ctl), intent(inout) :: pvr_ctl_struct
 !
 !
       if(my_rank .gt. 0) return
 !
-      if(pvr_ctl_struct(i_pvr)%view_file_ctl .eq. 'NO_FILE') then
+      if(pvr_ctl_struct%view_file_ctl .eq. 'NO_FILE') then
         write(*,*)  'Modelview control:', i_pvr, ' is included'
         return
       end if
 !
       write(*,*) 'Modelview control:', i_pvr,':  ',                     &
-     &               trim(pvr_ctl_struct(i_pvr)%view_file_ctl)
+     &               trim(pvr_ctl_struct%view_file_ctl)
 !
       open(pvr_ctl_file_code,                                           &
-     &        file=pvr_ctl_struct(i_pvr)%view_file_ctl, status='old')
+     &        file=pvr_ctl_struct%view_file_ctl, status='old')
 !
       call load_ctl_label_and_line
 !
       if(right_begin_flag(hd_view_transform) .gt. 0) then
         call read_view_transfer_ctl                                     &
-     &        (hd_view_transform, pvr_ctl_struct(i_pvr)%mat)
+     &        (hd_view_transform, pvr_ctl_struct%mat)
       else
         call calypso_mpi_abort(ierr_PVR, 'Set view matrix file')
       end if
@@ -253,36 +259,37 @@
 !
 !  ---------------------------------------------------------------------
 !
-      subroutine read_control_colormap(i_pvr)
+      subroutine read_control_colormap(i_pvr, pvr_ctl_struct)
 !
       use calypso_mpi
       use m_error_IDs
       use t_ctl_data_pvr_colormap
 !
       integer(kind = kint), intent(in) :: i_pvr
+      type(pvr_ctl), intent(inout) :: pvr_ctl_struct
 !
 !
       if(my_rank .gt. 0) return
 !
-      if(pvr_ctl_struct(i_pvr)%color_file_ctl .eq. 'NO_FILE') then
+      if(pvr_ctl_struct%color_file_ctl .eq. 'NO_FILE') then
         write(*,*)  'Colormap control:', i_pvr, ' is included'
         return
       end if
 !
       write(*,*) 'Colormap control:', i_pvr,':  ',                      &
-     &                 trim(pvr_ctl_struct(i_pvr)%color_file_ctl)
+     &                 trim(pvr_ctl_struct%color_file_ctl)
 !
       open(pvr_ctl_file_code,                                           &
-     &     file=pvr_ctl_struct(i_pvr)%color_file_ctl,  status='old')
+     &     file=pvr_ctl_struct%color_file_ctl,  status='old')
 !
       call load_ctl_label_and_line
 !
       if(right_begin_flag(hd_pvr_colordef) .gt. 0) then
         call read_pvr_colordef_ctl                                      &
-     &     (hd_pvr_colordef, pvr_ctl_struct(i_pvr)%color)
+     &     (hd_pvr_colordef, pvr_ctl_struct%color)
       else if(right_begin_flag(hd_colormap) .gt. 0) then
         call read_pvr_colordef_ctl                                      &
-     &     (hd_colormap, pvr_ctl_struct(i_pvr)%color)
+     &     (hd_colormap, pvr_ctl_struct%color)
       else
         call calypso_mpi_abort(ierr_PVR, 'Set correct colormap file')
       end if
