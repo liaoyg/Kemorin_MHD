@@ -62,7 +62,7 @@
       ctl_file_code = pvr_ctl_file_code
       if(iflag_debug .gt. 0) write(*,*) 's_set_pvr_control', num_pvr
       do i_pvr = 1, num_pvr
-        call read_control_pvr(i_pvr, fname_pvr_ctl(i_pvr),              &
+        call read_control_pvr(i_pvr, pvr_ctls1%fname_pvr_ctl(i_pvr),    &
      &      pvr_ctl_struct(i_pvr))
         call read_control_modelview                                     &
      &     (i_pvr, pvr_ctl_struct(i_pvr))
