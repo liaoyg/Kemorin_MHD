@@ -3,7 +3,7 @@
 !
 !      Written by H. Matsui on July, 2006
 !
-!!      integer(kind = kint), function check_PVR_update
+!!      integer(kind = kint), function check_PVR_update(pvr_ctls)
 !!      subroutine PVR_initialize(mesh, group, ele_mesh, nod_fld)
 !!      subroutine PVR_visualize                                        &
 !!     &         (istep_pvr, mesh, group, ele_mesh, jacs, nod_fld)
@@ -38,6 +38,7 @@
       use t_pvr_ray_startpoints
       use t_pvr_image_array
       use t_geometries_in_pvr_screen
+      use t_control_data_pvrs
 !
       use field_data_4_pvr
       use set_default_pvr_params
@@ -106,40 +107,40 @@
 !
 !  ---------------------------------------------------------------------
 !
-      subroutine PVR_initialize(mesh, group, ele_mesh, nod_fld)
+      subroutine PVR_initialize                                         &
+     &         (mesh, group, ele_mesh, nod_fld, pvr_ctls)
 !
-      use m_control_data_pvrs
       use t_control_data_pvr_misc
       use set_pvr_control
       use cal_pvr_modelview_mat
       use cal_pvr_projection_mat
       use find_selected_domain_bd
-      use bcast_control_data_4_pvr
 !
       type(mesh_geometry), intent(in) :: mesh
       type(mesh_groups), intent(in) :: group
       type(element_geometry), intent(in) :: ele_mesh
       type(phys_data), intent(in) :: nod_fld
+      type(volume_rendering_controls), intent(inout) :: pvr_ctls
 !
       integer(kind = kint) :: i_pvr
 !
 !
-      num_pvr = pvr_ctls1%num_pvr_ctl
+      num_pvr = pvr_ctls%num_pvr_ctl
       if (num_pvr .le. 0) return
 !
       if(iflag_debug .gt. 0) write(*,*) 'allocate_components_4_pvr',    &
      &         num_pvr
       call allocate_components_4_pvr(mesh%node, mesh%ele, group)
 !
-      if(pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0) then
+      if(pvr_ctls%pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0) then
         cflag_update                                                    &
-     &         = pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%charavalue
+     &         = pvr_ctls%pvr_ctl_struct(1)%updated_ctl%charavalue
       end if
 !
       do i_pvr = 1, num_pvr
         call read_set_each_pvr_controls(i_pvr, group, nod_fld,          &
-     &      pvr_ctls1%fname_pvr_ctl(i_pvr),                             &
-     &      pvr_ctls1%pvr_ctl_struct(i_pvr),                            &
+     &      pvr_ctls%fname_pvr_ctl(i_pvr),                             &
+     &      pvr_ctls%pvr_ctl_struct(i_pvr),                            &
      &      pvr_param(i_pvr), pvr_data(i_pvr))
         call calypso_mpi_barrier
       end do
