@@ -3,6 +3,9 @@
 !
 !      Written by H. Matsui on July, 2006
 !
+!      subroutine allocate_pvr_ctl_struct
+!      subroutine deallocate_pvr_file_header_ctl
+!
 !      subroutine read_viz_control_data
 !      subroutine bcast_viz_control_data
 !
@@ -34,10 +37,6 @@
 !
 !     lavel for volume rendering
 !
-      character(len=kchara), parameter                                  &
-     &                    :: hd_pvr_ctl = 'volume_rendering'
-      integer (kind=kint) :: i_pvr_ctl =   0
-!
 !     Top level
       character(len=kchara), parameter                                  &
      &             :: hd_section_ctl = 'cross_section_ctl'
@@ -49,13 +48,14 @@
      &             :: hd_psf_ctl = 'surface_rendering'
       character(len=kchara), parameter                                  &
      &             :: hd_iso_ctl = 'isosurf_rendering'
+      character(len=kchara), parameter                                  &
+     &                    :: hd_pvr_ctl = 'volume_rendering'
       character(len=kchara), parameter :: hd_fline_ctl =  'fieldline'
       private :: hd_section_ctl, hd_psf_ctl
       private :: hd_isosurf_ctl, hd_iso_ctl
       private :: hd_fline_ctl
 !
-      private :: hd_viz_control, i_viz_control, hd_pvr_ctl, i_pvr_ctl
-      private :: read_files_4_pvr_ctl, bcast_files_4_pvr_ctl
+      private :: hd_viz_control, i_viz_control, hd_pvr_ctl
 !
 !   --------------------------------------------------------------------
 !
