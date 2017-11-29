@@ -60,12 +60,16 @@
 !
 !
       ctl_file_code = pvr_ctl_file_code
-      if(iflag_debug .gt. 0) write(*,*) 's_set_pvr_control', num_pvr
+!
+      if(pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0) then
+        cflag_update                                                    &
+     &         = pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%charavalue
+      end if
+!
       do i_pvr = 1, num_pvr
-        call read_set_each_pvr_controls                                 &
-     &     (i_pvr, group, nod_fld, cflag_update,                        &
+        call read_set_each_pvr_controls(i_pvr, group, nod_fld,          &
      &      pvr_ctls1%fname_pvr_ctl(i_pvr),                             &
-     &      pvr_ctls1%pvr_ctl_struct(i_pvr),                            &
+     &      pvr_ctls1%pvr_ctl_struct(i_pvr), cflag_update,              &
      &      pvr_param(i_pvr), pvr_data(i_pvr))
       end do
 !      call dealloc_pvr_file_header_ctl(pvr_ctls)
@@ -112,12 +116,6 @@
      &    pvr_param%file, pvr_param%field_def, pvr_data%view,           &
      &    pvr_param%field, pvr_data%screen, pvr_data%color,             &
      &    pvr_param%colorbar)
-!
-      if(pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0           &
-     &     .and. i_pvr .eq. 1) then
-        cflag_update                                                    &
-     &         = pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%charavalue
-      end if
 !
       call deallocate_cont_dat_pvr(pvr_ctl_struct)
       call calypso_mpi_barrier
