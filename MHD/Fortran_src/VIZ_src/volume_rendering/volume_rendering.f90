@@ -130,34 +130,8 @@
      &         num_pvr
       call allocate_components_4_pvr(mesh%node, mesh%ele, group)
 !
-      ctl_file_code = pvr_ctl_file_code
-      if(iflag_debug .gt. 0) write(*,*) 's_set_pvr_control', num_pvr
-      do i_pvr = 1, num_pvr
-        call read_control_pvr(i_pvr)
-        call read_control_modelview(i_pvr)
-        call read_control_colormap(i_pvr)
-        do i_psf = 1, pvr_ctl_struct(i_pvr)%num_pvr_sect_ctl
-          call read_control_pvr_section_def                             &
-     &       (pvr_ctl_struct(i_pvr)%pvr_sect_ctl(i_psf))
-        end do
-!
-        call bcast_vr_psf_ctl(pvr_ctl_struct(i_pvr))
-!
-        call set_each_pvr_control(group%ele_grp, group%surf_grp,        &
-     &      nod_fld%num_phys, nod_fld%phys_name,                        &
-     &      pvr_ctl_struct(i_pvr), pvr_param(i_pvr)%file,               &
-     &      pvr_param(i_pvr)%field_def, pvr_data(i_pvr)%view,           &
-     &      pvr_param(i_pvr)%field, pvr_data(i_pvr)%screen,             &
-     &      pvr_data(i_pvr)%color, pvr_param(i_pvr)%colorbar)
-!
-        if(pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0                   &
-     &     .and. i_pvr .eq. 1) then
-          cflag_update = pvr_ctl_struct(1)%updated_ctl%charavalue
-        end if
-!
-        call deallocate_cont_dat_pvr(pvr_ctl_struct(i_pvr))
-        call calypso_mpi_barrier
-      end do
+      call read_set_pvr_controls(num_pvr, group, nod_fld,               &
+     &    cflag_update, pvr_param, pvr_data)
 !
 !
       call allocate_imark_4_surface(ele_mesh%surf%numsurf)
