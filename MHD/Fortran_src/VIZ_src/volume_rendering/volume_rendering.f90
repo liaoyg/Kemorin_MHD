@@ -121,7 +121,7 @@
       type(element_geometry), intent(in) :: ele_mesh
       type(phys_data), intent(in) :: nod_fld
 !
-      integer(kind = kint) :: i_pvr, i_psf
+      integer(kind = kint) :: i_pvr
 !
 !
       num_pvr = pvr_ctls1%num_pvr_ctl
@@ -131,8 +131,19 @@
      &         num_pvr
       call allocate_components_4_pvr(mesh%node, mesh%ele, group)
 !
-      call read_set_pvr_controls(num_pvr, group, nod_fld,               &
-     &    cflag_update, pvr_param, pvr_data)
+      if(pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0) then
+        cflag_update                                                    &
+     &         = pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%charavalue
+      end if
+!
+      do i_pvr = 1, num_pvr
+        call read_set_each_pvr_controls(i_pvr, group, nod_fld,          &
+     &      pvr_ctls1%fname_pvr_ctl(i_pvr),                             &
+     &      pvr_ctls1%pvr_ctl_struct(i_pvr),                            &
+     &      pvr_param(i_pvr), pvr_data(i_pvr))
+        call calypso_mpi_barrier
+      end do
+!      call dealloc_pvr_file_header_ctl(pvr_ctls)
 !
 !
       call allocate_imark_4_surface(ele_mesh%surf%numsurf)
