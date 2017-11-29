@@ -29,7 +29,6 @@
 !
       type(volume_rendering_controls), save :: pvr_ctls1
       integer(kind = kint) :: num_pvr_ctl = 0
-      type(pvr_ctl), pointer, save :: pvr_ctl_struct(:)
 !
 !     label for entry
 !
@@ -72,7 +71,7 @@
       subroutine allocate_pvr_ctl_struct
 !
       allocate(pvr_ctls1%fname_pvr_ctl(num_pvr_ctl))
-      allocate(pvr_ctl_struct(num_pvr_ctl))
+      allocate(pvr_ctls1%pvr_ctl_struct(num_pvr_ctl))
 !
       end subroutine allocate_pvr_ctl_struct
 !
@@ -80,7 +79,7 @@
 !
       subroutine deallocate_pvr_file_header_ctl
 !
-      deallocate(pvr_ctl_struct)
+      deallocate(pvr_ctls1%pvr_ctl_struct)
       deallocate(pvr_ctls1%fname_pvr_ctl)
 !
       end subroutine deallocate_pvr_file_header_ctl
@@ -182,7 +181,8 @@
         if(right_begin_flag(hd_pvr_ctl) .gt. 0) then
           i_pvr_ctl = i_pvr_ctl + 1
           pvr_ctls1%fname_pvr_ctl(i_pvr_ctl) = 'NO_FILE'
-          call read_vr_psf_ctl(hd_pvr_ctl, pvr_ctl_struct(i_pvr_ctl))
+          call read_vr_psf_ctl                                          &
+     &       (hd_pvr_ctl, pvr_ctls1%pvr_ctl_struct(i_pvr_ctl))
         end if
       end do
 !

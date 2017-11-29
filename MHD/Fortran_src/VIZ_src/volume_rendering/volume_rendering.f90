@@ -83,12 +83,12 @@
 !
       call calypso_mpi_barrier
       call read_control_pvr_update(pvr_ctls1%fname_pvr_ctl(1),          &
-     &    pvr_ctl_struct(1))
+     &    pvr_ctls1%pvr_ctl_struct(1))
 !
       if(my_rank .eq. izero) then
         check_PVR_update = IFLAG_THROUGH
-        if(pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0) then
-          tmpchara = pvr_ctl_struct(1)%updated_ctl%charavalue
+        if(pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%iflag .gt. 0) then
+          tmpchara = pvr_ctls1%pvr_ctl_struct(1)%updated_ctl%charavalue
           if(cmp_no_case(tmpchara, 'end')) then
             check_PVR_update = IFLAG_TERMINATE
           else if(cflag_update .ne. tmpchara) then
@@ -96,7 +96,7 @@
             cflag_update = tmpchara
           end if
         end if
-        call reset_pvr_update_flags(pvr_ctl_struct(1))
+        call reset_pvr_update_flags(pvr_ctls1%pvr_ctl_struct(1))
       end if
       call mpi_Bcast(check_PVR_update, ione, CALYPSO_INTEGER, izero,    &
      &    CALYPSO_COMM, ierr_MPI)
