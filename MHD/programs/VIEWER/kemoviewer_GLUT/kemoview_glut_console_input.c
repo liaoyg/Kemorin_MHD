@@ -309,6 +309,30 @@ void set_coastline_radius_console(){
 	return;
 };
 
+void set_background_color_console(){
+    GLfloat color[4];
+    float red, green, blue;
+    char buf[1024];
+
+    kemoview_get_background_color(color);
+    printf("Enter Background color by (R,G,B) from 0.0 to 1.0: \n");
+    printf("Corrent color:  %.7e %.7e %.7e \n", color[0], color[1], color[2]);
+    fgets(buf,sizeof(buf),stdin);
+    sscanf(buf,"%f %f %f", &red, &green, &blue);
+    printf("New background Color (R,G,B): %.7e %.7e %.7e \n", red, green, blue);
+    
+    color[0] = (GLfloat) red;
+    color[1] = (GLfloat) green;
+    color[2] = (GLfloat) blue;
+
+    
+    draw_mesh_keep_menu();
+    kemoview_set_background_color(color);
+    glClear(GL_COLOR_BUFFER_BIT); 
+    return;
+};
+
+
 void set_domain_distance_console(){
 	float distance;
 	char buf[1024];
@@ -381,6 +405,28 @@ static void read_psf_colormap_data(float *new_value, float *new_color){
 	printf("Input color or opacity value (0 to 1)\n");
 	fgets(buf,sizeof(buf),stdin);
 	sscanf(buf,"%f", new_color);
+	return;
+}
+
+void set_psf_single_color_console(){
+    double rgba[4];
+	
+    float red, green, blue, alpha;
+    char buf[1024];
+	
+    printf("Enter surface color by (R,G,B,A) from 0.0 to 1.0: \n");
+    fgets(buf,sizeof(buf),stdin);
+    sscanf(buf,"%f %f %f %f", &red, &green, &blue, &alpha);
+	printf("New background Color (R,G,B,A): %.7e %.7e %.7e %.7e \n",
+				red, green, blue, alpha);
+	
+	rgba[0] = (double) red;
+	rgba[1] = (double) green;
+	rgba[2] = (double) blue;
+	rgba[3] = (double) alpha;
+	
+    kemoview_set_PSF_single_color(rgba);
+	kemoview_set_PSF_patch_color_mode(SINGLE_COLOR);
 	return;
 }
 

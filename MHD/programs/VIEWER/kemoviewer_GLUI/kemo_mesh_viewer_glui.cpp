@@ -332,10 +332,11 @@ static void kemoview_fline_draw_setting(int sel){
 
 static void main_menu_handler(int sel){
 	if (sel == QUIT_SELECTED)   { exit(EXIT_SUCCESS); }
-	else if (sel == FILE_OPEN)      { set_open_file_menu_glui(); }
-	else if (sel == SAVE_SNAPSHOT)  { set_saveimage_menu_glui(winid); }
-	else if (sel == SAVE_EVOLUTION) { set_evolution_menu_glui(winid); }
-	else if (sel == SAVE_ROTATION)  { set_rotateimages_menu_glui(winid); }
+	else if(sel == FILE_OPEN)      { set_open_file_menu_glui(); }
+	else if(sel == SAVE_SNAPSHOT)  { set_saveimage_menu_glui(winid); }
+	else if(sel == SAVE_EVOLUTION) { set_evolution_menu_glui(winid); }
+	else if(sel == SAVE_ROTATION)  { set_rotateimages_menu_glui(winid); }
+    else if(sel == SET_BACKGROUND) { set_background_color_glui(winid); }
 	return;
 };
 
@@ -515,7 +516,7 @@ static void set_psf_comp_handler(int sel){
 
 static void set_psf_patchcolor_handler(int sel){
 	if (sel == WHITE_PSF_SURF)         {kemoview_set_PSF_patch_color_mode(WHITE_SURFACE);}
-    else if (sel == SGL_COLOR_PSF_SURF){kemoview_set_PSF_patch_color_mode(SINGLE_COLOR);}
+    else if (sel == SGL_COLOR_PSF_SURF){set_psf_single_color_glui(winid);}
 	else if (sel == RAINBOW_PSF_SURF)  {kemoview_set_PSF_patch_color_mode(RAINBOW_SURFACE);}
 	else if (sel == TEXTURE_PSF_SURF)  {set_psf_texture_by_glui(winid);};
 	
@@ -895,6 +896,7 @@ static void make_2nd_level_image_menu(){
 	if ( (iflag_draw_m > 0) && (iflag_draw_p == 0) && (iflag_draw_f == 0) ) {
 		glutAddMenuEntry("Object distance",SET_DISTANCE_DOMAIN);
 	};
+
 	glutAddMenuEntry("Output transfer matrices",OUTPUT_V_MATRIX);
 	glutAddMenuEntry("Load transfer matrices",INPUT_V_MATRIX);
 	
@@ -983,6 +985,8 @@ static void make_1st_level_menu(){
 		glutAddMenuEntry("Save rotate images", SAVE_ROTATION);
 		glutAddSubMenu("Rotate on Window",   glut_menu_id->draw_rot_image_menu);
 	};
+
+    glutAddMenuEntry("Background color",SET_BACKGROUND);
 	
 	glutAddMenuEntry("Quit",QUIT_SELECTED);
 	glutAttachMenu(GLUT_LEFT_BUTTON);

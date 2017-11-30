@@ -18,6 +18,10 @@ static GLUI_EditText   *editText_max;
 static GLUI_EditText   *editText_data;
 static GLUI_EditText   *editText_color;
 static GLUI_EditText   *editText_opacity;
+static GLUI_EditText   *editText_r;
+static GLUI_EditText   *editText_g;
+static GLUI_EditText   *editText_b;
+static GLUI_EditText   *editText_a;
 static GLUI_EditText   *editText_fline_thick;
 static GLUI_RadioGroup *radiogroup_colormap;
 static GLUI_RadioGroup *radiogroup_opacitymap;
@@ -41,6 +45,10 @@ static float distance;
 static float nodesize;
 static float scaling;
 static float thickness;
+static float red;
+static float green;
+static float blue;
+static float alpha;
 static int num_cloop;
 
 
@@ -253,6 +261,33 @@ static void input_coast_radius_from_panel(int val){
 	return;
 }
 
+static void update_BGcolor_glui(int val){
+    GLfloat color[4];
+    color[0] = (GLfloat) red;
+    color[1] = (GLfloat) green;
+    color[2] = (GLfloat) blue;
+    color[3] = (GLfloat) alpha;
+	
+	draw_mesh_keep_menu();
+    kemoview_set_background_color(color);
+    glClear(GL_COLOR_BUFFER_BIT); 
+	return;
+}
+
+static void update_PSFcolor_glui(int val){
+     double rgba[4];
+   
+    rgba[0] = (double) red;
+    rgba[1] = (double) green;
+    rgba[2] = (double) blue;
+    rgba[3] = (double) alpha;
+    
+    kemoview_set_PSF_single_color(rgba);
+	kemoview_set_PSF_patch_color_mode(SINGLE_COLOR);
+	draw_mesh_keep_menu();
+	return;
+}
+
 static void input_domain_distance_from_panel(int val){
 	distance = editText->get_float_val();
 	kemoview_set_domain_distance((double) distance);
@@ -425,6 +460,29 @@ void set_coastline_radius_glui(int winid){
 	return;
 }
 
+void set_background_color_glui(int winid){
+    GLfloat color[4];
+    char buf[1024];
+	
+    kemoview_get_background_color(color);
+    red =   color[0];
+    green = color[1];
+	blue =  color[2];
+	alpha = color[3];
+	
+	glui_sub = GLUI_Master.create_glui("Color editor (0.0 to 1.0)", 0, 100, 100);
+	editText_r = new GLUI_EditText( glui_sub, "Red:   ", GLUI_EDITTEXT_FLOAT,
+								 &red, -1, update_BGcolor_glui );
+	editText_g = new GLUI_EditText( glui_sub, "Green: ", GLUI_EDITTEXT_FLOAT,
+								 &green, -1, update_BGcolor_glui );
+	editText_b = new GLUI_EditText( glui_sub, "Blue:  ", GLUI_EDITTEXT_FLOAT,
+								 &blue, -1, update_BGcolor_glui );
+	glui_sub->add_button("Done", 0, close_panel);
+	
+    return;
+};
+
+
 void set_domain_distance_by_glui(int winid){
 	distance = (float) kemoview_get_domain_distance();
 	
@@ -452,6 +510,21 @@ void set_node_size_by_glui(int winid){
 	editText = new GLUI_EditText( glui_sub, "Node size: ", GLUI_EDITTEXT_FLOAT,
 								 &nodesize, -1, input_node_size_from_panel );
 	glui_sub->set_main_gfx_window(winid);
+	return;
+}
+
+void set_psf_single_color_glui(int winid){
+	glui_sub = GLUI_Master.create_glui("Color editor (0.0 to 1.0)", 0, 100, 100);
+	editText_r = new GLUI_EditText( glui_sub, "Red:   ", GLUI_EDITTEXT_FLOAT,
+								 &red, -1, update_PSFcolor_glui );
+	editText_g = new GLUI_EditText( glui_sub, "Green: ", GLUI_EDITTEXT_FLOAT,
+								 &green, -1, update_PSFcolor_glui );
+	editText_b = new GLUI_EditText( glui_sub, "Blue:  ", GLUI_EDITTEXT_FLOAT,
+								 &blue, -1, update_PSFcolor_glui );
+	editText_a = new GLUI_EditText( glui_sub, "alpha: ", GLUI_EDITTEXT_FLOAT,
+								 &alpha, -1, update_PSFcolor_glui );
+	glui_sub->add_button("Done", 0, close_panel);
+	
 	return;
 }
 

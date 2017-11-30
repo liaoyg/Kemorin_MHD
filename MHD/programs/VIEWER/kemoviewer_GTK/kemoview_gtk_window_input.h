@@ -20,6 +20,7 @@
 
 /*  prototypes */
 
+void set_psf_single_color_gtk();
 void edit_psf_colormap_gtk();
 void edit_psf_opasitymap_gtk();
 void set_psf_range_gtk();
@@ -34,6 +35,7 @@ void set_domain_opacity_gtk();
 void set_ele_group_opacity_gtk();
 void set_surf_group_opacity_gtk();
 void set_coastline_radius_gtk();
+void set_background_color_gtk();
 void set_domain_distance_gtk();
 void set_num_color_loop_gtk();
 void set_node_size_gtk();
