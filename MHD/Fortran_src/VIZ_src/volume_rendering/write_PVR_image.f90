@@ -55,7 +55,6 @@
       use t_pvr_ray_startpoints
       use ray_trace_4_each_image
       use composite_pvr_images
-      use set_pvr_ray_start_point
       use draw_pvr_colorbar
       use composite_pvr_images
       use PVR_image_transfer
@@ -76,16 +75,16 @@
 !>       MPI rank for image output
       integer(kind = kint), parameter :: irank_tgt = 0
 !
-!      integer(kind = kint) :: i, j, k, ipix
+      integer(kind = kint) :: i, j, k, ipix
 !
 !
       if(iflag_debug .gt. 0) write(*,*) 's_ray_trace_4_each_image'
       call s_ray_trace_4_each_image(node, ele, surf,                    &
      &    pvr_screen, field_pvr, color_param, ray_vec,                  &
-     &    pvr_start%num_pvr_ray, pvr_start%icount_pvr_trace,            &
-     &    pvr_start%isf_pvr_ray_start, pvr_start%xi_pvr_start,          &
-     &    pvr_start%xx_pvr_start, pvr_start%xx_pvr_ray_start,           &
-     &    pvr_start%rgba_ray)
+     &    pvr_start%num_pvr_ray, pvr_start%id_pixel_check,              &
+     &    pvr_start%icount_pvr_trace, pvr_start%isf_pvr_ray_start,      &
+     &    pvr_start%xi_pvr_start, pvr_start%xx_pvr_start,               &
+     &    pvr_start%xx_pvr_ray_start, pvr_start%rgba_ray)
 !
       if(iflag_debug .gt. 0) write(*,*) 'copy_segmented_image'
       call copy_segmented_image(pvr_start%num_pvr_ray,                  &
@@ -120,6 +119,16 @@
      &    pvr_img%npixel_img, pvr_rgb%num_pixel_xy,                     &
      &    pvr_img%ipixel_small, pvr_img%rgba_whole,                     &
      &    pvr_img%rgba_rank0, pvr_rgb%rgba_real_gl, pvr_img%COMM)
+!
+!      if(my_rank .eq. 0) then
+!        write(*,*) 'picked points'
+!        do j = 244, 246
+!          do i = 636, 638
+!            ipix = i + (j-1)* pvr_rgb%num_pixels(1)
+!            write(*,*) i, j, ipix, pvr_rgb%rgba_real_gl(1:4,ipix)
+!          end do
+!        end do
+!      end if
 !
       if(my_rank .eq. irank_tgt) then
         call set_pvr_colorbar(pvr_rgb%num_pixel_xy, pvr_rgb%num_pixels, &
