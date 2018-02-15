@@ -48,6 +48,7 @@
       use t_geometries_in_pvr_screen
       use cal_gradient_on_element
       use convert_components_4_viz
+      use set_components_flags
 !
       type(node_data), intent(in) :: node
       type(element_data), intent(in) :: ele
@@ -70,6 +71,14 @@
      &    node%a_r, node%ss, node%a_s, ione, num_comp,                  &
      &    fld_params%icomp_pvr_output, nod_fld%d_fld(1,ist_fld+1),      &
      &    field_pvr%d_pvr)
+!
+      if(num_comp .eq. 3) then
+        call convert_comps_4_viz                                        &
+     &       (node%numnod, node%istack_nod_smp, node%xx, node%rr,       &
+     &       node%a_r, node%ss, node%a_s, ione, num_comp,               &
+     &       icomp_VECTOR, nod_fld%d_fld(1,ist_fld+1),                  &
+     &       field_pvr%v_nod)
+      end if
 !
       call fem_gradient_on_element(ele%istack_ele_smp, node%numnod,     &
      &    ele%numele, ele%nnod_4_ele, ele%ie, ele%a_vol_ele,            &

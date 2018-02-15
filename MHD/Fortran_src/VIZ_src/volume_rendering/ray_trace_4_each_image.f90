@@ -24,6 +24,10 @@
       use set_rgba_4_each_pixel
 !
       use t_control_params_4_pvr
+      use m_machine_parameter
+      use cal_lic_on_surf_viz
+      use lic_kernel_generator
+      use lic_noise_generator
 !
       implicit  none
 !
@@ -71,6 +75,43 @@
       integer(kind = kint) :: inum, iflag_comm
       real(kind = kreal) :: rgba_tmp(4)
 !
+      integer(kind = kint) :: n_d_size(3)
+      character, allocatable:: noise_data(:)
+      integer(kind = kint) :: k_size
+      real(kind = kreal), allocatable :: k_ary(:)
+      integer(kind = kint) :: i, read_err, j, n_size
+      character(len=kchara), parameter :: filename = "noise/noise-256"
+
+!i = 0
+!write(*,*) "pid: ", getpid()
+!  do while(i == 0)
+!  call sleep(5)
+!end do
+i = i_debug
+i_debug = 0
+!write(*,*) "pid: ", getpid()
+!do while(i_debug == 0)
+!  call sleep(5)
+!end do
+i_debug = i
+!iflag_debug = 1
+
+      k_size = 128
+      allocate(k_ary(k_size))
+      call import_noise_ary(filename, noise_data, n_d_size, read_err)
+      call generate_kernal_ary(k_size, k_ary)
+
+      n_size = n_d_size(1) * n_d_size(2) * n_d_size(3)
+      if(read_err .eq. 0 .and. iflag_debug .gt. 0) then
+        write(*,*)  'noise data size', n_d_size(1), n_d_size(2), n_d_size(3)
+        write(*,*)  'kernel data', k_size
+        do i = 1, n_size
+          !read(raw_data(i), *) j
+          !write(*,*) ichar(raw_data(i))
+          write(*,*) noise_data(i)
+        end do
+      end if
+
 !
 !$omp parallel do private(inum, iflag_comm,rgba_tmp)
       do inum = 1, num_pvr_ray
@@ -79,16 +120,17 @@
 !        end if
 !
         rgba_tmp(1:4) = zero
-        call ray_trace_each_pixel                                       &
-     &      (node%numnod, ele%numele, surf%numsurf, surf%nnod_4_surf,   &
-     &       surf%ie_surf, surf%isf_4_ele, surf%iele_4_surf,            &
-     &       ele%interior_ele, node%xx, surf%vnorm_surf,                &
-     &       pvr_screen%arccos_sf, pvr_screen%x_nod_model,              &
-     &       pvr_screen%viewpoint_vec, field_pvr, color_param, ray_vec, &
-     &       id_pixel_check(inum), isf_pvr_ray_start(1,inum),           &
-     &       xx_pvr_ray_start(1,inum), xx_pvr_start(1,inum),            &
-     &       xi_pvr_start(1,inum), rgba_tmp(1), icount_pvr_trace(inum), &
-     &       iflag_comm)
+        call ray_trace_each_pixel                                            &
+     &      (node%numnod, ele%numele, surf%numsurf, surf%nnod_4_surf,        &
+     &       surf%ie_surf, surf%isf_4_ele, surf%iele_4_surf,                 &
+     &       ele%interior_ele, node%xx, surf%vnorm_surf, surf%interior_surf, &
+     &       pvr_screen%arccos_sf, pvr_screen%x_nod_model,                   &
+     &       pvr_screen%viewpoint_vec, field_pvr, color_param, ray_vec,      &
+     &       id_pixel_check(inum), isf_pvr_ray_start(1,inum),                &
+     &       xx_pvr_ray_start(1,inum), xx_pvr_start(1,inum),                 &
+     &       xi_pvr_start(1,inum), rgba_tmp(1), icount_pvr_trace(inum),      &
+     &       k_size, k_ary, n_size, noise_data, node%xyz_min_gl,             &
+     &       node%xyz_max_gl, iflag_comm)
         rgba_ray(1:4,inum) = rgba_tmp(1:4)
       end do
 !$omp end parallel do
@@ -140,9 +182,11 @@
       subroutine ray_trace_each_pixel                                   &
      &       (numnod, numele, numsurf, nnod_4_surf, ie_surf,            &
      &        isf_4_ele, iele_4_surf, interior_ele, xx, vnorm_surf,     &
-     &        arccos_sf, x_nod_model, viewpoint_vec, field_pvr,         &
-     &        color_param, ray_vec, iflag_check, isurf_org,             &
-     &        screen_st, xx_st, xi, rgba_ray, icount_line, iflag_comm)
+     &        interior_surf, arccos_sf, x_nod_model, viewpoint_vec,     &
+     &        field_pvr, color_param, ray_vec, iflag_check, isurf_org,  &
+     &        screen_st, xx_st, xi, rgba_ray, icount_line,              &
+     &        k_size, k_ary, n_size, noise_data, xyz_min_gl,            &
+     &        xyz_max_gl, iflag_comm)
 !
       use t_geometries_in_pvr_screen
       use cal_field_on_surf_viz
@@ -156,6 +200,7 @@
       integer(kind = kint), intent(in) :: isf_4_ele(numele,nsurf_4_ele)
       integer(kind = kint), intent(in) :: iele_4_surf(numsurf,2,2)
       integer(kind = kint), intent(in) :: interior_ele(numele)
+      integer(kind = kint), intent(in) :: interior_surf(numsurf)
       real(kind = kreal), intent(in) :: xx(numnod,3)
       real(kind = kreal), intent(in) :: vnorm_surf(numsurf,3)
 !
@@ -163,6 +208,9 @@
       real(kind = kreal), intent(in) :: arccos_sf(numsurf)
       real(kind = kreal), intent(in) :: viewpoint_vec(3)
       real(kind = kreal), intent(in) :: ray_vec(3)
+!
+      real(kind = kreal), intent(in) :: xyz_min_gl(3)
+      real(kind = kreal), intent(in) :: xyz_max_gl(3)
 !
       type(pvr_projected_field), intent(in) :: field_pvr
       type(pvr_colormap_parameter), intent(in) :: color_param
@@ -173,17 +221,24 @@
       real(kind = kreal), intent(inout) :: xx_st(3), xi(2)
       real(kind = kreal), intent(inout) :: rgba_ray(4)
 !
+      integer(kind = kint), intent(in) :: n_size
+      character(kind=1), intent(in):: noise_data(n_size)
+      integer(kind = kint), intent(in) :: k_size
+      real(kind = kreal), intent(in) :: k_ary(k_size)
+!
       integer(kind = kint), parameter :: iflag_back = 0
       integer(kind = kint) :: iflag_notrace
       integer(kind = kint) :: isf_tgt, isurf_end, iele, isf_org
       integer(kind = kint) :: i_iso, i_psf, iflag, iflag_hit
       real(kind = kreal) :: screen_tgt(3), c_tgt(1), c_org(1)
       real(kind = kreal) :: grad_tgt(3), xx_tgt(3), rflag, rflag2
+      integer(kind = kint) :: isurf_orgs(2,3), i, iflag_lic
 !
 !
       if(isurf_org(1) .eq. 0) return
 !
       iflag_notrace = 1
+      iflag_lic = 1
       iele =    isurf_org(1)
       isf_org = isurf_org(2)
       isurf_end = abs(isf_4_ele(iele,isf_org))
@@ -206,6 +261,7 @@
         end if
 !
 !   extend to surface of element
+!   find ray exit surface loacal id on current element isf_tgt
 !
         call find_line_end_in_1ele                                      &
      &     (iflag_back, numnod, numele, numsurf, nnod_4_surf,           &
@@ -214,6 +270,8 @@
 !        if(iflag_check .gt. 0) write(*,*) 'screen_tgt',                &
 !     &                        my_rank, xx_st(1:3), interior_ele(iele)
 !
+!write(*,*) "pvr: screen_st: ", screen_st, "xx_st", xx_st, "screen_tgt", screen_tgt
+
         if(isf_tgt .eq. 0) then
           iflag_comm = -1
           exit
@@ -223,21 +281,29 @@
 !
         iflag_notrace = 0
         isurf_end = abs(isf_4_ele(iele,isf_tgt))
+
 !
         if(isf_4_ele(iele,isf_tgt) .lt. 0) then
-          isurf_org(1) = iele_4_surf(isurf_end,1,1)
-          isurf_org(2) = iele_4_surf(isurf_end,1,2)
+          isurf_org(1) = iele_4_surf(isurf_end,1,1) ! element on one side share the surface
+          isurf_org(2) = iele_4_surf(isurf_end,1,2) ! the surface id of one side element(1-6)
         else
           isurf_org(1) = iele_4_surf(isurf_end,2,1)
           isurf_org(2) = iele_4_surf(isurf_end,2,2)
         end if
-!
+        ! new element surface info
+        do i = 1, 2
+          isurf_orgs(i,1) = iele_4_surf(isurf_end,i,1)
+          isurf_orgs(i,2) = iele_4_surf(isurf_end,i,2)
+          isurf_orgs(i,3) = isurf_org(3)
+        end do
+!   find 3D coordinate of exit point on exit surface
         call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,     &
      &      ie_surf, isurf_end, xi, xx, xx_tgt)
         call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,     &
      &      ie_surf, isurf_end, xi, field_pvr%d_pvr, c_tgt(1))
 !
         if(interior_ele(iele) .gt. 0) then
+!   rendering boundery
           if(arccos_sf(isurf_end) .gt. SMALL_RAY_TRACE) then
             grad_tgt(1:3) = vnorm_surf(isurf_end,1:3)
             call plane_rendering_with_light                             &
@@ -245,6 +311,19 @@
      &          arccos_sf(isurf_end),  color_param, rgba_ray)
           end if
 !
+!   3d lic calculation at current xx position
+
+!do i = 1, 2
+!  write(50+my_rank,*) "ele: ", isurf_orgs(i,1), "local surf: ", isurf_orgs(i,2)
+!end do
+
+          call cal_lic_on_surf_vector(numnod, numsurf, numele, nnod_4_surf,    &
+     &          isf_4_ele, iele_4_surf, interior_surf, xx, vnorm_surf,         &
+     &          isurf_orgs, ie_surf, xi, n_size, noise_data, k_size,           &
+     &          k_ary, field_pvr%v_nod, xx_tgt, isurf_end, c_tgt(1),           &
+     &          xyz_min_gl, xyz_max_gl, iflag_lic)
+          !write(50+my_rank, *) iflag_lic
+
           do i_psf = 1, field_pvr%num_sections
             rflag =  side_of_plane(field_pvr%coefs(1:10,i_psf), xx_st)
             rflag2 = side_of_plane(field_pvr%coefs(1:10,i_psf), xx_tgt)

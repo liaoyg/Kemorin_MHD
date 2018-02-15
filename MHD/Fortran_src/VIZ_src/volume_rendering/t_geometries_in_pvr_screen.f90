@@ -67,6 +67,8 @@
       type pvr_projected_field
 !>    Data for rendering
         real(kind = kreal), allocatable :: d_pvr(:)
+!>    Vector data for rendering
+        real(kind = kreal), allocatable :: v_nod(:,:)
 !>    Gradient for rendering
         real(kind = kreal), allocatable :: grad_ele(:,:)
 !
@@ -205,9 +207,11 @@
 !
 !
       allocate(fld%d_pvr(nnod))
+      allocate(fld%v_nod(nnod, 3))
       allocate(fld%grad_ele(nele,3))
 !
       if(nnod .gt. 0) fld%d_pvr =    0.0d0
+      if(nnod .gt. 0) fld%v_nod =    0.0d0
       if(nele .gt. 0) fld%grad_ele = 0.0d0
 !
       end subroutine alloc_nod_data_4_pvr
