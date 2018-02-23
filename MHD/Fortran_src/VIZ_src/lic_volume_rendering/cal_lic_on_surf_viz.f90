@@ -331,9 +331,9 @@ real(kind = kreal), intent(in) :: xyz_max(3)
 !
 real(kind = kreal), intent(inout) :: lic_v
 !
-integer(kind = kint) :: isf_tgt, isurf_end, iele, isf_org
+integer(kind = kint) :: isf_tgt, isurf_end, isurf_start, iele, isf_org
 real(kind = kreal) :: x_tgt(3), v_tgt(3), c_tgt(1), xi(2), flux
-integer(kind = kint) :: i_iter, i_k, i_n, iflag_debug
+integer(kind = kint) :: i_iter, i_k, i_n, iflag_debug, i
 real(kind = kreal) :: n_v, k_area, nv_sum
 !
 !
@@ -353,22 +353,42 @@ if(isurf_org(1) .eq. 0) then
   return
 end if
 
+iele =    isurf_org(1)
+isf_org = isurf_org(2)
+isurf_start = abs(isf_4_ele(iele, isf_org))
+
 !write(50 + my_rank, *) "start ele: ", isurf_org(1), "surf:", isurf_org(2)
 do
   i_iter = i_iter + 1
-  iele =    isurf_org(1)
-  isf_org = isurf_org(2)
-  !
-  !   extend in the middle of element
-  !
-  call find_line_end_in_1ele(iflag_back, numnod, numele, numsurf, &
-  &      nnod_4_surf, isf_4_ele, ie_surf, xx, iele, isf_org,         &
-  &      v_start, x_start, isf_tgt, x_tgt, xi)
-  !
+  if(isurf_start .lt. 1 .or. isurf_start .gt. numsurf) then
+    iflag_comm = -10
+    exit
+  end if
+
+  if(interior_surf(isurf_start) .eq. izero) then
+    iflag_comm = 10
+    return
+  end if
+  isf_tgt = 0
+
+  do i = 1, 2
+    iele = iele_4_surf(isurf_start,i,1)
+    isf_org = iele_4_surf(isurf_start,i,2)
+    if(iele .gt. 0) then
+      call find_line_end_in_1ele(iflag_back, numnod, numele, numsurf,         &
+      &      nnod_4_surf, isf_4_ele, ie_surf, xx, iele, isf_org,              &
+      &      v_start, x_start, isf_tgt, x_tgt, xi)
+      if(isf_tgt .gt. 0) then
+        exit
+      end if
+    end if
+  end do
+
   if(isf_tgt .eq. 0) then
     iflag_comm = -11
     exit
   end if
+
   !
   isurf_end = abs(isf_4_ele(iele,isf_tgt))
   call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,     &
@@ -409,40 +429,17 @@ if(iflag_debug .eq. 1) write(50 + my_rank, *) "iter: ", i_iter, "lic_idx:", i_k,
   lic_v = lic_v + n_v * k_node(i_k)
   k_area = k_area + k_node(i_k)
 if(iflag_debug .eq. 1) write(50 + my_rank, *) "nv: ", n_v, "nv sum:", nv_sum, "kernel area: ", k_area, "lic_v: ", lic_v
-  flux = (v_start(1) * vnorm_surf(isurf_end,1)                    &
-  &        + v_start(2) * vnorm_surf(isurf_end,2)                    &
-  &        + v_start(3) * vnorm_surf(isurf_end,3))                   &
-  &         * dble(isf_4_ele(iele,isf_tgt) / isurf_end)              &
-  &         *(-one)**iflag_back
 
   if(interior_surf(isurf_end) .eq. izero) then
-    isurf_org(1) = iele
-    isurf_org(2) = isf_tgt
-    isurf_org(3) = ie_surf(isurf_end,1)
+    isurf_start = isurf_end
     iflag_comm = 10
-    return
+    exit
   else
-    if(flux.ge.zero) then
-      if(isf_4_ele(iele,isf_tgt) .lt. 0) then
-        isurf_org(1) = iele_4_surf(isurf_end,1,1)
-        isurf_org(2) = iele_4_surf(isurf_end,1,2)
-      else
-        isurf_org(1) = iele_4_surf(isurf_end,2,1)
-        isurf_org(2) = iele_4_surf(isurf_end,2,2)
-      end if
-    else
-      iflag_comm = -4
-      exit
-    end if
+    isurf_start = isurf_end
   end if
-!
-!         write(70+my_rank,*) 'isurf_end', icount_line, iele, isf_tgt,  &
-!     &                        isf_4_ele(iele,isf_tgt)
-!         write(70+my_rank,*) 'isurf_nxt', icount_line, isurf_org(1:2), &
-!     &                        isf_4_ele(isurf_org(1),isurf_org(2))
-!
-  if(isurf_org(1).eq.0 .or. i_iter .gt.max_line_step) then
-    iflag_comm = 0
+
+  if(i_iter .gt.max_line_step) then
+    iflag_comm = 1
     exit
   end if
 end do

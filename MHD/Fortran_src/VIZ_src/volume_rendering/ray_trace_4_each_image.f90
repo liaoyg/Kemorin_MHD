@@ -82,19 +82,7 @@
       integer(kind = kint) :: i, read_err, j, n_size
       character(len=kchara), parameter :: filename = "noise/noise-256"
 
-!i = 0
-!write(*,*) "pid: ", getpid()
-!  do while(i == 0)
-!  call sleep(5)
-!end do
-i = i_debug
-i_debug = 0
-!write(*,*) "pid: ", getpid()
-!do while(i_debug == 0)
-!  call sleep(5)
-!end do
-i_debug = i
-!iflag_debug = 1
+      iflag_debug = 0
 
       k_size = 128
       allocate(k_ary(k_size))
@@ -102,15 +90,15 @@ i_debug = i
       call generate_kernal_ary(k_size, k_ary)
 
       n_size = n_d_size(1) * n_d_size(2) * n_d_size(3)
-      if(read_err .eq. 0 .and. iflag_debug .gt. 0) then
-        write(*,*)  'noise data size', n_d_size(1), n_d_size(2), n_d_size(3)
-        write(*,*)  'kernel data', k_size
-        do i = 1, n_size
+      !if(read_err .eq. 0 .and. iflag_debug .gt. 0) then
+      !  write(*,*)  'noise data size', n_d_size(1), n_d_size(2), n_d_size(3)
+      !  write(*,*)  'kernel data', k_size
+      !  do i = 1, n_size
           !read(raw_data(i), *) j
           !write(*,*) ichar(raw_data(i))
-          write(*,*) noise_data(i)
-        end do
-      end if
+      !    write(*,*) noise_data(i)
+      !  end do
+      !end if
 
 !
 !$omp parallel do private(inum, iflag_comm,rgba_tmp)
