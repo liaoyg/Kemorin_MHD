@@ -92,8 +92,8 @@
         n_v = 0.0
         call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
         o_tgt = o_tgt + n_v * kernal_node(kernal_size/2)
-        if(iflag_debug .eq. 1) write(50+my_rank,*) "xx", xx_org, "min", xyz_min, "max", xyz_max
-        if(iflag_debug .eq. 1) write(50+my_rank,*) "n_size",noise_size, "nid", pos_idx, "n_v", o_tgt
+        !if(iflag_debug .eq. 1) write(50+my_rank,*) "xx", xx_org, "min", xyz_min, "max", xyz_max
+        !if(iflag_debug .eq. 1) write(50+my_rank,*) "n_size",noise_size, "nid", pos_idx, "n_v", o_tgt
         call cal_field_on_surf_vector(nnod, nsurf, nnod_4_surf, ie_surf, icur_sf, xi, v_nod, org_vec)
 
 
@@ -149,6 +149,7 @@
           if(iflag_debug .eq. 1) write(50+my_rank, *) "not find exit point in neighbor element. end-----------------"
           iflag_comm = -2
         else
+          new_pos(1:3) = xx_org(1:3)
           if(iflag_debug .eq. 1) write(50+my_rank, *) "start cal lic, ele and surf: ", ilic_suf_org(1), ilic_suf_org(2)
           call s_cal_lic_from_point(nnod, nelem, nsurf,                      &
           &          nnod_4_surf, xx, ie_surf, isf_4_ele,                    &
@@ -159,7 +160,9 @@
           &          lic_v, k_area, iflag_comm)
           o_tgt = o_tgt + lic_v
         end if
+        if(iflag_debug .eq. 1) write(50+my_rank,*) "-----------------------Forward iter end-------------with:", iflag_comm
 
+        if(iflag_debug .eq. 1) write(50+my_rank,*) "-----------------------Backward iter begin--------------------"
         !   Backward iteration
         iflag_found_sf = 0
         iflag_back = -1
@@ -183,6 +186,7 @@
           if(iflag_debug .eq. 1) write(50+my_rank, *) "not find exit point in neighbor element. end-----------------"
           iflag_comm = -2
         else
+          new_pos(1:3) = xx_org(1:3)
           if(iflag_debug .eq. 1) write(50+my_rank, *) "start cal lic, ele and surf: ", ilic_suf_org(1), ilic_suf_org(2)
           call s_cal_lic_from_point(nnod, nelem, nsurf,                      &
           &          nnod_4_surf, xx, ie_surf, isf_4_ele,                    &
@@ -193,6 +197,7 @@
           &          lic_v, k_area, iflag_comm)
           o_tgt = o_tgt + lic_v
         end if
+        if(iflag_debug .eq. 1) write(50+my_rank,*) "-----------------------Backward iter end------------with:", iflag_comm
 
         if(k_area .gt. 0.0) then
           o_tgt = o_tgt / k_area
@@ -432,16 +437,19 @@ do
     iflag_comm = -11
     exit
   end if
-
+! find next point on one surface
+if(iflag_debug .eq. 1) write(50 + my_rank, *) "From", isurf_start, "at elem", iele, "local", isf_org
+if(iflag_debug .eq. 1) write(50 + my_rank, *) "pos:", x_start
   !
   isurf_end = abs(isf_4_ele(iele,isf_tgt))
   call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,     &
   &      ie_surf, isurf_end, xi, vect_nod, v_tgt)
   !
-
   isf_org =  0
   x_start(1:3) = half * (x_start(1:3) + x_tgt(1:3))
   v_start(1:3) = half * (v_start(1:3) + v_tgt(1:3))
+if(iflag_debug .eq. 1) write(50 + my_rank, *) "first hit pos:", x_tgt
+if(iflag_debug .eq. 1) write(50 + my_rank, *) "middle pos:", x_start
   !
   !   extend to surface of element
   !
@@ -458,7 +466,8 @@ do
   call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,     &
   &      ie_surf, isurf_end, xi, vect_nod, v_start)
   step_len = NORM2(x_tgt(1:3) - x_org(1:3))
-
+if(iflag_debug .eq. 1) write(50 + my_rank, *) "To  ", isurf_end, "at elem", iele, "local", isf_tgt
+if(iflag_debug .eq. 1) write(50 + my_rank, *) "pos:", x_tgt
   x_start(1:3) =  x_tgt(1:3)
   !call cal_pos_idx_volume(n_size, x_tgt, xyz_min, xyz_max, i_n)
   n_v = 0.0

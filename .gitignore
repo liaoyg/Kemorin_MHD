@@ -4,3 +4,8 @@ MHD/Cocoa/Fortran_codes/Fortran_codes.xcodeproj/
 
 /bin
 /work
+MHD_project.xcworkspace/xcuserdata/liaoyangguang.xcuserdatad/UserInterfaceState.xcuserstate
+
+*.xcuserstate
+
+*.plist

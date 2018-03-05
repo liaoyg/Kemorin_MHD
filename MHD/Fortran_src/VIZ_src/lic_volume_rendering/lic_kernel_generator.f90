@@ -52,6 +52,7 @@
         do i = 1, k_size
           idx = i * 1.0 / k_size
           call guaussian(mu, sigma, idx, k_ary(i))
+          !k_ary(i) = 1.0
           !write(*,*) i, k_ary(i)
         end do
 
