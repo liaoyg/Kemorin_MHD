@@ -94,8 +94,8 @@
      &    grad_data, color_param%pvr_lighting_real,                     &
      &    xin_model, xout_model, color, rgb(1))
 !
-      rgb(1:3) = rgb(1:3) * opa_current * ray_length
-      rgb(4) =   opa_current*ray_length
+      rgb(1:3) = rgb(1:3) * opa_current * ray_length / 0.066
+      rgb(4) =   opa_current * ray_length / 0.066
       if(rgb(4) .gt. one) rgb(4) = one
       if(rgb(4) .lt. zero) rgb(4) = zero
 !
@@ -328,9 +328,12 @@
       real(kind = kreal), intent(in) :: rgba_src(4)
       real(kind = kreal), intent(inout) :: rgba_tgt(4)
 !
-      rgba_tgt(4) = rgba_src(4) + rgba_tgt(4) * (one - rgba_src(4))
-      rgba_tgt(1:3) =  rgba_src(1:3)                                    &
-     &               + rgba_tgt(1:3) * (one - rgba_src(4))
+!      rgba_tgt(4) = rgba_src(4) + rgba_tgt(4) * (one - rgba_src(4))
+!      rgba_tgt(1:3) =  rgba_src(1:3)                                    &
+!     &               + rgba_tgt(1:3) * (one - rgba_src(4))
+       rgba_tgt(4) = rgba_src(4) * (one - rgba_tgt(4)) + rgba_tgt(4)
+       rgba_tgt(1:3) =  rgba_src(1:3) * (one - rgba_tgt(4))              &
+      &               + rgba_tgt(1:3)
 !
       end subroutine composite_alpha_blending
 !
