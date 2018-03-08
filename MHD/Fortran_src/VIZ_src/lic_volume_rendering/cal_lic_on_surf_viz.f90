@@ -36,9 +36,10 @@
 !   isurf_org is an array with element id and surface element id(1-6)
       subroutine cal_lic_on_surf_vector(nnod, nsurf, nelem, nnod_4_surf,        &
      &          isf_4_ele, iele_4_surf, interior_surf, xx,                      &
-     &          vnorm_surf, isurf_orgs, ie_surf, xi,                             &
-     &          noise_size, noise_nod, kernal_size, kernal_node,                &
-     &          v_nod, xx_org, isurf, o_tgt, xyz_min, xyz_max, iflag_comm)
+     &          vnorm_surf, isurf_orgs, ie_surf, xi,                            &
+     &          noise_size, noise_nod, noise_grad, kernal_size, kernal_node,    &
+     &          v_nod, xx_org, isurf, xyz_min, xyz_max, iflag_comm,     &
+     &          o_tgt, n_grad)
 
         use m_geometry_constants
         use calypso_mpi
@@ -54,11 +55,11 @@
         real(kind = kreal), intent(inout) :: xi(2)
         real(kind = kreal), intent(in) :: v_nod(nnod,3), xx(nnod, 3)
         real(kind = kreal), intent(in) :: xx_org(3)
-        real(kind = kreal), intent(inout) :: o_tgt
+        real(kind = kreal), intent(inout) :: o_tgt, n_grad(3)
         integer(kind = kint), intent(inout) :: iflag_comm
         integer(kind = kint), intent(in) :: noise_size, kernal_size
         real(kind = kreal), intent(in) :: kernal_node(kernal_size)
-        character(kind = 1), intent(in):: noise_nod(noise_size)
+        character(kind = 1), intent(in):: noise_nod(noise_size), noise_grad(noise_size*3)
 
         real(kind = kreal), intent(in) :: xyz_min(3)
         real(kind = kreal), intent(in) :: xyz_max(3)
@@ -84,6 +85,7 @@
         !   initial convolution integration at origin point
         lic_v = 0.0
         o_tgt = 0.0
+        n_grad(1:3) = 0.0
         icur_sf = isurf
 
         !call cal_pos_idx_volume(noise_size, xx_org, xyz_min, xyz_max, pos_idx)
@@ -92,6 +94,8 @@
         n_v = 0.0
         call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
         o_tgt = o_tgt + n_v * kernal_node(kernal_size/2)
+        call noise_grad_sampling(noise_size, noise_grad, xx_org, xyz_min, xyz_max, n_grad)
+        n_grad = n_grad + n_grad * kernal_node(kernal_size/2)
         !if(iflag_debug .eq. 1) write(50+my_rank,*) "xx", xx_org, "min", xyz_min, "max", xyz_max
         !if(iflag_debug .eq. 1) write(50+my_rank,*) "n_size",noise_size, "nid", pos_idx, "n_v", o_tgt
         call cal_field_on_surf_vector(nnod, nsurf, nnod_4_surf, ie_surf, icur_sf, xi, v_nod, org_vec)
@@ -157,7 +161,7 @@
           &          forward_len, iflag_back, xyz_min, xyz_max,              &
           &          v_nod, ilic_suf_org, new_pos, step_vec,                 &
           &          kernal_size, kernal_node, noise_size, noise_nod,        &
-          &          lic_v, k_area, iflag_comm)
+          &          noise_grad, lic_v, n_grad, k_area, iflag_comm)
           o_tgt = o_tgt + lic_v
         end if
         if(iflag_debug .eq. 1) write(50+my_rank,*) "-----------------------Forward iter end-------------with:", iflag_comm
@@ -194,7 +198,7 @@
           &          backward_len, iflag_back, xyz_min, xyz_max,             &
           &          v_nod, ilic_suf_org, new_pos, step_vec,                 &
           &          kernal_size, kernal_node, noise_size, noise_nod,        &
-          &          lic_v, k_area, iflag_comm)
+          &          noise_grad, lic_v, n_grad, k_area, iflag_comm)
           o_tgt = o_tgt + lic_v
         end if
         if(iflag_debug .eq. 1) write(50+my_rank,*) "-----------------------Backward iter end------------with:", iflag_comm
@@ -202,7 +206,7 @@
         if(k_area .gt. 0.0) then
           o_tgt = o_tgt / k_area
         end if
-        o_tgt = o_tgt * 10.0
+        o_tgt = o_tgt * 20.0
 
         !write(50+my_rank, *) iflag_comm, o_tgt
         if(iflag_debug .eq. 1) write(50+my_rank,*) "Get lic value: ", o_tgt
@@ -346,8 +350,8 @@ subroutine s_cal_lic_from_point(numnod, numele, numsurf,           &
 &          iele_4_surf, interior_surf, vnorm_surf,                 &
 &          max_line_len, iflag_back, xyz_min, xyz_max,             &
 &          vect_nod, isurf_org, x_start, v_start,                  &
-&          k_size, k_node, n_size, n_node,                         &
-&          lic_v, k_area, iflag_comm)
+&          k_size, k_node, n_size, n_node, grad_node,              &
+&          lic_v, grad_v, k_area, iflag_comm)
 
 !
 integer(kind = kint), intent(in) :: numnod, numele, numsurf
@@ -368,17 +372,18 @@ real(kind = kreal), intent(inout) ::   v_start(3), x_start(3)
 !
 integer(kind = kint), intent(in) :: n_size, k_size
 real(kind = kreal), intent(in) :: k_node(k_size)
-character(kind = 1), intent(in):: n_node(n_size)
+character(kind = 1), intent(in):: n_node(n_size), grad_node(n_size*3)
 !
 real(kind = kreal), intent(in) :: xyz_min(3)
 real(kind = kreal), intent(in) :: xyz_max(3)
 !
-real(kind = kreal), intent(inout) :: lic_v, k_area
+real(kind = kreal), intent(inout) :: lic_v, k_area, grad_v(3)
 !
 integer(kind = kint) :: isf_tgt, isurf_end, isurf_start, iele, isf_org
 real(kind = kreal) :: x_org(3), x_tgt(3), v_tgt(3), c_tgt(1), xi(2), flux
 integer(kind = kint) :: i_iter, i_k, i_n, iflag_debug, i
 real(kind = kreal) :: n_v, nv_sum, step_len, len_sum, k_value, k_pos, avg_stepsize
+real(kind = kreal) :: g_v(3)
 !
 !
 !init local variables
@@ -386,6 +391,7 @@ i_iter = 0
 i_k = k_size / 2.0 ! index of kernel value
 i_n = 0 ! index of noise value
 n_v = 0.0 ! noise value
+g_v(1:3) = 0.0
 nv_sum = 0.0
 lic_v = 0.0
 iflag_debug = 0
@@ -472,6 +478,8 @@ if(iflag_debug .eq. 1) write(50 + my_rank, *) "pos:", x_tgt
   !call cal_pos_idx_volume(n_size, x_tgt, xyz_min, xyz_max, i_n)
   n_v = 0.0
   call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
+  g_v(1:3) = 0.0
+  call noise_grad_sampling(n_size, grad_node, x_tgt, xyz_min, xyz_max, g_v)
   nv_sum = nv_sum + n_v
   len_sum = len_sum + step_len
   len_sum = min(len_sum, max_line_len)
@@ -486,6 +494,7 @@ call kernal_sampling(k_size, k_node, k_pos, k_value)
 if(iflag_debug .eq. 1) write(50 + my_rank, *) "--step: ",i_iter, step_len, len_sum, "k_pos:", k_pos, "k_v: ", k_value
   !lic_v = lic_v + n_v * k_node(i_k)
   lic_v = lic_v + n_v * k_value
+  grad_v = grad_v + g_v * k_value
   k_area = k_area + k_value
 if(iflag_debug .eq. 1) write(50 + my_rank, *) "nv: ", n_v, "nv sum:", nv_sum, "kernel area: ", k_area, "lic_v: ", lic_v
 

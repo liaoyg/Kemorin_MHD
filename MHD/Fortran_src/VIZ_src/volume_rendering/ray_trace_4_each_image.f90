@@ -76,17 +76,21 @@
       real(kind = kreal) :: rgba_tmp(4)
 !
       integer(kind = kint) :: n_d_size(3)
-      character, allocatable:: noise_data(:)
+      character, allocatable:: noise_data(:), noise_grad_data(:)
       integer(kind = kint) :: k_size
       real(kind = kreal), allocatable :: k_ary(:)
       integer(kind = kint) :: i, read_err, j, n_size
-      character(len=kchara), parameter :: filename = "noise/noise-256"
+      character(len=kchara), parameter :: filename = "noise/noise_256_80"
+      character(len=kchara), parameter :: gradfilename = "noise/noise_256_80.grd"
 
       iflag_debug = 0
 
       k_size = 128
       allocate(k_ary(k_size))
       call import_noise_ary(filename, noise_data, n_d_size, read_err)
+      if(read_err .eq. 0) then
+        call import_noise_grad_ary(gradfilename, noise_grad_data, n_d_size, read_err)
+      end if
       call generate_kernal_ary(k_size, k_ary)
 
       n_size = n_d_size(1) * n_d_size(2) * n_d_size(3)
@@ -117,8 +121,8 @@
      &       id_pixel_check(inum), isf_pvr_ray_start(1,inum),                &
      &       xx_pvr_ray_start(1,inum), xx_pvr_start(1,inum),                 &
      &       xi_pvr_start(1,inum), rgba_tmp(1), icount_pvr_trace(inum),      &
-     &       k_size, k_ary, n_size, noise_data, node%xyz_min_gl,             &
-     &       node%xyz_max_gl, iflag_comm)
+     &       k_size, k_ary, n_size, noise_data, noise_grad_data,             &
+     &       node%xyz_min_gl, node%xyz_max_gl, iflag_comm)
         rgba_ray(1:4,inum) = rgba_tmp(1:4)
       end do
 !$omp end parallel do
@@ -173,8 +177,8 @@
      &        interior_surf, arccos_sf, x_nod_model, viewpoint_vec,     &
      &        field_pvr, color_param, ray_vec, iflag_check, isurf_org,  &
      &        screen_st, xx_st, xi, rgba_ray, icount_line,              &
-     &        k_size, k_ary, n_size, noise_data, xyz_min_gl,            &
-     &        xyz_max_gl, iflag_comm)
+     &        k_size, k_ary, n_size, noise_data, noise_grad,            &
+     &        xyz_min_gl, xyz_max_gl, iflag_comm)
 !
       use t_geometries_in_pvr_screen
       use cal_field_on_surf_viz
@@ -210,7 +214,7 @@
       real(kind = kreal), intent(inout) :: rgba_ray(4)
 !
       integer(kind = kint), intent(in) :: n_size
-      character(kind=1), intent(in):: noise_data(n_size)
+      character(kind=1), intent(in):: noise_data(n_size), noise_grad(n_size*3)
       integer(kind = kint), intent(in) :: k_size
       real(kind = kreal), intent(in) :: k_ary(k_size)
 !
@@ -307,9 +311,9 @@
 
           call cal_lic_on_surf_vector(numnod, numsurf, numele, nnod_4_surf,    &
      &          isf_4_ele, iele_4_surf, interior_surf, xx, vnorm_surf,         &
-     &          isurf_orgs, ie_surf, xi, n_size, noise_data, k_size,           &
-     &          k_ary, field_pvr%v_nod, xx_tgt, isurf_end, c_tgt(1),           &
-     &          xyz_min_gl, xyz_max_gl, iflag_lic)
+     &          isurf_orgs, ie_surf, xi, n_size, noise_data, noise_grad,       &
+     &          k_size, k_ary, field_pvr%v_nod, xx_tgt, isurf_end,             &
+     &          xyz_min_gl, xyz_max_gl, iflag_lic, c_tgt(1), grad_tgt)
           !write(50+my_rank, *) iflag_lic
 
           do i_psf = 1, field_pvr%num_sections
@@ -348,7 +352,8 @@
             end if
           end do
 !
-          grad_tgt(1:3) = field_pvr%grad_ele(iele,1:3)
+!          grad_tgt(1:3) = field_pvr%grad_ele(iele,1:3)
+          grad_tgt(1:3) = norm2(grad_tgt(1:3))
           c_tgt(1) = half*(c_tgt(1) + c_org(1))
           call s_set_rgba_4_each_pixel(viewpoint_vec, xx_st, xx_tgt,    &
      &        c_tgt(1), grad_tgt, color_param, rgba_ray)
