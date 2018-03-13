@@ -1980,6 +1980,9 @@
                   location = "group:lic_volume_rendering"
                   name = "lic_volume_rendering">
                   <FileRef
+                     location = "group:t_noise_node_data.f90">
+                  </FileRef>
+                  <FileRef
                      location = "group:Makefile">
                   </FileRef>
                   <FileRef
