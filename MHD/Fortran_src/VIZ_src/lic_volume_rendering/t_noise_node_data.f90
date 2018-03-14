@@ -47,7 +47,7 @@
       real(kind=kreal) :: rand_v
 
       n_node%n_value = 0.0
-      
+
       n_node%node_dim = dim
       n_node%node_level = level
       if(level .gt. 0) then
@@ -62,7 +62,7 @@
 !
 !  ---------------------------------------------------------------------
 !
-      subroutine dealloc_noise_node(n_node)
+      recursive subroutine dealloc_noise_node(n_node)
 !
       type(noise_node), intent(inout) :: n_node
       integer(kind=kint) :: i, size, dim
