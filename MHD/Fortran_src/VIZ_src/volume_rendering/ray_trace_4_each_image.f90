@@ -90,7 +90,7 @@
       k_size = 128
       allocate(k_ary(k_size))
       ! import noise_value in noise_node data structure
-      call import_noise_nd_ary(filename, n_node_data, n_d_size, read_err)
+      !call import_noise_nd_ary(filename, n_node_data, n_d_size, read_err)
       ! directly import noise_value to an array
       call import_noise_ary(filename, noise_data, n_d_size, read_err)
       if(read_err .eq. 0) then
@@ -126,7 +126,7 @@
      &       id_pixel_check(inum), isf_pvr_ray_start(1,inum),                &
      &       xx_pvr_ray_start(1,inum), xx_pvr_start(1,inum),                 &
      &       xi_pvr_start(1,inum), rgba_tmp(1), icount_pvr_trace(inum),      &
-     &       k_size, k_ary, n_size, n_node_data, noise_grad_data,             &
+     &       k_size, k_ary, n_size, noise_data, noise_grad_data,             &
      &       node%xyz_min_gl, node%xyz_max_gl, iflag_comm)
         rgba_ray(1:4,inum) = rgba_tmp(1:4)
       end do
@@ -221,8 +221,8 @@
 !
       integer(kind = kint), intent(in) :: n_size
       character(kind=1), intent(in):: noise_grad(n_size*3)
-      !character(kind=1), intent(in):: noise_data(n_size)
-      type(noise_node), intent(in) :: noise_data(n_size)
+      character(kind=1), intent(in):: noise_data(n_size)
+      !type(noise_node), intent(in) :: noise_data(n_size)
       integer(kind = kint), intent(in) :: k_size
       real(kind = kreal), intent(in) :: k_ary(k_size)
 !

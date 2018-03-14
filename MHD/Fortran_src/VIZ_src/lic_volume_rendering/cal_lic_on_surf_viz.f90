@@ -61,8 +61,8 @@
         integer(kind = kint), intent(in) :: noise_size, kernal_size
         real(kind = kreal), intent(in) :: kernal_node(kernal_size)
         character(kind = 1), intent(in):: noise_grad(noise_size*3)
-        !character(kind = 1), intent(in):: noise_nod(noise_size)
-        type(noise_node), intent(in) :: noise_nod(noise_size)
+        character(kind = 1), intent(in):: noise_nod(noise_size)
+        !type(noise_node), intent(in) :: noise_nod(noise_size)
 
         real(kind = kreal), intent(in) :: xyz_min(3)
         real(kind = kreal), intent(in) :: xyz_max(3)
@@ -95,8 +95,8 @@
         !o_tgt = o_tgt + ichar(noise_nod(pos_idx)) / 255.0 * kernal_node(kernal_size/2)
         !o_tgt = o_tgt + get_noise_value(noise_size, noise_nod, pos_idx) * kernal_node(kernal_size/2)
         n_v = 0.0
-        !call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
-        call noise_nd_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
+        call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
+        !call noise_nd_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
         o_tgt = o_tgt + n_v * kernal_node(kernal_size/2)
         call noise_grad_sampling(noise_size, noise_grad, xx_org, xyz_min, xyz_max, n_grad)
         n_grad = n_grad + n_grad * kernal_node(kernal_size/2)
@@ -379,8 +379,8 @@ real(kind = kreal), intent(inout) ::   v_start(3), x_start(3)
 integer(kind = kint), intent(in) :: n_size, k_size
 real(kind = kreal), intent(in) :: k_node(k_size)
 character(kind = 1), intent(in):: grad_node(n_size*3)
-!character(kind = 1), intent(in):: n_node(n_size)
-type(noise_node), intent(in) :: n_node(n_size)
+character(kind = 1), intent(in):: n_node(n_size)
+!type(noise_node), intent(in) :: n_node(n_size)
 !
 real(kind = kreal), intent(in) :: xyz_min(3)
 real(kind = kreal), intent(in) :: xyz_max(3)
@@ -485,8 +485,8 @@ if(iflag_debug .eq. 1) write(50 + my_rank, *) "pos:", x_tgt
   x_start(1:3) =  x_tgt(1:3)
   !call cal_pos_idx_volume(n_size, x_tgt, xyz_min, xyz_max, i_n)
   n_v = 0.0
-  !call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
-  call noise_nd_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
+  call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
+  !call noise_nd_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
   g_v(1:3) = 0.0
   call noise_grad_sampling(n_size, grad_node, x_tgt, xyz_min, xyz_max, g_v)
   nv_sum = nv_sum + n_v
@@ -534,8 +534,8 @@ if(len_sum .gt. max_line_len) then
     k_pos = 0.0
     x_tgt = x_start + v_start / norm2(v_start) * avg_stepsize
     n_v = 0.0
-    !call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
-    call noise_nd_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
+    call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
+    !call noise_nd_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
     if(iflag_back .eq. ione) then
       k_pos =  0.5 + 0.5 * len_sum/max_line_len
     else
