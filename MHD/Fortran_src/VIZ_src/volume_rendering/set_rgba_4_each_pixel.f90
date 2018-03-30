@@ -54,7 +54,7 @@
 !
       subroutine s_set_rgba_4_each_pixel(viewpoint_vec,                 &
      &          xin_model, xout_model, c_data, grad_data,               &
-     &          color_param, avr_ray_len, rgba_pixel)
+     &          color_param, avr_ray_len, last_ray_len, rgba_pixel)
 !
       use t_control_params_4_pvr
       use set_color_4_pvr
@@ -64,7 +64,7 @@
       real(kind = kreal), intent(in) :: xin_model(3), xout_model(3)
       type(pvr_colormap_parameter), intent(in) :: color_param
 !
-      real(kind = kreal), intent(inout) :: rgba_pixel(4)
+      real(kind = kreal), intent(inout) :: rgba_pixel(4), last_ray_len
 !
       integer(kind = kint) :: num_of_features
       real(kind = kreal) :: color(3), ray_vec(3)
@@ -100,11 +100,18 @@
 !
       !rgb(1:3) = rgb(1:3) * opa_current * ray_length
       !rgb(4) =   opa_current * ray_length
-      rgb(4) = 1 - (1-opa_current)**(ray_length / avr_ray_len)
+rgb(4) = 1 - (1-opa_current)**(ray_length / avr_ray_len)
+!write(*,*) last_ray_len
+!      if(last_ray_len .eq. zero) then
+!        rgb(4) = 1 - (1-opa_current)**(ray_length)
+!      else
+!        rgb(4) = 1 - (1-opa_current)**(ray_length / last_ray_len)
+!      end if
       rgb(1:3) = rgb(1:3) * rgb(4)
       !rgb(4) =   opa_current
       if(rgb(4) .gt. one) rgb(4) = one
       if(rgb(4) .lt. zero) rgb(4) = zero
+      last_ray_len = ray_length
 !
       call composite_alpha_blending(rgb, rgba_pixel)
       deallocate(rgb)

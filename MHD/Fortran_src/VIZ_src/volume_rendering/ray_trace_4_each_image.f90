@@ -231,11 +231,11 @@
       integer(kind = kint) :: isf_tgt, isurf_end, iele, isf_org
       integer(kind = kint) :: i_iso, i_psf, iflag, iflag_hit
       real(kind = kreal) :: screen_tgt(3), c_tgt(1), c_org(1)
-      real(kind = kreal) :: grad_tgt(3), xx_tgt(3), rflag, rflag2
+      real(kind = kreal) :: grad_tgt(3), xx_tgt(3), rflag, rflag2, grad_len
       integer(kind = kint) :: isurf_orgs(2,3), i, iflag_lic
 
-real(kind = kreal) :: ray_total_len = zero, ave_ray_len
-integer(kind = kint) :: icount_line_cur_ray = 0
+      real(kind = kreal) :: ray_total_len = zero, ave_ray_len, last_ray_len = one
+      integer(kind = kint) :: icount_line_cur_ray = 0
 !
 !
       if(isurf_org(1) .eq. 0) return
@@ -249,6 +249,8 @@ integer(kind = kint) :: icount_line_cur_ray = 0
      &    ie_surf, isurf_end, xi, xx, xx_st)
       call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,       &
      &    ie_surf, isurf_end, xi, field_pvr%d_pvr, c_org(1) )
+
+
 !
       if(iflag_check .gt. 0) then
         iflag_hit = 0
@@ -305,15 +307,16 @@ integer(kind = kint) :: icount_line_cur_ray = 0
      &      ie_surf, isurf_end, xi, xx, xx_tgt)
         call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,     &
      &      ie_surf, isurf_end, xi, field_pvr%d_pvr, c_tgt(1))
+        c_tgt(1) = 0.0
 !
         if(interior_ele(iele) .gt. 0) then
 !   rendering boundery
-          if(arccos_sf(isurf_end) .gt. SMALL_RAY_TRACE) then
-            grad_tgt(1:3) = vnorm_surf(isurf_end,1:3)
-            call plane_rendering_with_light                             &
-     &         (viewpoint_vec, xx_tgt, grad_tgt,                        &
-     &          arccos_sf(isurf_end),  color_param, rgba_ray)
-          end if
+!          if(arccos_sf(isurf_end) .gt. SMALL_RAY_TRACE) then
+!            grad_tgt(1:3) = vnorm_surf(isurf_end,1:3)
+!            call plane_rendering_with_light                             &
+!     &         (viewpoint_vec, xx_tgt, grad_tgt,                        &
+!     &          arccos_sf(isurf_end),  color_param, rgba_ray)
+!          end if
 !
 !   3d lic calculation at current xx position
 
@@ -369,10 +372,14 @@ integer(kind = kint) :: icount_line_cur_ray = 0
           ave_ray_len = ray_total_len / icount_line_cur_ray
 !
           !grad_tgt(1:3) = field_pvr%grad_ele(iele,1:3)
-          grad_tgt(1:3) = grad_tgt(1:3) / norm2(grad_tgt(1:3))
+          grad_len = norm2(grad_tgt(1:3))
+          if(grad_len .ne. 0.0) then
+            grad_tgt(1:3) = grad_tgt(1:3) / norm2(grad_tgt(1:3))
+          endif
           c_tgt(1) = half*(c_tgt(1) + c_org(1))
           call s_set_rgba_4_each_pixel(viewpoint_vec, xx_st, xx_tgt,    &
-     &        c_tgt(1), grad_tgt, color_param, ave_ray_len, rgba_ray)
+     &        c_tgt(1), grad_tgt, color_param, ave_ray_len,             &
+     &        last_ray_len, rgba_ray)
         end if
 !
         if(isurf_org(1).eq.0) then

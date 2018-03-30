@@ -90,19 +90,8 @@
         o_tgt = 0.0
         n_grad(1:3) = 0.0
         icur_sf = isurf
-
-        !call cal_pos_idx_volume(noise_size, xx_org, xyz_min, xyz_max, pos_idx)
-        !o_tgt = o_tgt + ichar(noise_nod(pos_idx)) / 255.0 * kernal_node(kernal_size/2)
-        !o_tgt = o_tgt + get_noise_value(noise_size, noise_nod, pos_idx) * kernal_node(kernal_size/2)
         n_v = 0.0
-        call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
-        !call noise_nd_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
-        o_tgt = o_tgt + n_v * kernal_node(kernal_size/2)
-        call noise_grad_sampling(noise_size, noise_grad, xx_org, xyz_min, xyz_max, n_grad)
-        n_grad = n_grad + n_grad * kernal_node(kernal_size/2)
-        !if(iflag_debug .eq. 1) write(50+my_rank,*) "xx", xx_org, "min", xyz_min, "max", xyz_max
-        !if(iflag_debug .eq. 1) write(50+my_rank,*) "n_size",noise_size, "nid", pos_idx, "n_v", o_tgt
-        call cal_field_on_surf_vector(nnod, nsurf, nnod_4_surf, ie_surf, icur_sf, xi, v_nod, org_vec)
+
 
 
         do i = 1, 2
@@ -122,7 +111,18 @@
         !write(50+my_rank,*) "isurf's element: ", iele_4_surf(isurf,1,1), iele_4_surf(isurf,2,1)
         !write(50+my_rank,*) "isurf_org old: ", isurf_orgs(1,1:2), "isurf_org new: ", isurf_orgs(2,1:2)
 
+        !call cal_pos_idx_volume(noise_size, xx_org, xyz_min, xyz_max, pos_idx)
+        !o_tgt = o_tgt + ichar(noise_nod(pos_idx)) / 255.0 * kernal_node(kernal_size/2)
+        !o_tgt = o_tgt + get_noise_value(noise_size, noise_nod, pos_idx) * kernal_node(kernal_size/2)
 
+        call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
+        !call noise_nd_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
+        o_tgt = o_tgt + n_v * kernal_node(kernal_size/2.0)
+        call noise_grad_sampling(noise_size, noise_grad, xx_org, xyz_min, xyz_max, n_grad)
+        n_grad = n_grad + n_grad * kernal_node(kernal_size/2)
+        !if(iflag_debug .eq. 1) write(50+my_rank,*) "xx", xx_org, "min", xyz_min, "max", xyz_max
+        !if(iflag_debug .eq. 1) write(50+my_rank,*) "n_size",noise_size, "nid", pos_idx, "n_v", o_tgt
+        call cal_field_on_surf_vector(nnod, nsurf, nnod_4_surf, ie_surf, icur_sf, xi, v_nod, org_vec)
 
         !write(50+my_rank,*) "cal lic at: ", xx_org, "with v: ", org_vec
         if(iflag_debug .eq. 1) write(50+my_rank,*) "------------------------Forward iter begin--------------------"
@@ -210,7 +210,8 @@
         if(k_area .gt. 0.0) then
           o_tgt = o_tgt / k_area
         end if
-        o_tgt = o_tgt * 20.0
+        ! when data scale is large, the lic scalar value need to increase
+        o_tgt = o_tgt * 15.0 * 6
 
         !write(50+my_rank, *) iflag_comm, o_tgt
         if(iflag_debug .eq. 1) write(50+my_rank,*) "Get lic value: ", o_tgt
@@ -521,7 +522,7 @@ if(iflag_debug .eq. 1) write(50 + my_rank, *) "nv: ", n_v, "nv sum:", nv_sum, "k
   end if
 end do
 
-if(len_sum .gt. max_line_len) then
+if(len_sum .lt. max_line_len) then
   avg_stepsize = len_sum / i_iter
   if (avg_stepsize .lt. 0.005) then
     avg_stepsize = 0.005

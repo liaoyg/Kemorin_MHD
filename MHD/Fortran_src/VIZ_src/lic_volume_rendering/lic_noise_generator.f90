@@ -248,7 +248,7 @@ end subroutine import_noise_nd_ary
 
       noise_value = 0.0
       xyz_norm = (xx_org - xyz_min) / (xyz_max - xyz_min)
-      xyz_norm = xyz_norm * 2
+      xyz_norm = xyz_norm * 4
       xyz_norm = xyz_norm - int(xyz_norm)
       dim = int(noise_size**(1./3.))
       xyz = xyz_norm * dim
@@ -298,7 +298,7 @@ end subroutine import_noise_nd_ary
 
       grad_value(1:3) = 0.0
       xyz_norm = (xx_org - xyz_min) / (xyz_max - xyz_min)
-      xyz_norm = xyz_norm * 2
+      xyz_norm = xyz_norm * 4
       xyz_norm = xyz_norm - int(xyz_norm)
       dim = int(noise_size**(1./3.))
       xyz = xyz_norm * dim
@@ -349,7 +349,7 @@ real(kind = kreal) :: xyz_norm(3)
 
 noise_value = 0.0
 xyz_norm = (xx_org - xyz_min) / (xyz_max - xyz_min)
-xyz_norm = xyz_norm * 2
+xyz_norm = xyz_norm * 4
 xyz_norm = xyz_norm - int(xyz_norm)
 dim = int(noise_size**(1./3.))
 xyz = xyz_norm * dim
