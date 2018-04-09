@@ -73,7 +73,7 @@
         real(kind = kreal) :: org_vec(3), step_vec(3), new_pos(3), old_pos(3)
         integer(kind = kint) :: ilic_suf_org(3), icur_sf
         integer(kind = kint) :: pos_idx, kernal_idx, i, isf_tgt, iele_sf_org(2,2)
-        real(kind = kreal) :: lic_v, flux, n_v, forward_len, backward_len, k_area
+        real(kind = kreal) :: lic_v, flux, n_v, forward_len, backward_len, k_area, noise_freq
         integer(kind = kint) :: iflag_found_sf, iele, isf_org, iflag_debug
 
 
@@ -84,6 +84,7 @@
         forward_len = 0.32
         backward_len = 0.32
         k_area = 0.0
+        noise_freq = 2.0
 
         !   initial convolution integration at origin point
         lic_v = 0.0
@@ -115,10 +116,10 @@
         !o_tgt = o_tgt + ichar(noise_nod(pos_idx)) / 255.0 * kernal_node(kernal_size/2)
         !o_tgt = o_tgt + get_noise_value(noise_size, noise_nod, pos_idx) * kernal_node(kernal_size/2)
 
-        call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
+        call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, noise_freq, n_v)
         !call noise_nd_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
         o_tgt = o_tgt + n_v * kernal_node(kernal_size/2.0)
-        call noise_grad_sampling(noise_size, noise_grad, xx_org, xyz_min, xyz_max, n_grad)
+        call noise_grad_sampling(noise_size, noise_grad, xx_org, xyz_min, xyz_max, noise_freq, n_grad)
         n_grad = n_grad + n_grad * kernal_node(kernal_size/2)
         !if(iflag_debug .eq. 1) write(50+my_rank,*) "xx", xx_org, "min", xyz_min, "max", xyz_max
         !if(iflag_debug .eq. 1) write(50+my_rank,*) "n_size",noise_size, "nid", pos_idx, "n_v", o_tgt
@@ -165,7 +166,7 @@
           &          forward_len, iflag_back, xyz_min, xyz_max,              &
           &          v_nod, ilic_suf_org, new_pos, step_vec,                 &
           &          kernal_size, kernal_node, noise_size, noise_nod,        &
-          &          noise_grad, lic_v, n_grad, k_area, iflag_comm)
+          &          noise_freq, noise_grad, lic_v, n_grad, k_area, iflag_comm)
           o_tgt = o_tgt + lic_v
         end if
         if(iflag_debug .eq. 1) write(50+my_rank,*) "-----------------------Forward iter end-------------with:", iflag_comm
@@ -202,7 +203,7 @@
           &          backward_len, iflag_back, xyz_min, xyz_max,             &
           &          v_nod, ilic_suf_org, new_pos, step_vec,                 &
           &          kernal_size, kernal_node, noise_size, noise_nod,        &
-          &          noise_grad, lic_v, n_grad, k_area, iflag_comm)
+          &          noise_freq, noise_grad, lic_v, n_grad, k_area, iflag_comm)
           o_tgt = o_tgt + lic_v
         end if
         if(iflag_debug .eq. 1) write(50+my_rank,*) "-----------------------Backward iter end------------with:", iflag_comm
@@ -211,7 +212,7 @@
           o_tgt = o_tgt / k_area
         end if
         ! when data scale is large, the lic scalar value need to increase
-        o_tgt = o_tgt * 15.0 * 6
+        o_tgt = o_tgt * 15.0
 
         !write(50+my_rank, *) iflag_comm, o_tgt
         if(iflag_debug .eq. 1) write(50+my_rank,*) "Get lic value: ", o_tgt
@@ -355,7 +356,7 @@ subroutine s_cal_lic_from_point(numnod, numele, numsurf,           &
 &          iele_4_surf, interior_surf, vnorm_surf,                 &
 &          max_line_len, iflag_back, xyz_min, xyz_max,             &
 &          vect_nod, isurf_org, x_start, v_start,                  &
-&          k_size, k_node, n_size, n_node, grad_node,              &
+&          k_size, k_node, n_size, n_node, noise_freq, grad_node,  &
 &          lic_v, grad_v, k_area, iflag_comm)
 
 use t_noise_node_data
@@ -378,7 +379,7 @@ integer(kind = kint), intent(inout) :: iflag_comm
 real(kind = kreal), intent(inout) ::   v_start(3), x_start(3)
 !
 integer(kind = kint), intent(in) :: n_size, k_size
-real(kind = kreal), intent(in) :: k_node(k_size)
+real(kind = kreal), intent(in) :: k_node(k_size), noise_freq
 character(kind = 1), intent(in):: grad_node(n_size*3)
 character(kind = 1), intent(in):: n_node(n_size)
 !type(noise_node), intent(in) :: n_node(n_size)
@@ -486,10 +487,10 @@ if(iflag_debug .eq. 1) write(50 + my_rank, *) "pos:", x_tgt
   x_start(1:3) =  x_tgt(1:3)
   !call cal_pos_idx_volume(n_size, x_tgt, xyz_min, xyz_max, i_n)
   n_v = 0.0
-  call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
+  call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, noise_freq, n_v)
   !call noise_nd_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
   g_v(1:3) = 0.0
-  call noise_grad_sampling(n_size, grad_node, x_tgt, xyz_min, xyz_max, g_v)
+  call noise_grad_sampling(n_size, grad_node, x_tgt, xyz_min, xyz_max, noise_freq, g_v)
   nv_sum = nv_sum + n_v
   len_sum = len_sum + step_len
   len_sum = min(len_sum, max_line_len)
@@ -535,7 +536,7 @@ if(len_sum .lt. max_line_len) then
     k_pos = 0.0
     x_tgt = x_start + v_start / norm2(v_start) * avg_stepsize
     n_v = 0.0
-    call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
+    call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, noise_freq, n_v)
     !call noise_nd_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
     if(iflag_back .eq. ione) then
       k_pos =  0.5 + 0.5 * len_sum/max_line_len
