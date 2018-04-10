@@ -84,7 +84,7 @@
         forward_len = 0.32
         backward_len = 0.32
         k_area = 0.0
-        noise_freq = 2.0
+        noise_freq = 3.0
 
         !   initial convolution integration at origin point
         lic_v = 0.0

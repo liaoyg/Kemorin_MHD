@@ -230,8 +230,8 @@
       integer(kind = kint) :: iflag_notrace
       integer(kind = kint) :: isf_tgt, isurf_end, iele, isf_org
       integer(kind = kint) :: i_iso, i_psf, iflag, iflag_hit
-      real(kind = kreal) :: screen_tgt(3), c_tgt(1), c_org(1)
-      real(kind = kreal) :: grad_tgt(3), xx_tgt(3), rflag, rflag2, grad_len
+      real(kind = kreal) :: screen_tgt(3), c_tgt(1)
+      real(kind = kreal) :: grad_tgt(3), xx_tgt(3), rflag, rflag2, grad_len, xx_mid(3)
       integer(kind = kint) :: isurf_orgs(2,3), i, iflag_lic
 
       real(kind = kreal) :: ray_total_len = zero, ave_ray_len, last_ray_len = one
@@ -247,8 +247,6 @@
       isurf_end = abs(isf_4_ele(iele,isf_org))
       call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,       &
      &    ie_surf, isurf_end, xi, xx, xx_st)
-      call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,       &
-     &    ie_surf, isurf_end, xi, field_pvr%d_pvr, c_org(1) )
 
 
 !
@@ -311,72 +309,34 @@
 !
         if(interior_ele(iele) .gt. 0) then
 !   rendering boundery
-!          if(arccos_sf(isurf_end) .gt. SMALL_RAY_TRACE) then
-!            grad_tgt(1:3) = vnorm_surf(isurf_end,1:3)
-!            call plane_rendering_with_light                             &
-!     &         (viewpoint_vec, xx_tgt, grad_tgt,                        &
-!     &          arccos_sf(isurf_end),  color_param, rgba_ray)
-!          end if
+          if(arccos_sf(isurf_end) .gt. SMALL_RAY_TRACE) then
+            grad_tgt(1:3) = vnorm_surf(isurf_end,1:3)
+            call plane_rendering_with_light                             &
+     &         (viewpoint_vec, xx_tgt, grad_tgt,                        &
+     &          arccos_sf(isurf_end),  color_param, rgba_ray)
+          end if
 !
 !   3d lic calculation at current xx position
 
-!do i = 1, 2
-!  write(50+my_rank,*) "ele: ", isurf_orgs(i,1), "local surf: ", isurf_orgs(i,2)
-!end do
-
+! find mid point between xx_st and xx_tgt, this mid point will be actual sample point
+          xx_mid = half*(xx_st + xx_tgt)
 ! calculate lic value at current location, lic value will be used as intensity
 ! as volume rendering
           call cal_lic_on_surf_vector(numnod, numsurf, numele, nnod_4_surf,    &
      &          isf_4_ele, iele_4_surf, interior_surf, xx, vnorm_surf,         &
      &          isurf_orgs, ie_surf, xi, n_size, noise_data, noise_grad,       &
-     &          k_size, k_ary, field_pvr%v_nod, xx_tgt, isurf_end,             &
+     &          k_size, k_ary, field_pvr%v_nod, xx_mid, isurf_end,             &
      &          xyz_min_gl, xyz_max_gl, iflag_lic, c_tgt(1), grad_tgt)
-          !write(50+my_rank, *) iflag_lic
 
-          do i_psf = 1, field_pvr%num_sections
-            rflag =  side_of_plane(field_pvr%coefs(1:10,i_psf), xx_st)
-            rflag2 = side_of_plane(field_pvr%coefs(1:10,i_psf), xx_tgt)
-            if     (rflag .ge. -TINY .and. rflag2 .le. TINY) then
-              iflag = 1
-              iflag_hit = 1
-            else if(rflag .le. TINY .and. rflag2 .ge. -TINY) then
-              iflag = 1
-              iflag_hit = 1
-            else
-              iflag = 0
-            end if
-
-            if(iflag .ne. 0) then
-              call cal_normal_of_plane                                  &
-     &           (field_pvr%coefs(1:10,i_psf), xx_tgt, grad_tgt)
-              call color_plane_with_light                               &
-     &           (viewpoint_vec, xx_tgt, c_tgt(1), grad_tgt,            &
-     &            field_pvr%sect_opacity(i_psf), color_param, rgba_ray)
-            end if
-          end do
-!
-          do i_iso = 1, field_pvr%num_isosurf
-            rflag =  (c_org(1) - field_pvr%iso_value(i_iso))            &
-     &             * (c_tgt(1) - field_pvr%iso_value(i_iso))
-            if((c_tgt(1) - field_pvr%iso_value(i_iso)) .eq. zero        &
-     &        .or. rflag .lt. zero) then
-              grad_tgt(1:3) = field_pvr%grad_ele(iele,1:3)              &
-     &                       * field_pvr%itype_isosurf(i_iso)
-              call color_plane_with_light                               &
-     &           (viewpoint_vec, xx_tgt, field_pvr%iso_value(i_iso),    &
-     &            grad_tgt, field_pvr%iso_opacity(i_iso),               &
-     &            color_param, rgba_ray)
-            end if
-          end do
           ray_total_len = ray_total_len + norm2(xx_tgt - xx_st)
           ave_ray_len = ray_total_len / icount_line_cur_ray
 !
-          !grad_tgt(1:3) = field_pvr%grad_ele(iele,1:3)
+! normalize gradient
           grad_len = norm2(grad_tgt(1:3))
           if(grad_len .ne. 0.0) then
             grad_tgt(1:3) = grad_tgt(1:3) / norm2(grad_tgt(1:3))
           endif
-          c_tgt(1) = half*(c_tgt(1) + c_org(1))
+
           call s_set_rgba_4_each_pixel(viewpoint_vec, xx_st, xx_tgt,    &
      &        c_tgt(1), grad_tgt, color_param, ave_ray_len,             &
      &        last_ray_len, rgba_ray)
@@ -389,7 +349,6 @@
 !
         screen_st(1:3) = screen_tgt(1:3)
         xx_st(1:3) = xx_tgt(1:3)
-        c_org(1) =   c_tgt(1)
       end do
 !
 !      if(iflag_check*field_pvr%num_sections .gt. 0) then
