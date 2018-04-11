@@ -91,15 +91,20 @@
 !
 !  ---------------------------------------------------------------------
 !
-      subroutine init_noise_mask(n_mask, min, max, ref_data)
+      subroutine init_noise_mask(n_mask, min, max, ref_data, num_ref)
+!
+        use t_geometries_in_pvr_screen
 !
         type(noise_mask), intent(inout) :: n_mask
+        integer(kind=kint) :: num_ref
         real(kind=kreal), intent(in) :: min, max
-        real(kind=kreal), intent(in) :: ref_data(:)
+        real(kind=kreal), intent(in) :: ref_data(num_ref)
+        !type(pvr_projected_field), intent(in) :: field_pvr
 
         n_mask%range_min = min
         n_mask%range_max = max
-        n_mask%ref_data = ref_data
+        allocate(n_mask%ref_data(num_ref))
+        n_mask%ref_data(:) = ref_data(:)
 
       end subroutine init_noise_mask
 !

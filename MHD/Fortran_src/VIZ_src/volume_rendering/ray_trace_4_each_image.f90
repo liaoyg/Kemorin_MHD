@@ -79,7 +79,7 @@
       integer(kind = kint) :: n_d_size(3)
       character, allocatable:: noise_data(:), noise_grad_data(:)
       type(noise_node), pointer, dimension(:) :: n_node_data
-      type(noise_mask), pointer :: n_mask
+      type(noise_mask), allocatable :: n_mask
       integer(kind = kint) :: k_size
       real(kind = kreal), allocatable :: k_ary(:)
       integer(kind = kint) :: i, read_err, j, n_size
@@ -103,7 +103,8 @@
       n_size = n_d_size(1) * n_d_size(2) * n_d_size(3)
       range_min = 0.0
       range_max = 8.0
-      call init_noise_mask(n_mask, range_min, range_max, field_pvr%d_pvr)
+      allocate(n_mask)
+      call init_noise_mask(n_mask, range_min, range_max, field_pvr%d_pvr, node%numnod)
 
 !
 !$omp parallel do private(inum, iflag_comm,rgba_tmp)
