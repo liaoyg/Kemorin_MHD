@@ -79,11 +79,13 @@
       integer(kind = kint) :: n_d_size(3)
       character, allocatable:: noise_data(:), noise_grad_data(:)
       type(noise_node), pointer, dimension(:) :: n_node_data
+      type(noise_mask), pointer :: n_mask
       integer(kind = kint) :: k_size
       real(kind = kreal), allocatable :: k_ary(:)
       integer(kind = kint) :: i, read_err, j, n_size
       character(len=kchara), parameter :: filename = "noise/noise-256"
       character(len=kchara), parameter :: gradfilename = "noise/noise-256.grd"
+      real(kind = kreal) :: range_min, range_max
 
       iflag_debug = 0
 
@@ -99,15 +101,9 @@
       call generate_kernal_ary(k_size, k_ary)
 
       n_size = n_d_size(1) * n_d_size(2) * n_d_size(3)
-      !if(read_err .eq. 0 .and. iflag_debug .gt. 0) then
-      !  write(*,*)  'noise data size', n_d_size(1), n_d_size(2), n_d_size(3)
-      !  write(*,*)  'kernel data', k_size
-      !  do i = 1, n_size
-          !read(raw_data(i), *) j
-          !write(*,*) ichar(raw_data(i))
-      !    write(*,*) noise_data(i)
-      !  end do
-      !end if
+      range_min = 0.0
+      range_max = 8.0
+      call init_noise_mask(n_mask, range_min, range_max, field_pvr%d_pvr)
 
 !
 !$omp parallel do private(inum, iflag_comm,rgba_tmp)
@@ -126,7 +122,7 @@
      &       id_pixel_check(inum), isf_pvr_ray_start(1,inum),                &
      &       xx_pvr_ray_start(1,inum), xx_pvr_start(1,inum),                 &
      &       xi_pvr_start(1,inum), rgba_tmp(1), icount_pvr_trace(inum),      &
-     &       k_size, k_ary, n_size, noise_data, noise_grad_data,             &
+     &       k_size, k_ary, n_size, noise_data, noise_grad_data, n_mask,     &
      &       node%xyz_min_gl, node%xyz_max_gl, iflag_comm)
         rgba_ray(1:4,inum) = rgba_tmp(1:4)
       end do
@@ -182,7 +178,7 @@
      &        interior_surf, arccos_sf, x_nod_model, viewpoint_vec,     &
      &        field_pvr, color_param, ray_vec, iflag_check, isurf_org,  &
      &        screen_st, xx_st, xi, rgba_ray, icount_line,              &
-     &        k_size, k_ary, n_size, noise_data, noise_grad,            &
+     &        k_size, k_ary, n_size, noise_data, noise_grad, n_mask,    &
      &        xyz_min_gl, xyz_max_gl, iflag_comm)
 !
       use t_geometries_in_pvr_screen
@@ -223,6 +219,7 @@
       character(kind=1), intent(in):: noise_grad(n_size*3)
       character(kind=1), intent(in):: noise_data(n_size)
       !type(noise_node), intent(in) :: noise_data(n_size)
+      type(noise_mask), intent(inout) :: n_mask
       integer(kind = kint), intent(in) :: k_size
       real(kind = kreal), intent(in) :: k_ary(k_size)
 !
@@ -303,8 +300,7 @@
 !   find 3D coordinate of exit point on exit surface
         call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,     &
      &      ie_surf, isurf_end, xi, xx, xx_tgt)
-        call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,     &
-     &      ie_surf, isurf_end, xi, field_pvr%d_pvr, c_tgt(1))
+
         c_tgt(1) = 0.0
 !
         if(interior_ele(iele) .gt. 0) then
@@ -324,7 +320,8 @@
 ! as volume rendering
           call cal_lic_on_surf_vector(numnod, numsurf, numele, nnod_4_surf,    &
      &          isf_4_ele, iele_4_surf, interior_surf, xx, vnorm_surf,         &
-     &          isurf_orgs, ie_surf, xi, n_size, noise_data, noise_grad,       &
+     &          isurf_orgs, ie_surf, xi,                                       &
+     &          n_size, noise_data, noise_grad, n_mask,                        &
      &          k_size, k_ary, field_pvr%v_nod, xx_mid, isurf_end,             &
      &          xyz_min_gl, xyz_max_gl, iflag_lic, c_tgt(1), grad_tgt)
 

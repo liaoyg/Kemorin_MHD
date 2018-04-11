@@ -37,8 +37,9 @@
       subroutine cal_lic_on_surf_vector(nnod, nsurf, nelem, nnod_4_surf,        &
      &          isf_4_ele, iele_4_surf, interior_surf, xx,                      &
      &          vnorm_surf, isurf_orgs, ie_surf, xi,                            &
-     &          noise_size, noise_nod, noise_grad, kernal_size, kernal_node,    &
-     &          v_nod, xx_org, isurf, xyz_min, xyz_max, iflag_comm,     &
+     &          noise_size, noise_nod, noise_grad, n_mask,                      &
+     &          kernal_size, kernal_node,                                       &
+     &          v_nod, xx_org, isurf, xyz_min, xyz_max, iflag_comm,             &
      &          o_tgt, n_grad)
 
         use m_geometry_constants
@@ -63,19 +64,19 @@
         character(kind = 1), intent(in):: noise_grad(noise_size*3)
         character(kind = 1), intent(in):: noise_nod(noise_size)
         !type(noise_node), intent(in) :: noise_nod(noise_size)
+        type(noise_mask), intent(inout) :: n_mask
 
         real(kind = kreal), intent(in) :: xyz_min(3)
         real(kind = kreal), intent(in) :: xyz_max(3)
 
         integer(kind = kint) :: nforward_step, nbackward_stap, iflag_back, istep
 
-        real(kind = kreal) :: dir
+        real(kind = kreal) :: dir, ref_value(1)
         real(kind = kreal) :: org_vec(3), step_vec(3), new_pos(3), old_pos(3)
         integer(kind = kint) :: ilic_suf_org(3), icur_sf
         integer(kind = kint) :: pos_idx, kernal_idx, i, isf_tgt, iele_sf_org(2,2)
         real(kind = kreal) :: lic_v, flux, n_v, forward_len, backward_len, k_area, noise_freq
         integer(kind = kint) :: iflag_found_sf, iele, isf_org, iflag_debug
-
 
         iflag_comm = 1
         iflag_debug = 0
@@ -92,6 +93,7 @@
         n_grad(1:3) = 0.0
         icur_sf = isurf
         n_v = 0.0
+        ref_value = 0.0
 
 
 
@@ -108,15 +110,17 @@
         end do
 
 
-        !write(50+my_rank,*) "isurf: ", isurf
-        !write(50+my_rank,*) "isurf's element: ", iele_4_surf(isurf,1,1), iele_4_surf(isurf,2,1)
-        !write(50+my_rank,*) "isurf_org old: ", isurf_orgs(1,1:2), "isurf_org new: ", isurf_orgs(2,1:2)
-
         !call cal_pos_idx_volume(noise_size, xx_org, xyz_min, xyz_max, pos_idx)
         !o_tgt = o_tgt + ichar(noise_nod(pos_idx)) / 255.0 * kernal_node(kernal_size/2)
         !o_tgt = o_tgt + get_noise_value(noise_size, noise_nod, pos_idx) * kernal_node(kernal_size/2)
 
-        call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, noise_freq, n_v)
+        call cal_field_on_surf_scalar(nnod, nsurf, nnod_4_surf,     &
+        &      ie_surf, icur_sf, xi, n_mask%ref_data, ref_value(1))
+        if(mask_flag(n_mask, ref_value(1))) then
+          call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, noise_freq, n_v)
+        else
+          n_v = 0.0
+        end if
         !call noise_nd_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, n_v)
         o_tgt = o_tgt + n_v * kernal_node(kernal_size/2.0)
         call noise_grad_sampling(noise_size, noise_grad, xx_org, xyz_min, xyz_max, noise_freq, n_grad)
@@ -166,7 +170,8 @@
           &          forward_len, iflag_back, xyz_min, xyz_max,              &
           &          v_nod, ilic_suf_org, new_pos, step_vec,                 &
           &          kernal_size, kernal_node, noise_size, noise_nod,        &
-          &          noise_freq, noise_grad, lic_v, n_grad, k_area, iflag_comm)
+          &          noise_freq, noise_grad, n_mask,                         &
+          &          lic_v, n_grad, k_area, iflag_comm)
           o_tgt = o_tgt + lic_v
         end if
         if(iflag_debug .eq. 1) write(50+my_rank,*) "-----------------------Forward iter end-------------with:", iflag_comm
@@ -203,7 +208,8 @@
           &          backward_len, iflag_back, xyz_min, xyz_max,             &
           &          v_nod, ilic_suf_org, new_pos, step_vec,                 &
           &          kernal_size, kernal_node, noise_size, noise_nod,        &
-          &          noise_freq, noise_grad, lic_v, n_grad, k_area, iflag_comm)
+          &          noise_freq, noise_grad, n_mask,                         &
+          &          lic_v, n_grad, k_area, iflag_comm)
           o_tgt = o_tgt + lic_v
         end if
         if(iflag_debug .eq. 1) write(50+my_rank,*) "-----------------------Backward iter end------------with:", iflag_comm
@@ -356,7 +362,8 @@ subroutine s_cal_lic_from_point(numnod, numele, numsurf,           &
 &          iele_4_surf, interior_surf, vnorm_surf,                 &
 &          max_line_len, iflag_back, xyz_min, xyz_max,             &
 &          vect_nod, isurf_org, x_start, v_start,                  &
-&          k_size, k_node, n_size, n_node, noise_freq, grad_node,  &
+&          k_size, k_node, n_size, n_node, noise_freq,             &
+&          grad_node, n_mask,                                      &
 &          lic_v, grad_v, k_area, iflag_comm)
 
 use t_noise_node_data
@@ -383,6 +390,7 @@ real(kind = kreal), intent(in) :: k_node(k_size), noise_freq
 character(kind = 1), intent(in):: grad_node(n_size*3)
 character(kind = 1), intent(in):: n_node(n_size)
 !type(noise_node), intent(in) :: n_node(n_size)
+type(noise_mask), intent(inout) :: n_mask
 !
 real(kind = kreal), intent(in) :: xyz_min(3)
 real(kind = kreal), intent(in) :: xyz_max(3)
@@ -393,7 +401,7 @@ integer(kind = kint) :: isf_tgt, isurf_end, isurf_start, iele, isf_org
 real(kind = kreal) :: x_org(3), x_tgt(3), v_tgt(3), c_tgt(1), xi(2), flux
 integer(kind = kint) :: i_iter, i_k, i_n, iflag_debug, i
 real(kind = kreal) :: n_v, nv_sum, step_len, len_sum, k_value, k_pos, avg_stepsize
-real(kind = kreal) :: g_v(3)
+real(kind = kreal) :: g_v(3), ref_value(1)
 !
 !
 !init local variables
@@ -487,7 +495,12 @@ if(iflag_debug .eq. 1) write(50 + my_rank, *) "pos:", x_tgt
   x_start(1:3) =  x_tgt(1:3)
   !call cal_pos_idx_volume(n_size, x_tgt, xyz_min, xyz_max, i_n)
   n_v = 0.0
-  call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, noise_freq, n_v)
+  ref_value = 0.0
+  call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,     &
+  &      ie_surf, isurf_end, xi, n_mask%ref_data, ref_value(1))
+  if(mask_flag(n_mask, ref_value(1))) then
+    call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, noise_freq, n_v)
+  end if
   !call noise_nd_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
   g_v(1:3) = 0.0
   call noise_grad_sampling(n_size, grad_node, x_tgt, xyz_min, xyz_max, noise_freq, g_v)
@@ -536,7 +549,12 @@ if(len_sum .lt. max_line_len) then
     k_pos = 0.0
     x_tgt = x_start + v_start / norm2(v_start) * avg_stepsize
     n_v = 0.0
-    call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, noise_freq, n_v)
+    ref_value = 0.0
+    call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,     &
+    &      ie_surf, isurf_end, xi, n_mask%ref_data, ref_value(1))
+    if(mask_flag(n_mask, ref_value(1))) then
+      call noise_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, noise_freq, n_v)
+    end if
     !call noise_nd_sampling(n_size, n_node, x_tgt, xyz_min, xyz_max, n_v)
     if(iflag_back .eq. ione) then
       k_pos =  0.5 + 0.5 * len_sum/max_line_len
