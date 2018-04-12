@@ -101,8 +101,8 @@
       call generate_kernal_ary(k_size, k_ary)
 
       n_size = n_d_size(1) * n_d_size(2) * n_d_size(3)
-      range_min = 0.0
-      range_max = 8.0
+      range_min = 7.0
+      range_max = 14.0
       allocate(n_mask)
       call init_noise_mask(n_mask, range_min, range_max, field_pvr%d_pvr, node%numnod)
 
@@ -228,7 +228,7 @@
       integer(kind = kint) :: iflag_notrace
       integer(kind = kint) :: isf_tgt, isurf_end, iele, isf_org
       integer(kind = kint) :: i_iso, i_psf, iflag, iflag_hit
-      real(kind = kreal) :: screen_tgt(3), c_tgt(1)
+      real(kind = kreal) :: screen_tgt(3), c_tgt(1), r_org(1), r_tgt(1), r_mid(1)
       real(kind = kreal) :: grad_tgt(3), xx_tgt(3), rflag, rflag2, grad_len, xx_mid(3)
       integer(kind = kint) :: isurf_orgs(2,3), i, iflag_lic
 
@@ -245,7 +245,8 @@
       isurf_end = abs(isf_4_ele(iele,isf_org))
       call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,       &
      &    ie_surf, isurf_end, xi, xx, xx_st)
-
+      call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,       &
+     &    ie_surf, isurf_end, xi, field_pvr%d_pvr, r_org(1) )
 
 !
       if(iflag_check .gt. 0) then
@@ -301,6 +302,8 @@
 !   find 3D coordinate of exit point on exit surface
         call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,     &
      &      ie_surf, isurf_end, xi, xx, xx_tgt)
+        call cal_field_on_surf_scalar(numnod, numsurf, nnod_4_surf,       &
+     &    ie_surf, isurf_end, xi, field_pvr%d_pvr, r_tgt(1) )
 
         c_tgt(1) = 0.0
 !
@@ -317,12 +320,14 @@
 
 ! find mid point between xx_st and xx_tgt, this mid point will be actual sample point
           xx_mid = half*(xx_st + xx_tgt)
+! reference data at origin of lic iteration
+          r_mid(1) = half*(r_org(1)+r_tgt(1))
 ! calculate lic value at current location, lic value will be used as intensity
 ! as volume rendering
           call cal_lic_on_surf_vector(numnod, numsurf, numele, nnod_4_surf,    &
      &          isf_4_ele, iele_4_surf, interior_surf, xx, vnorm_surf,         &
      &          isurf_orgs, ie_surf, xi,                                       &
-     &          n_size, noise_data, noise_grad, n_mask,                        &
+     &          n_size, noise_data, noise_grad, n_mask, r_mid(1),              &
      &          k_size, k_ary, field_pvr%v_nod, xx_mid, isurf_end,             &
      &          xyz_min_gl, xyz_max_gl, iflag_lic, c_tgt(1), grad_tgt)
 
@@ -347,6 +352,7 @@
 !
         screen_st(1:3) = screen_tgt(1:3)
         xx_st(1:3) = xx_tgt(1:3)
+        r_org(1) = r_tgt(1)
       end do
 !
 !      if(iflag_check*field_pvr%num_sections .gt. 0) then

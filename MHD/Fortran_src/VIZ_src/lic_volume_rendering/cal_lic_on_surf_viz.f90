@@ -37,7 +37,7 @@
       subroutine cal_lic_on_surf_vector(nnod, nsurf, nelem, nnod_4_surf,        &
      &          isf_4_ele, iele_4_surf, interior_surf, xx,                      &
      &          vnorm_surf, isurf_orgs, ie_surf, xi,                            &
-     &          noise_size, noise_nod, noise_grad, n_mask,                      &
+     &          noise_size, noise_nod, noise_grad, n_mask, r_org,               &
      &          kernal_size, kernal_node,                                       &
      &          v_nod, xx_org, isurf, xyz_min, xyz_max, iflag_comm,             &
      &          o_tgt, n_grad)
@@ -56,7 +56,7 @@
 
         real(kind = kreal), intent(inout) :: xi(2)
         real(kind = kreal), intent(in) :: v_nod(nnod,3), xx(nnod, 3)
-        real(kind = kreal), intent(in) :: xx_org(3)
+        real(kind = kreal), intent(in) :: xx_org(3), r_org
         real(kind = kreal), intent(inout) :: o_tgt, n_grad(3)
         integer(kind = kint), intent(inout) :: iflag_comm
         integer(kind = kint), intent(in) :: noise_size, kernal_size
@@ -85,7 +85,7 @@
         forward_len = 0.32
         backward_len = 0.32
         k_area = 0.0
-        noise_freq = 3.0
+        noise_freq = 1.8
 
         !   initial convolution integration at origin point
         lic_v = 0.0
@@ -109,14 +109,7 @@
           end if
         end do
 
-
-        !call cal_pos_idx_volume(noise_size, xx_org, xyz_min, xyz_max, pos_idx)
-        !o_tgt = o_tgt + ichar(noise_nod(pos_idx)) / 255.0 * kernal_node(kernal_size/2)
-        !o_tgt = o_tgt + get_noise_value(noise_size, noise_nod, pos_idx) * kernal_node(kernal_size/2)
-
-        call cal_field_on_surf_scalar(nnod, nsurf, nnod_4_surf,     &
-        &      ie_surf, icur_sf, xi, n_mask%ref_data, ref_value(1))
-        if(mask_flag(n_mask, ref_value(1))) then
+        if(mask_flag(n_mask, r_org)) then
           call noise_sampling(noise_size, noise_nod, xx_org, xyz_min, xyz_max, noise_freq, n_v)
         else
           n_v = 0.0
@@ -224,136 +217,6 @@
         if(iflag_debug .eq. 1) write(50+my_rank,*) "Get lic value: ", o_tgt
         if(iflag_debug .eq. 1) write(50+my_rank, *)"   "
     end subroutine cal_lic_on_surf_vector
-!
-!  ---------------------------------------------------------------------
-!
-
-      subroutine s_trace_lic_element( numnod, numele, numsurf,           &
-     &          nnod_4_surf, xx, ie_surf, isf_4_ele, iele_4_surf,        &
-     &          interior_surf, vnorm_surf, iflag_back, vect_nod,         &
-     &          n_size, n_data, isurf_org, isurf, x_start, v_start,      &
-     &          noise_v, xyz_min, xyz_max, iflag_comm)
-
-    !
-    integer(kind = kint), intent(in) :: numnod, numele, numsurf
-    integer(kind = kint), intent(in) :: nnod_4_surf
-    real(kind = kreal), intent(in) :: xx(numnod,3)
-    integer(kind = kint), intent(in) :: ie_surf(numsurf,nnod_4_surf)
-    integer(kind = kint), intent(in) :: isf_4_ele(numele,nsurf_4_ele)
-    integer(kind = kint), intent(in) :: iele_4_surf(numsurf,2,2)
-    integer(kind = kint), intent(in) :: interior_surf(numsurf)
-    real(kind = kreal), intent(in) :: vnorm_surf(numsurf,3)
-    !
-    real(kind = kreal), intent(in) :: xyz_min(3)
-    real(kind = kreal), intent(in) :: xyz_max(3)
-    !
-    integer(kind = kint), intent(in) :: iflag_back, n_size
-    real(kind = kreal), intent(in) :: vect_nod(numnod,3)
-    character(kind = 1), intent(in) :: n_data(n_size)
-    !
-    integer(kind = kint), intent(inout) :: isurf_org(3), isurf
-    integer(kind = kint), intent(inout) :: iflag_comm
-    real(kind = kreal), intent(inout) ::   v_start(3), x_start(3), noise_v
-    !
-    integer(kind = kint) :: isf_tgt, isurf_end, iele, isf_org, n_idx, i
-    real(kind = kreal) :: x_tgt(3), v_tgt(3), c_tgt(1), xi(2), flux
-    !
-    !initialize input and local variables
-
-    noise_v = 0.0
-    iflag_comm = 1
-
-    if(isurf .eq. 0) then
-      iflag_comm = 0
-      return
-    end if
-
-    ! current surface will have two neigbor element, now choose one first
-    ! current element
-    iele =    iele_4_surf(isurf,1,1)
-    ! current local surface id
-    isf_org = iele_4_surf(isurf,1,2)
-write(50+my_rank,*) "point start: ", x_start
-!write(*,*) "param: ", iele, isf_org, v_start, x_start
-!
-    call find_line_end_in_1ele(iflag_back, numnod, numele, numsurf,     &
-     &      nnod_4_surf, isf_4_ele, ie_surf, xx, iele, isf_org,         &
-     &      v_start, x_start, isf_tgt, x_tgt, xi)
-    !
-write(50+my_rank,*) "ray: ", v_start
-write(50+my_rank,*) "hit at: ", x_tgt
-    ! if there is no hit point in current element, we will choose another element
-    if(isf_tgt .eq. 0) then
-      ! if it is exterior surface, there is only one element
-      if(interior_surf(isurf) .eq. izero) then
-        iflag_comm = -1
-        return
-      end if
-      ! current element
-      iele =    iele_4_surf(isurf,2,1)
-      ! current local surface id
-      isf_org = iele_4_surf(isurf,2,2)
-      call find_line_end_in_1ele(iflag_back, numnod, numele, numsurf,    &
-      &      nnod_4_surf, isf_4_ele, ie_surf, xx, iele, isf_org,         &
-      &      v_start, x_start, isf_tgt, x_tgt, xi)
-      ! still no exit surface, then return
-      if(isf_tgt .eq. 0) then
-        iflag_comm = -1
-        return
-      end if
-    end if
-    !
-    isurf_end = abs(isf_4_ele(iele,isf_tgt))
-    call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,         &
-     &      ie_surf, isurf_end, xi, vect_nod, v_tgt)
-    !   get middle point which is within current element
-    !isf_org =  0
-    x_start(1:3) = half * (x_start(1:3) + x_tgt(1:3))
-    v_start(1:3) = half * (v_start(1:3) + v_tgt(1:3))
-write(50+my_rank,*) "mid point: ", x_start
-write(50+my_rank,*) "with v: ", v_start
-    !c_field(1) =   half * (c_field(1) + c_tgt(1))
-    !
-    !   extend to surface of element
-    !
-    call find_line_end_in_1ele(iflag_back, numnod, numele, numsurf,     &
-     &      nnod_4_surf, isf_4_ele, ie_surf, xx, iele, isf_org,         &
-     &      v_start, x_start, isf_tgt, x_tgt, xi)
-    !
-    if(isf_tgt .eq. 0) then
-      iflag_comm = -11
-      return
-    end if
-    !
-    isurf_end = abs(isf_4_ele(iele,isf_tgt))
-    call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,         &
-     &      ie_surf, isurf_end, xi, vect_nod, v_start)
-    call cal_field_on_surf_vector(numnod, numsurf, nnod_4_surf,         &
-    &      ie_surf, isurf_end, xi, xx, x_start)
-write(50+my_rank,*) "secd exit at: ", x_tgt, "new x_start:", x_start
-!if(my_rank .eq. 0) write(*,*) "secd exit at: ", x_tgt
-write(50+my_rank,*) "with v: ", v_start
-    !   get noise(c_field) value from noise data set according to current surface and xi
-    call cal_pos_idx_volume(n_size, x_tgt, xyz_min, xyz_max, n_idx)
-    noise_v = ichar(n_data(n_idx)) / 1.0
-
-    ! if next point is on exterior surface
-    if(interior_surf(isurf_end) .eq. izero) then
-      isurf_org(1) = iele
-      isurf_org(2) = isf_tgt
-      isurf_org(3) = ie_surf(isurf_end,1)
-      iflag_comm = 10
-      return
-    end if
-    !update current surface id for next iteration
-    isurf = isurf_end
-
-    if(isurf_org(1).eq.0 ) then
-      iflag_comm = -10
-      return
-    end if
-
-    end subroutine s_trace_lic_element
 !
 !  ---------------------------------------------------------------------
 !
