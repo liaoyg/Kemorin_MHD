@@ -37,7 +37,7 @@
       subroutine cal_lic_on_surf_vector(nnod, nsurf, nelem, nnod_4_surf,        &
      &          isf_4_ele, iele_4_surf, interior_surf, xx,                      &
      &          vnorm_surf, isurf_orgs, ie_surf, xi,                            &
-     &          noise_size, noise_nod, noise_grad, n_mask, r_org,               &
+     &          noise_size, noise_nod, noise_grad, n_mask, r_org, vec_org,      &
      &          kernal_size, kernal_node,                                       &
      &          v_nod, xx_org, isurf, xyz_min, xyz_max, iflag_comm,             &
      &          o_tgt, n_grad)
@@ -56,7 +56,7 @@
 
         real(kind = kreal), intent(inout) :: xi(2)
         real(kind = kreal), intent(in) :: v_nod(nnod,3), xx(nnod, 3)
-        real(kind = kreal), intent(in) :: xx_org(3), r_org
+        real(kind = kreal), intent(in) :: xx_org(3), r_org, vec_org(3)
         real(kind = kreal), intent(inout) :: o_tgt, n_grad(3)
         integer(kind = kint), intent(inout) :: iflag_comm
         integer(kind = kint), intent(in) :: noise_size, kernal_size
@@ -72,7 +72,7 @@
         integer(kind = kint) :: nforward_step, nbackward_stap, iflag_back, istep
 
         real(kind = kreal) :: dir, ref_value(1)
-        real(kind = kreal) :: org_vec(3), step_vec(3), new_pos(3), old_pos(3)
+        real(kind = kreal) :: step_vec(3), new_pos(3), old_pos(3)
         integer(kind = kint) :: ilic_suf_org(3), icur_sf
         integer(kind = kint) :: pos_idx, kernal_idx, i, isf_tgt, iele_sf_org(2,2)
         real(kind = kreal) :: lic_v, flux, n_v, forward_len, backward_len, k_area, noise_freq
@@ -85,7 +85,7 @@
         forward_len = 0.32
         backward_len = 0.32
         k_area = 0.0
-        noise_freq = 1.8
+        noise_freq = 2.5
 
         !   initial convolution integration at origin point
         lic_v = 0.0
@@ -118,15 +118,11 @@
         o_tgt = o_tgt + n_v * kernal_node(kernal_size/2.0)
         call noise_grad_sampling(noise_size, noise_grad, xx_org, xyz_min, xyz_max, noise_freq, n_grad)
         n_grad = n_grad + n_grad * kernal_node(kernal_size/2)
-        !if(iflag_debug .eq. 1) write(50+my_rank,*) "xx", xx_org, "min", xyz_min, "max", xyz_max
-        !if(iflag_debug .eq. 1) write(50+my_rank,*) "n_size",noise_size, "nid", pos_idx, "n_v", o_tgt
-        call cal_field_on_surf_vector(nnod, nsurf, nnod_4_surf, ie_surf, icur_sf, xi, v_nod, org_vec)
 
-        !write(50+my_rank,*) "cal lic at: ", xx_org, "with v: ", org_vec
         if(iflag_debug .eq. 1) write(50+my_rank,*) "------------------------Forward iter begin--------------------"
         !   forward integration
         iflag_back = 1
-        step_vec(1:3) = org_vec(1:3)
+        step_vec(1:3) = vec_org(1:3)
         new_pos(1:3) = xx_org(1:3)
         ! if current surface is exterior surface, then return.
         if((interior_surf(icur_sf) .eq. izero) .or. (icur_sf .eq. izero)) then
@@ -142,7 +138,7 @@
           isf_org = isurf_orgs(i,2)
           call find_line_end_in_1ele(iflag_back, nnod, nelem, nsurf,         &
           &      nnod_4_surf, isf_4_ele, ie_surf, xx, iele, isf_org,         &
-          &      org_vec, xx_org, isf_tgt, new_pos, xi)
+          &      vec_org, xx_org, isf_tgt, new_pos, xi)
           if(isf_tgt .gt. 0) then
             !write(50+my_rank, *) "find exit point in neighbor element."
             iflag_found_sf = 1
@@ -173,14 +169,14 @@
         !   Backward iteration
         iflag_found_sf = 0
         iflag_back = -1
-        step_vec(1:3) = org_vec(1:3)
+        step_vec(1:3) = vec_org(1:3)
         new_pos(1:3) = xx_org(1:3)
         do i = 1, 2
           iele = isurf_orgs(i,1)
           isf_org = isurf_orgs(i,2)
           call find_line_end_in_1ele(iflag_back, nnod, nelem, nsurf,         &
           &      nnod_4_surf, isf_4_ele, ie_surf, xx, iele, isf_org,         &
-          &      org_vec, xx_org, isf_tgt, new_pos, xi)
+          &      vec_org, xx_org, isf_tgt, new_pos, xi)
           if(isf_tgt .gt. 0) then
             !write(50+my_rank, *) "find exit point in neighbor element."
             iflag_found_sf = 1
